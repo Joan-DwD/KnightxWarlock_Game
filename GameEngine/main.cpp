@@ -14,24 +14,24 @@ void processKeyboardInput();
 // ======================
 // TIME
 // ======================
-float deltaTime = 0.0f; // Time between current frame and last frame
+float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // ======================
 // WINDOW
 // ======================
-Window window("Simple Room", 800, 800);
+Window window("KNIGHTXWARLOCK", 1920, 1080);
 
 // ======================
 // CAMERA
 // ======================
-Camera camera(glm::vec3(0.0f, 10.0f, 0.0f)); // Above center of room
+Camera camera(glm::vec3(0.0f, 12.0f, 4.2f)); // Above center of room
 
 // ======================
 // LIGHT
 // ======================
-glm::vec3 lightColor = glm::vec3(0.8f, 0.6f, 0.4f); // Warm, dim torchlight
-glm::vec3 lightPos = glm::vec3(6.5f, 4.0f, 20.0f); // Near door, above
+glm::vec3 lightColor = glm::vec3(0.8f, 0.6f, 0.4f);
+glm::vec3 lightPos = glm::vec3(6.5f, 4.0f, 0.0f);
 
 int main()
 {
@@ -40,7 +40,7 @@ int main()
     // ======================
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE); // Disable backface culling to see walls from inside
+    glDisable(GL_CULL_FACE);
 
     // ======================
     // SHADERS
@@ -54,51 +54,44 @@ int main()
     GLuint woodTex = loadBMP("Resources/Textures/wood.bmp");
     GLuint rockTex = loadBMP("Resources/Textures/rock.bmp");
     GLuint orangeTex = loadBMP("Resources/Textures/orange.bmp");
+    GLuint purpleTex = loadBMP("Resources/Textures/purple.bmp");
+    GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
 
-    // Prepare textures
     std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
     std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
     std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
+    std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
+    std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
 
     // ======================
     // LOAD MODELS
     // ======================
     MeshLoaderObj loader;
 
-    // Simple room - walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
-    Mesh wallCube1 = loader.loadObj("Resources/Models/cube.obj", woodTextures);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
 
-    // Prison cell objects
-    Mesh key = loader.loadObj("Resources/Models/key.obj", orangeTextures);
-    Mesh door = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+    // Pawns
+    Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", purpleTextures);
+    Mesh knight = loader.loadObj("Resources/Models/pawn.obj", goldTextures);
 
-    // Pawn
-    Mesh pawn = loader.loadObj("Resources/Models/pawn.obj", woodTextures);
-
-    // Wooden beams/pillars and bars
-    Mesh beam = loader.loadObj("Resources/Models/cube.obj", woodTextures);
-    Mesh pillar = loader.loadObj("Resources/Models/cube.obj", woodTextures);
-    Mesh bar = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+    // Key and door
+    Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", goldTextures);
+    Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", woodTextures);
 
     // ======================
     // OBJECT POSITIONS
     // ======================
-    glm::vec3 keyPos = glm::vec3(0.0f, 0.1f, 0.0f);   // Key on floor
-    glm::vec3 doorPos = glm::vec3(6.5f, 1.5f, 24.0f);  // Center of front wall, door height
-    glm::vec3 pawnPos = glm::vec3(6.5f, 0.1f, 10.0f);  // Pawn on floor
+    glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
+    glm::vec3 knightPos = glm::vec3(0.0f, 2.0f, 0.0f);
+    bool activeIsWarlock = true; // start controlling Warlock
 
-    // ======================
-    // GAME STATE
-    // ======================
-    bool hasKey = false;
+    glm::vec3 keyPos = glm::vec3(-3.0f, 0.2f, -3.0f);   // on floor
     bool keyCollected = false;
-    bool doorUnlocked = false;
+    bool hasKey = false;
 
-    std::cout << "=== PRISON CELL ===" << std::endl;
-    std::cout << "You awaken in a cold stone cell..." << std::endl;
-    std::cout << "Controls: WASD to move, Arrow keys to look around, E to interact" << std::endl;
+    glm::vec3 doorPos = glm::vec3(0.0f, 2.0f, -6.9f);
+    bool doorUnlocked = false;
 
     // ======================
     // MAIN LOOP
@@ -115,25 +108,17 @@ int main()
         lastFrame = currentFrame;
 
         // ======================
-        // CAMERA INPUT
-        // ======================
-        processKeyboardInput();
-
-        // ======================
         // MATRICES
         // ======================
         glm::mat4 ProjectionMatrix = glm::perspective(90.0f, window.getWidth() * 1.0f / window.getHeight(), 0.1f, 10000.0f);
         glm::mat4 ViewMatrix = glm::lookAt(
             camera.getCameraPosition(),
-            glm::vec3(camera.getCameraPosition().x, 0.0f, camera.getCameraPosition().z), // Look at floor
-            glm::vec3(0.0f, 0.0f, -1.0f) // Up vector pointing along -Z so "forward" is consistent
+            glm::vec3(camera.getCameraPosition().x, camera.getCameraPosition().y - 0.8f, camera.getCameraPosition().z - 0.25f),
+            glm::vec3(0.0f, 0.0f, -1.0f)
         );
         glm::mat4 ModelMatrix;
         glm::mat4 MVP;
 
-        // ======================
-        // SHADER UNIFORMS
-        // ======================
         shader.use();
         GLuint MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
         GLuint ModelMatrixID = glGetUniformLocation(shader.getId(), "model");
@@ -144,10 +129,13 @@ int main()
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
 
+        // ======================
+        // WALLS (unchanged)
+        // ======================
         // Back wall (+Z)
         ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 1.5f, 5.0f)); // center Y=1.5, Z=far edge
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5.0f, 1.5f, 0.2f));       // width X=5, height Y=3, depth Z=0.2
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.5f, 7.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 3.5f, 0.1f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
@@ -155,8 +143,8 @@ int main()
 
         // Front wall (-Z)
         ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 1.5f, -5.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5.0f, 1.5f, 0.2f));
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.5f, -7.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 3.5f, 0.1f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
@@ -164,8 +152,8 @@ int main()
 
         // Left wall (-X)
         ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-5.0f, 1.5f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.2f, 1.5f, 5.0f));
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-7.0f, 3.5f, 0.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.1f, 3.5f, 7.0f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
@@ -173,57 +161,65 @@ int main()
 
         // Right wall (+X)
         ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(5.0f, 1.5f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.2f, 3.0f, 5.0f));
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(7.0f, 3.5f, 0.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.1f, 3.5f, 7.0f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         wallCube.draw(shader);
 
-
         // ======================
         // FLOOR
         // ======================
-        ModelMatrix = glm::mat4(1.0);
+        ModelMatrix = glm::mat4(1.0f);
         ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5.0f, 0.1f, 5.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 7.0f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         floorCube.draw(shader);
 
         // ======================
-        // KEY
+        // CHARACTER SWAP (SPACE)
         // ======================
-        if (!keyCollected)
+        static bool spacePressedLastFrame = false;
+        if (window.isPressed(GLFW_KEY_SPACE))
         {
-            ModelMatrix = glm::mat4(1.0);
-            ModelMatrix = glm::translate(ModelMatrix, keyPos);
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.03f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            key.draw(shader);
+            if (!spacePressedLastFrame)
+            {
+                activeIsWarlock = !activeIsWarlock;
+                spacePressedLastFrame = true;
+            }
+        }
+        else
+        {
+            spacePressedLastFrame = false;
         }
 
         // ======================
-        // PAWN
+        // PAWN MOVEMENT
         // ======================
-        ModelMatrix = glm::mat4(1.0);
-        ModelMatrix = glm::translate(ModelMatrix, pawnPos);
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.8f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        pawn.draw(shader);
+        float speed = 5.0f * deltaTime;
+        if (activeIsWarlock)
+        {
+            if (window.isPressed(GLFW_KEY_W)) warlockPos.z -= speed;
+            if (window.isPressed(GLFW_KEY_S)) warlockPos.z += speed;
+            if (window.isPressed(GLFW_KEY_A)) warlockPos.x -= speed;
+            if (window.isPressed(GLFW_KEY_D)) warlockPos.x += speed;
+        }
+        else
+        {
+            if (window.isPressed(GLFW_KEY_W)) knightPos.z -= speed;
+            if (window.isPressed(GLFW_KEY_S)) knightPos.z += speed;
+            if (window.isPressed(GLFW_KEY_A)) knightPos.x -= speed;
+            if (window.isPressed(GLFW_KEY_D)) knightPos.x += speed;
+        }
 
         // ======================
-        // INTERACTIONS
+        // KEY PICKUP
         // ======================
-        glm::vec3 cameraPos = camera.getCameraPosition();
-
-        // Key pickup
-        float distToKey = glm::length(cameraPos - keyPos);
+        glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
+        float distToKey = glm::length(activePos - keyPos);
         if (distToKey < 2.0f && !keyCollected)
         {
             if (window.isPressed(GLFW_KEY_E))
@@ -243,8 +239,10 @@ int main()
             }
         }
 
-        // Door interaction
-        float distToDoor = glm::length(cameraPos - doorPos);
+        // ======================
+        // DOOR INTERACTION
+        // ======================
+        float distToDoor = glm::length(activePos - doorPos);
         if (distToDoor < 3.0f)
         {
             if (window.isPressed(GLFW_KEY_E))
@@ -260,20 +258,53 @@ int main()
                     std::cout << ">>> The door is locked. You need a key." << std::endl;
                 }
             }
-            else
-            {
-                static bool shownDoorPrompt = false;
-                if (!shownDoorPrompt && !doorUnlocked)
-                {
-                    if (hasKey)
-                        std::cout << "Press E to unlock the door" << std::endl;
-                    else
-                        std::cout << "Press E to try the door (locked)" << std::endl;
-
-                    shownDoorPrompt = true;
-                }
-            }
         }
+
+        // ======================
+        // DRAW PAWNS
+        // ======================
+        // Warlock
+        ModelMatrix = glm::mat4(1.0f);
+        ModelMatrix = glm::translate(ModelMatrix, warlockPos);
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.4f));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        warlock.draw(shader);
+
+        // Knight
+        ModelMatrix = glm::mat4(1.0f);
+        ModelMatrix = glm::translate(ModelMatrix, knightPos);
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.4f));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        knight.draw(shader);
+
+        // ======================
+        // DRAW KEY
+        // ======================
+        if (!keyCollected)
+        {
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, keyPos);
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.02f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            keyMesh.draw(shader);
+        }
+
+        // ======================
+        // DRAW DOOR
+        // ======================
+        ModelMatrix = glm::mat4(1.0f);
+        ModelMatrix = glm::translate(ModelMatrix, doorPos);
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        doorMesh.draw(shader);
 
         window.update();
     }
@@ -282,23 +313,21 @@ int main()
 }
 
 // ======================
-// CAMERA INPUT
+// CAMERA INPUT (commented out)
 // ======================
 void processKeyboardInput()
 {
+    /*
     float cameraSpeed = 30 * deltaTime;
-
-    // Translation
     if (window.isPressed(GLFW_KEY_W)) camera.keyboardMoveFront(cameraSpeed);
     if (window.isPressed(GLFW_KEY_S)) camera.keyboardMoveBack(cameraSpeed);
     if (window.isPressed(GLFW_KEY_A)) camera.keyboardMoveLeft(cameraSpeed);
     if (window.isPressed(GLFW_KEY_D)) camera.keyboardMoveRight(cameraSpeed);
     if (window.isPressed(GLFW_KEY_R)) camera.keyboardMoveUp(cameraSpeed);
     if (window.isPressed(GLFW_KEY_F)) camera.keyboardMoveDown(cameraSpeed);
-
-    // Rotation
     if (window.isPressed(GLFW_KEY_LEFT)) camera.rotateOy(cameraSpeed);
     if (window.isPressed(GLFW_KEY_RIGHT)) camera.rotateOy(-cameraSpeed);
     if (window.isPressed(GLFW_KEY_UP)) camera.rotateOx(cameraSpeed);
     if (window.isPressed(GLFW_KEY_DOWN)) camera.rotateOx(-cameraSpeed);
+    */
 }
