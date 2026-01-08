@@ -12,6 +12,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+// --- Custom Class Includes ---
+#include "Wall.h"
+
 // ======================
 // TEXT RENDERING STRUCTS
 // ======================
@@ -103,6 +106,19 @@ int main()
     // Key and door
     Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", goldTextures);
     Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+
+    // ======================
+    // --- CREATE WALL OBJECTS ---
+    // ======================
+    // Back wall (+Z)
+    Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
+    // Front wall (-Z)
+    Wall frontWall(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
+    // Left wall (-X)
+    Wall leftWall(&wallCube, glm::vec3(-7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
+    // Right wall (+X)
+    Wall rightWall(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
+
 
     // ======================
     // --- FREETYPE SETUP ---
@@ -218,43 +234,12 @@ int main()
             camera.getCameraPosition().z);
 
         // ======================
-        // WALLS (unchanged)
+        // WALLS (now using class !)
         // ======================
-        // Back wall (+Z)
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.5f, 7.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 3.5f, 0.1f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        wallCube.draw(shader);
-
-        // Front wall (-Z)
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.5f, -7.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 3.5f, 0.1f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        wallCube.draw(shader);
-
-        // Left wall (-X)
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-7.0f, 3.5f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.1f, 3.5f, 7.0f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        wallCube.draw(shader);
-
-        // Right wall (+X)
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(7.0f, 3.5f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.1f, 3.5f, 7.0f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        wallCube.draw(shader);
+        backWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
 
         // ======================
         // FLOOR
