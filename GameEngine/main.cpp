@@ -319,12 +319,12 @@ int main()
         // =============================
         if (window.isPressed(GLFW_KEY_R))
         {
-            if (!rPressedLastFrame) // Only trigger once per press
+            if (!rPressedLastFrame)
             {
-                currentLineIndex++;
-                // Loop back to start if we reach the end
-                if (currentLineIndex >= dialogueLines.size()) {
-                    currentLineIndex = 0;
+                // Only increment if we haven't finished the dialogue yet.
+                // When currentLineIndex equals dialogueLines.size(), dialogue ends
+                if (currentLineIndex < dialogueLines.size()) {
+                    currentLineIndex++;
                 }
                 rPressedLastFrame = true;
             }
@@ -401,25 +401,31 @@ int main()
 
         glDisable(GL_DEPTH_TEST);
 
-        // --- 1. Render the Background Box ---
-        diagShader.use();
+        // Only draw the box and text if we haven't reached the end of the list
+        if (currentLineIndex < dialogueLines.size())
+        {
+            // --- Render the Background Box ---
+            diagShader.use();
 
-        // Set Model Matrix for UI: Bottom Center
-        glm::mat4 boxModel = glm::mat4(1.0f);
-        boxModel = glm::translate(boxModel, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f));
-        boxModel = glm::scale(boxModel, glm::vec3(1200.0f, 200.0f, 1.0f));
+            // Set Model Matrix for UI: Bottom Center
+            glm::mat4 boxModel = glm::mat4(1.0f);
+            boxModel = glm::translate(boxModel, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f));
+            boxModel = glm::scale(boxModel, glm::vec3(1200.0f, 200.0f, 1.0f));
 
-        // Pass "model" uniform
-        glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "model"), 1, GL_FALSE, &boxModel[0][0]);
+            // Pass "model" uniform
+            glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "model"), 1, GL_FALSE, &boxModel[0][0]);
 
-        // Pass "color" uniform (Navy Blue) - R, G, B
-        glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.1f, 0.15f, 0.5f);
+            // Pass "color" uniform (Navy Blue)
+            glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.1f, 0.15f, 0.5f);
 
-        dialogueBoxMesh.draw(diagShader);
+            dialogueBoxMesh.draw(diagShader);
 
+            // --- Render Text On Top ---
+            // We use the string from our vector based on the current index
+            textRenderer.RenderText(textShader, dialogueLines[currentLineIndex], 700.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
+        }
 
-        // --- 2. Render Text On Top ---
-
+        // --- Render Hints (Always visible) ---
         // Hints (Top Left)
         if (!hasKey) {
             textRenderer.RenderText(textShader, "Find the Key...", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
@@ -430,10 +436,6 @@ int main()
         else {
             textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
         }
-
-        // --- DIALOGUE BOX TEXT ---
-        // We use the string from our vector based on the current index
-        textRenderer.RenderText(textShader, dialogueLines[currentLineIndex], 700.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
 
         glEnable(GL_DEPTH_TEST);
 
