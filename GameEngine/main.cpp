@@ -32,13 +32,13 @@ Window window("KNIGHTXWARLOCK", 1920, 1080);
 // ======================
 // CAMERA
 // ======================
-Camera camera(glm::vec3(0.0f, 12.0f, 4.2f)); // Above center of room
+Camera camera(glm::vec3(0.0f, 15.0f, 4.2f)); // Above center of room
 
 // ======================
 // LIGHT
 // ======================
 glm::vec3 lightColor = glm::vec3(0.8f, 0.6f, 0.4f);
-glm::vec3 lightPos = glm::vec3(6.5f, 4.0f, 0.0f);
+glm::vec3 lightPos = glm::vec3(0.0f, 6.5f, 1.0f);
 
 int main()
 {
