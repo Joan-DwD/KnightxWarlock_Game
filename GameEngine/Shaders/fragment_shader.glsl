@@ -1,19 +1,33 @@
 #version 400
 
-in vec2 textureCoord; 
-in vec3 norm;
-in vec3 fragPos;
-
 out vec4 fragColor;
 
-uniform sampler2D texture1;
-uniform vec3 lightColor;
+in vec3 FragPos; // from vertex
+in vec3 Normal;
+in vec2 TexCoords;
+
+uniform sampler2D texture1; 
+
 uniform vec3 lightPos;
-uniform vec3 viewPos;
+uniform vec3 lightColor;
 
 void main()
 {
-	//TO DO: Add illumination from Lab 9
+    // small amount of ambient light
+    float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength * lightColor;
 
-	fragColor = texture(texture1, textureCoord);
+    // diffuse light
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - FragPos);
+    
+        // dot product
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
+
+    vec4 objectColor = texture(texture1, TexCoords);
+    
+    vec3 result = (ambient + diffuse) * objectColor.rgb;
+    
+    fragColor = vec4(result, objectColor.a);
 }
