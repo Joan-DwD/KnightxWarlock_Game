@@ -59,6 +59,7 @@ int main()
     Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
+    Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
 
     // ======================
     // TEXTURES
@@ -92,6 +93,10 @@ int main()
     Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", goldTextures);
     Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", woodTextures);
 
+    // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
+    std::vector<Texture> noTextures;
+    Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
+
     // ======================
     // --- CREATE WALL OBJECTS ---
     // ======================
@@ -117,6 +122,10 @@ int main()
     glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(window.getWidth()), 0.0f, static_cast<float>(window.getHeight()));
     textShader.use();
     glUniformMatrix4fv(glGetUniformLocation(textShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
+
+    // Setup Dialogue Shader (Important: Set projection here!)
+    diagShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 
     // ======================
     // OBJECT POSITIONS
@@ -353,6 +362,32 @@ int main()
         doorMesh.draw(shader);
 
 
+        // ==================================
+        // DRAW UI / DIALOGUE BOX
+        // ==================================
+
+        glDisable(GL_DEPTH_TEST);
+
+        // --- 1. Render the Background Box ---
+        diagShader.use();
+
+        // Set Model Matrix for UI: Bottom Center
+        glm::mat4 boxModel = glm::mat4(1.0f);
+        boxModel = glm::translate(boxModel, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f));
+        boxModel = glm::scale(boxModel, glm::vec3(1200.0f, 200.0f, 1.0f));
+
+        // Pass "model" uniform
+        glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "model"), 1, GL_FALSE, &boxModel[0][0]);
+
+        // Pass "color" uniform (Navy Blue) - R, G, B
+        glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.1f, 0.15f, 0.5f);
+
+        dialogueBoxMesh.draw(diagShader);
+
+
+        // --- 2. Render Text On Top ---
+
+        // Hints (Top Left)
         if (!hasKey) {
             textRenderer.RenderText(textShader, "Find the Key...", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
         }
@@ -362,6 +397,11 @@ int main()
         else {
             textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
         }
+
+        // Dialogue Box Text (Bottom Center)
+        textRenderer.RenderText(textShader, "Placeholder text", 700.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
+
+        glEnable(GL_DEPTH_TEST);
 
         window.update();
     }
