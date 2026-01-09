@@ -11,6 +11,7 @@
 // --- Custom Class Includes ---
 #include "TextRenderer.h"
 #include "Wall.h"
+#include "Torch.h"
 #include "Collision.h"
 
 // ======================
@@ -110,6 +111,21 @@ int main()
     Wall rightWall(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
     // Middle wall
     Wall middleWall(&prisonWall, glm::vec3(-2.0f, 2.0f, 0.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+
+    // ======================
+    // TORCH
+    // ======================
+    Torch* wallTorch = nullptr;
+
+    // currently on left wall a bit below cell
+    wallTorch = new Torch(&wallCube, &wallCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
+
+    Mesh flameCube = loader.loadObj("Resources/Models/cube.obj", orangeTextures);
+    Mesh stickCube = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+
+    // re-initialize using specific textures
+    delete wallTorch;
+    wallTorch = new Torch(&stickCube, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -215,6 +231,12 @@ int main()
         floorCube.draw(shader);
 
         // ======================
+        // TORCH
+        // ======================
+        wallTorch->draw(shader, ViewMatrix, ProjectionMatrix);
+
+
+        // ======================
         // CHARACTER SWAP (SPACE)
         // ======================
         static bool spacePressedLastFrame = false;
@@ -292,6 +314,30 @@ int main()
                 }
             }
         }
+
+        // ======================
+        // TORCH INTERACTION
+        // ======================
+
+        static bool eKeyWasPressed = false;
+
+        if (wallTorch->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 2.0f))
+        {
+            if (window.isPressed(GLFW_KEY_E))
+            {
+                // debounce
+                if (!eKeyWasPressed) {
+                    wallTorch->toggle();
+                    std::cout << ">>> Torch toggled!" << std::endl;
+                    eKeyWasPressed = true;
+                }
+            }
+            else {
+                eKeyWasPressed = false;
+            }
+        }
+
+
 
         // ======================
         // DOOR INTERACTION
