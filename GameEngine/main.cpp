@@ -144,6 +144,19 @@ int main()
 
     glm::vec3 exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
 
+    // ======================
+    // DIALOGUE SYSTEM STATE
+    // ======================
+    std::vector<std::string> dialogueLines = {
+        "Hi!! Press R to advance through dialogue",
+        "You made it yay!",
+        "Use WASD to move your characters.",
+        "The Warlock can reach places the Knight cannot.",
+        "Press space to swap character control!",
+    };
+    int currentLineIndex = 0;
+    bool rPressedLastFrame = false; // Prevents skipping 60 lines per second
+
 
     // ======================
     // MAIN LOOP
@@ -301,6 +314,26 @@ int main()
             }
         }
 
+        // =============================
+        // DIALOGUE CYCLING (Press R)
+        // =============================
+        if (window.isPressed(GLFW_KEY_R))
+        {
+            if (!rPressedLastFrame) // Only trigger once per press
+            {
+                currentLineIndex++;
+                // Loop back to start if we reach the end
+                if (currentLineIndex >= dialogueLines.size()) {
+                    currentLineIndex = 0;
+                }
+                rPressedLastFrame = true;
+            }
+        }
+        else
+        {
+            rPressedLastFrame = false;
+        }
+
         // ======================
         // DRAW PAWNS
         // ======================
@@ -398,8 +431,9 @@ int main()
             textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
         }
 
-        // Dialogue Box Text (Bottom Center)
-        textRenderer.RenderText(textShader, "Placeholder text", 700.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
+        // --- DIALOGUE BOX TEXT ---
+        // We use the string from our vector based on the current index
+        textRenderer.RenderText(textShader, dialogueLines[currentLineIndex], 700.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
 
         glEnable(GL_DEPTH_TEST);
 
