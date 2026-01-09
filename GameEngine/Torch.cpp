@@ -13,24 +13,26 @@ bool Torch::isPlayerClose(glm::vec3 playerPos, float radius) const {
     return glm::distance(position, playerPos) < radius;
 }
 
-void Torch::draw(Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) {
+void Torch::draw(Shader& defaultShader, Shader& glowShader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) {
 
     glm::mat4 model = glm::mat4(1.0f);
 
     // move to wall position
     model = glm::translate(model, position);
     glm::mat4 orientationMatrix = model;
+    defaultShader.use();
 
     // scale stick
     glm::mat4 bodyModel = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));
 
     glm::mat4 mvp = projectionMatrix * viewMatrix * bodyModel;
-    glUniformMatrix4fv(glGetUniformLocation(shader.getId(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader.getId(), "model"), 1, GL_FALSE, &bodyModel[0][0]);
-    bodyMesh->draw(shader);
+    glUniformMatrix4fv(glGetUniformLocation(defaultShader.getId(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(defaultShader.getId(), "model"), 1, GL_FALSE, &bodyModel[0][0]);
+    bodyMesh->draw(defaultShader);
 
     // only draw flame if the torch is on
     if (isOn) {
+        defaultShader.use();
         glm::mat4 flameModel = orientationMatrix;
 
         // move flame up
@@ -40,9 +42,12 @@ void Torch::draw(Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatri
         flameModel = glm::scale(flameModel, glm::vec3(0.2f, 0.2f, 0.2f));
 
         mvp = projectionMatrix * viewMatrix * flameModel;
-        glUniformMatrix4fv(glGetUniformLocation(shader.getId(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader.getId(), "model"), 1, GL_FALSE, &flameModel[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(defaultShader.getId(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(defaultShader.getId(), "model"), 1, GL_FALSE, &flameModel[0][0]);
 
-        flameMesh->draw(shader);
+        GLint viewPosLoc = glGetUniformLocation(defaultShader.getId(), "viewPos");
+
+        flameMesh->draw(glowShader);
+        defaultShader.use();
     }
 }

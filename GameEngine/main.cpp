@@ -210,6 +210,13 @@ int main()
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
 
+        //  offset to be "inside" the flame
+        glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
+        glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
+        glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
+        // torch state
+        glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
+
         // ======================
         // WALLS
         // ======================
@@ -233,7 +240,7 @@ int main()
         // ======================
         // TORCH
         // ======================
-        wallTorch->draw(shader, ViewMatrix, ProjectionMatrix);
+        wallTorch->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
 
 
         // ======================
