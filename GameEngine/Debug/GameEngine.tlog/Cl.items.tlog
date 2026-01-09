@@ -5,3 +5,7 @@ C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Model Loading\me
 C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Model Loading\mesh.cpp;C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Debug\mesh.obj
 C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Shaders\shader.cpp;C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Debug\shader.obj
 C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Model Loading\texture.cpp;C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Debug\texture.obj
+<<<<<<< Updated upstream
+=======
+C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Wall.cpp;C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\Debug\Wall.obj
+>>>>>>> Stashed changes

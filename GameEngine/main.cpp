@@ -5,6 +5,32 @@
 #include "Model Loading\meshLoaderObj.h"
 #include <iostream>
 #include <cmath>
+<<<<<<< Updated upstream
+=======
+#include <map>
+#include <string>
+
+// --- FreeType Includes (for text rendering) ---
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+// --- Custom Class Includes ---
+#include "Wall.h"
+#include "Collision.h"
+
+// ======================
+// TEXT RENDERING STRUCTS
+// ======================
+struct Character {
+    unsigned int TextureID; // ID of the glyph texture
+    glm::ivec2   Size;
+    glm::ivec2   Bearing;
+    unsigned int Advance;
+};
+
+std::map<GLchar, Character> Characters;
+unsigned int textVAO, textVBO;
+>>>>>>> Stashed changes
 
 // ======================
 // FUNCTION DECLARATIONS
@@ -56,12 +82,14 @@ int main()
     GLuint orangeTex = loadBMP("Resources/Textures/orange.bmp");
     GLuint purpleTex = loadBMP("Resources/Textures/purple.bmp");
     GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
+    GLuint ironTex = loadBMP("Resources/Textures/iron.bmp");
 
     std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
     std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
     std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
     std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
     std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
+    std::vector<Texture> ironTextures = { { ironTex, "texture_diffuse" } };
 
     // ======================
     // LOAD MODELS
@@ -70,6 +98,7 @@ int main()
 
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
+    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", ironTextures);
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", purpleTextures);
@@ -80,18 +109,102 @@ int main()
     Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", woodTextures);
 
     // ======================
+<<<<<<< Updated upstream
+=======
+    // --- CREATE WALL OBJECTS ---
+    // ======================
+    // Back wall (+Z)
+    Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
+    // Front wall (-Z)
+    Wall frontWall(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
+    // Left wall (-X)
+    Wall leftWall(&wallCube, glm::vec3(-7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
+    // Right wall (+X)
+    Wall rightWall(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
+    // Middle wall
+    Wall middleWall(&prisonWall, glm::vec3(-1.0f, 2.0f, 0.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+
+
+    // ======================
+    // --- FREETYPE SETUP ---
+    // ======================
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft)) {
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        return -1;
+    }
+
+    FT_Face face;
+    // Make sure this path exists on your PC!
+    if (FT_New_Face(ft, "C:/Windows/Fonts/arial.ttf", 0, &face)) {
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        return -1;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, 48);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    for (unsigned char c = 0; c < 128; c++)
+    {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            continue;
+        }
+        unsigned int texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character = {
+            texture,
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            static_cast<unsigned int>(face->glyph->advance.x)
+        };
+        Characters.insert(std::pair<char, Character>(c, character));
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // Setup Text Projection (Orthographic)
+    glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(window.getWidth()), 0.0f, static_cast<float>(window.getHeight()));
+    textShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(textShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
+
+
+    // ======================
+>>>>>>> Stashed changes
     // OBJECT POSITIONS
     // ======================
     glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
-    glm::vec3 knightPos = glm::vec3(0.0f, 2.0f, 0.0f);
+    glm::vec3 knightPos = glm::vec3(-3.0f, 2.0f, -3.0f);
     bool activeIsWarlock = true; // start controlling Warlock
+    const glm::vec3 pawnHalfSize(0.3f, 1.0f, 0.3f); // collision box for player
 
-    glm::vec3 keyPos = glm::vec3(-3.0f, 0.2f, -3.0f);   // on floor
+    glm::vec3 keyPos = glm::vec3(-5.0f, 0.2f, -5.0f);   // on floor
     bool keyCollected = false;
     bool hasKey = false;
 
-    glm::vec3 doorPos = glm::vec3(0.0f, 2.0f, -6.9f);
+    glm::vec3 doorPos = glm::vec3(6.0f, 2.0f, 0.0f);
     bool doorUnlocked = false;
+
+    glm::vec3 exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
 
     // ======================
     // MAIN LOOP
@@ -132,6 +245,7 @@ int main()
         // ======================
         // WALLS (unchanged)
         // ======================
+<<<<<<< Updated upstream
         // Back wall (+Z)
         ModelMatrix = glm::mat4(1.0f);
         ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.5f, 7.0f));
@@ -167,6 +281,13 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         wallCube.draw(shader);
+=======
+        backWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        middleWall.draw(shader, ViewMatrix, ProjectionMatrix);
+>>>>>>> Stashed changes
 
         // ======================
         // FLOOR
@@ -197,22 +318,41 @@ int main()
         }
 
         // ======================
+        // COLLIDERS
+        // ======================
+        
+        std::vector<AABB> colliders;
+
+        colliders.push_back(backWall.getAABB());
+        colliders.push_back(frontWall.getAABB());
+        colliders.push_back(leftWall.getAABB());
+        colliders.push_back(rightWall.getAABB());
+        colliders.push_back(middleWall.getAABB());
+
+        if (!doorUnlocked)
+        {
+            colliders.push_back(
+                makeAABB(doorPos, glm::vec3(1.0f, 2.0f, 0.1f))
+            );
+        }
+        // ======================
         // PAWN MOVEMENT
         // ======================
         float speed = 5.0f * deltaTime;
+        glm::vec3 delta(0.0f);
+
+        if (window.isPressed(GLFW_KEY_W)) delta.z -= speed;
+        if (window.isPressed(GLFW_KEY_S)) delta.z += speed;
+        if (window.isPressed(GLFW_KEY_A)) delta.x -= speed;
+        if (window.isPressed(GLFW_KEY_D)) delta.x += speed;
+
         if (activeIsWarlock)
         {
-            if (window.isPressed(GLFW_KEY_W)) warlockPos.z -= speed;
-            if (window.isPressed(GLFW_KEY_S)) warlockPos.z += speed;
-            if (window.isPressed(GLFW_KEY_A)) warlockPos.x -= speed;
-            if (window.isPressed(GLFW_KEY_D)) warlockPos.x += speed;
+            movement(warlockPos, delta, pawnHalfSize, colliders);
         }
         else
         {
-            if (window.isPressed(GLFW_KEY_W)) knightPos.z -= speed;
-            if (window.isPressed(GLFW_KEY_S)) knightPos.z += speed;
-            if (window.isPressed(GLFW_KEY_A)) knightPos.x -= speed;
-            if (window.isPressed(GLFW_KEY_D)) knightPos.x += speed;
+            movement(knightPos, delta, pawnHalfSize, colliders);
         }
 
         // ======================
@@ -298,8 +438,22 @@ int main()
         // ======================
         // DRAW DOOR
         // ======================
+        if (!doorUnlocked)
+        {
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, doorPos);
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            doorMesh.draw(shader);
+        }
+        
+        // ======================
+        // DRAW EXIT
+        // ======================
         ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, doorPos);
+        ModelMatrix = glm::translate(ModelMatrix, exitPos);
         ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
