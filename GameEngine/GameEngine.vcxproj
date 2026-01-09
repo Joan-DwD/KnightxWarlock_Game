@@ -125,6 +125,7 @@
     <ClCompile Include="Shaders\shader.cpp" />
     <ClCompile Include="Model Loading\texture.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
+    <ClCompile Include="Torch.cpp" />
     <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +138,7 @@
     <ClInclude Include="Shaders\shader.h" />
     <ClInclude Include="Model Loading\texture.h" />
     <ClInclude Include="TextRenderer.h" />
+    <ClInclude Include="Torch.h" />
     <ClInclude Include="Wall.h" />
   </ItemGroup>
   <ItemGroup>
