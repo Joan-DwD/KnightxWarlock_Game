@@ -11,6 +11,7 @@
 // --- Custom Class Includes ---
 #include "TextRenderer.h"
 #include "Wall.h"
+#include "Collision.h"
 
 // ======================
 // FUNCTION DECLARATIONS
@@ -81,6 +82,7 @@ int main()
 
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
+    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", purpleTextures);
@@ -101,6 +103,8 @@ int main()
     Wall leftWall(&wallCube, glm::vec3(-7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
     // Right wall (+X)
     Wall rightWall(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
+    // Middle wall
+    Wall middleWall(&prisonWall, glm::vec3(-2.0f, 2.0f, 0.0f), glm::vec3(5.0f, 2.0f, 0.1f));
 
     // ======================
     // TEXT RENDERER SETUP
@@ -118,15 +122,19 @@ int main()
     // OBJECT POSITIONS
     // ======================
     glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
-    glm::vec3 knightPos = glm::vec3(0.0f, 2.0f, 0.0f);
+    glm::vec3 knightPos = glm::vec3(-3.0f, 2.0f, -3.0f);
     bool activeIsWarlock = true; // start controlling Warlock
+    const glm::vec3 pawnHalfSize(0.3f, 1.0f, 0.3f); // collision box for player
 
     glm::vec3 keyPos = glm::vec3(-3.0f, 0.2f, -3.0f);   // on floor
     bool keyCollected = false;
     bool hasKey = false;
 
-    glm::vec3 doorPos = glm::vec3(0.0f, 2.0f, -6.9f);
+    glm::vec3 doorPos = glm::vec3(5.0f, 2.0f, 0.0f);
     bool doorUnlocked = false;
+
+    glm::vec3 exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
+
 
     // ======================
     // MAIN LOOP
@@ -171,6 +179,7 @@ int main()
         frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
         leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
         rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+        middleWall.draw(shader, ViewMatrix, ProjectionMatrix);
 
         // ======================
         // FLOOR
@@ -201,22 +210,41 @@ int main()
         }
 
         // ======================
+        // COLLIDERS
+        // ======================
+
+        std::vector<AABB> colliders;
+
+        colliders.push_back(backWall.getAABB());
+        colliders.push_back(frontWall.getAABB());
+        colliders.push_back(leftWall.getAABB());
+        colliders.push_back(rightWall.getAABB());
+        colliders.push_back(middleWall.getAABB());
+
+        if (!doorUnlocked)
+        {
+            colliders.push_back(
+                makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
+            );
+        }
+        // ======================
         // PAWN MOVEMENT
         // ======================
         float speed = 5.0f * deltaTime;
+        glm::vec3 delta(0.0f);
+
+        if (window.isPressed(GLFW_KEY_W)) delta.z -= speed;
+        if (window.isPressed(GLFW_KEY_S)) delta.z += speed;
+        if (window.isPressed(GLFW_KEY_A)) delta.x -= speed;
+        if (window.isPressed(GLFW_KEY_D)) delta.x += speed;
+
         if (activeIsWarlock)
         {
-            if (window.isPressed(GLFW_KEY_W)) warlockPos.z -= speed;
-            if (window.isPressed(GLFW_KEY_S)) warlockPos.z += speed;
-            if (window.isPressed(GLFW_KEY_A)) warlockPos.x -= speed;
-            if (window.isPressed(GLFW_KEY_D)) warlockPos.x += speed;
+            movement(warlockPos, delta, pawnHalfSize, colliders);
         }
         else
         {
-            if (window.isPressed(GLFW_KEY_W)) knightPos.z -= speed;
-            if (window.isPressed(GLFW_KEY_S)) knightPos.z += speed;
-            if (window.isPressed(GLFW_KEY_A)) knightPos.x -= speed;
-            if (window.isPressed(GLFW_KEY_D)) knightPos.x += speed;
+            movement(knightPos, delta, pawnHalfSize, colliders);
         }
 
         // ======================
@@ -302,13 +330,28 @@ int main()
         // ======================
         // DRAW DOOR
         // ======================
+        if (!doorUnlocked)
+        {
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, doorPos);
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            doorMesh.draw(shader);
+        }
+
+        // ======================
+        // DRAW EXIT
+        // ======================
         ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, doorPos);
+        ModelMatrix = glm::translate(ModelMatrix, exitPos);
         ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         doorMesh.draw(shader);
+
 
         if (!hasKey) {
             textRenderer.RenderText(textShader, "Find the Key...", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
