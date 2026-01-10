@@ -1,0 +1,17 @@
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/libpng16.lib
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/bin/libpng16.dll
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/include/png.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/include/pngconf.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/include/pnglibconf.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/include/libpng16/png.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/include/libpng16/pngconf.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/include/libpng16/pnglibconf.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/pkgconfig/libpng16.pc
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/libpng/libpng16.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/libpng/libpng16-release.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/libpng16.lib
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/bin/libpng16.dll
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/cmake/PNG/PNGTargets.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/cmake/PNG/PNGTargets-release.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/cmake/PNG/PNGConfig.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/libpng_x64-windows/lib/cmake/PNG/PNGConfigVersion.cmake

@@ -1,0 +1,8 @@
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/freetype.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/package.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/package_source.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/edit_cache.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/rebuild_cache.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/list_install_components.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/install.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/blds/freetype/x64-windows-dbg/CMakeFiles/install/local.dir

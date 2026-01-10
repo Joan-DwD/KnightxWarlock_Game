@@ -1,0 +1,12 @@
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/tools/brotli/brotli.exe
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/lib/brotlienc.lib
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/bin/brotlienc.dll
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/lib/brotlidec.lib
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/bin/brotlidec.dll
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/lib/brotlicommon.lib
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/bin/brotlicommon.dll
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/share/unofficial-brotli/unofficial-brotli-config.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/share/unofficial-brotli/unofficial-brotli-config-debug.cmake
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/lib/pkgconfig/libbrotlicommon.pc
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/lib/pkgconfig/libbrotlidec.pc
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/vcpkg/pkgs/brotli_x64-windows/debug/lib/pkgconfig/libbrotlienc.pc

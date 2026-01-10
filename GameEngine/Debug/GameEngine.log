@@ -1,0 +1,18 @@
+﻿  Wall.cpp
+C:\Users\Jwan\Downloads\ECG_project-main\ECG_project-main\GameEngine\OctreeCollision.h(100,32): warning C4018: '>': signed/unsigned mismatch
+  (compiling source file 'Wall.cpp')
+  
+  main.cpp
+C:\Users\Jwan\Downloads\ECG_project-main\ECG_project-main\GameEngine\OctreeCollision.h(100,32): warning C4018: '>': signed/unsigned mismatch
+  (compiling source file 'main.cpp')
+  
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(130,9): warning C4005: 'APIENTRY': macro redefinition
+  (compiling source file 'main.cpp')
+      C:\Users\Jwan\Downloads\ECG_project-main\ECG_project-main\Dependencies\GLFW\include\glfw3.h(98,11):
+      see previous definition of 'APIENTRY'
+  
+C:\Users\Jwan\Downloads\ECG_project-main\ECG_project-main\GameEngine\main.cpp(357,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  GameEngine.vcxproj -> C:\Users\Jwan\Downloads\ECG_project-main\ECG_project-main\Debug\GameEngine.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

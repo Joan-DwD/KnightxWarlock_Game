@@ -1,0 +1,4 @@
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/x86-windows/vcpkg/pkgs/zlib_x86-windows/lib/zlib.lib
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/x86-windows/vcpkg/pkgs/zlib_x86-windows/bin/zlib1.dll
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/x86-windows/vcpkg/pkgs/zlib_x86-windows/include/zconf.h
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/x86-windows/vcpkg/pkgs/zlib_x86-windows/include/zlib.h

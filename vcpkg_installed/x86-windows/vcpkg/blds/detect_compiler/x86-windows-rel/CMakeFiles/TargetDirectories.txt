@@ -1,0 +1,2 @@
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/x86-windows/vcpkg/blds/detect_compiler/x86-windows-rel/CMakeFiles/edit_cache.dir
+C:/Users/Jwan/Downloads/ECG_project-main/ECG_project-main/vcpkg_installed/x86-windows/vcpkg/blds/detect_compiler/x86-windows-rel/CMakeFiles/rebuild_cache.dir
