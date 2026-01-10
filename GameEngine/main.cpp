@@ -15,6 +15,14 @@
 #include "Collision.h"
 
 // ======================
+// QUEST HANDLING VARIABLES
+// ======================
+
+int currentTask = 1;
+int currentRoom = 2;
+int firstLoad = 1;
+
+// ======================
 // FUNCTION DECLARATIONS
 // ======================
 void processKeyboardInput();
@@ -28,7 +36,7 @@ float lastFrame = 0.0f;
 // ======================
 // WINDOW
 // ======================
-Window window("KNIGHTXWARLOCK", 1920, 1080);
+Window window("KNIGHTXWARLOCK", 1600, 900);
 
 // ======================
 // CAMERA
@@ -99,18 +107,36 @@ int main()
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
 
     // ======================
-    // --- CREATE WALL OBJECTS ---
+    // WALLS FOR ROOM 1 - PRISON
     // ======================
-    // Back wall (+Z)
-    Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
-    // Front wall (-Z)
-    Wall frontWall(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
-    // Left wall (-X)
+    // Back wall
+    Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //back is down
+    // Front wall
+    Wall frontWall(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //front is up
+    // Left wall
     Wall leftWall(&wallCube, glm::vec3(-7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
-    // Right wall (+X)
+    // Right wall
     Wall rightWall(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 7.0f));
     // Middle wall
     Wall middleWall(&prisonWall, glm::vec3(-2.0f, 2.0f, 0.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+
+    // ======================
+    // WALLS FOR ROOM 2 - HALLWAY
+    // ======================
+    // Back wall
+    Wall backWall_2(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(2.0f, 3.5f, 0.1f));
+    // Front wallec)
+    // same as above
+    Wall frontWall_2(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //front is up
+    //Left side walls
+    Wall leftWall_2_a(&wallCube, glm::vec3(-7.0f, 3.5f, -3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
+    Wall leftWall_2_b(&wallCube, glm::vec3(-4.5f, 3.5f, 0.0f), glm::vec3(2.5f, 3.5f, 0.1f));
+    Wall leftWall_2_c(&wallCube, glm::vec3(-2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
+    //Right side walls
+    Wall rightWall_2_a(&wallCube, glm::vec3(7.0f, 3.5f, -3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
+    Wall rightWall_2_b(&wallCube, glm::vec3(4.5f, 3.5f, 0.0f), glm::vec3(2.5f, 3.5f, 0.1f));
+    Wall rightWall_2_c(&wallCube, glm::vec3(2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
+
 
     // ======================
     // TORCH
@@ -125,7 +151,16 @@ int main()
 
     // re-initialize using specific textures
     delete wallTorch;
+
+    // room 1 torch
     wallTorch = new Torch(&stickCube, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
+
+    // room 2 torches
+    Torch* hallTorch_1 = new Torch(&stickCube, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_2 = new Torch(&stickCube, &flameCube, glm::vec3(3.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_3 = new Torch(&stickCube, &flameCube, glm::vec3(-3.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_4 = new Torch(&stickCube, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_5 = new Torch(&stickCube, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -147,21 +182,21 @@ int main()
     // OBJECT POSITIONS
     // ======================
     glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
-    glm::vec3 knightPos = glm::vec3(-3.0f, 2.0f, -3.0f);
+    glm::vec3 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
     bool activeIsWarlock = true; // start controlling Warlock
     const glm::vec3 pawnHalfSize(0.3f, 1.0f, 0.3f); // collision box for player
 
-    glm::vec3 keyPos = glm::vec3(-3.0f, 0.2f, -3.0f);   // on floor
+    glm::vec3 keyPos = glm::vec3(-3.0f, 0.2f, -3.0f);
     bool keyCollected = false;
     bool hasKey = false;
 
     glm::vec3 doorPos = glm::vec3(5.0f, 2.0f, 0.0f);
     bool doorUnlocked = false;
 
-    glm::vec3 exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
+    glm::vec3 exitPos;
 
     // ======================
-    // DIALOGUE SYSTEM STATE
+    // DIALOGUE SYSTEM STATE (needs changing to read from .txt)
     // ======================
     std::vector<std::string> dialogueLines = {
         "Hi!! Press R to advance through dialogue",
@@ -218,32 +253,6 @@ int main()
         glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
 
         // ======================
-        // WALLS
-        // ======================
-        backWall.draw(shader, ViewMatrix, ProjectionMatrix);
-        frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
-        leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
-        rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
-        middleWall.draw(shader, ViewMatrix, ProjectionMatrix);
-
-        // ======================
-        // FLOOR
-        // ======================
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 7.0f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        floorCube.draw(shader);
-
-        // ======================
-        // TORCH
-        // ======================
-        wallTorch->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-
-
-        // ======================
         // CHARACTER SWAP (SPACE)
         // ======================
         static bool spacePressedLastFrame = false;
@@ -258,68 +267,6 @@ int main()
         else
         {
             spacePressedLastFrame = false;
-        }
-
-        // ======================
-        // COLLIDERS
-        // ======================
-
-        std::vector<AABB> colliders;
-
-        colliders.push_back(backWall.getAABB());
-        colliders.push_back(frontWall.getAABB());
-        colliders.push_back(leftWall.getAABB());
-        colliders.push_back(rightWall.getAABB());
-        colliders.push_back(middleWall.getAABB());
-
-        if (!doorUnlocked)
-        {
-            colliders.push_back(
-                makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
-            );
-        }
-        // ======================
-        // PAWN MOVEMENT
-        // ======================
-        float speed = 5.0f * deltaTime;
-        glm::vec3 delta(0.0f);
-
-        if (window.isPressed(GLFW_KEY_W)) delta.z -= speed;
-        if (window.isPressed(GLFW_KEY_S)) delta.z += speed;
-        if (window.isPressed(GLFW_KEY_A)) delta.x -= speed;
-        if (window.isPressed(GLFW_KEY_D)) delta.x += speed;
-
-        if (activeIsWarlock)
-        {
-            movement(warlockPos, delta, pawnHalfSize, colliders);
-        }
-        else
-        {
-            movement(knightPos, delta, pawnHalfSize, colliders);
-        }
-
-        // ======================
-        // KEY PICKUP
-        // ======================
-        glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
-        float distToKey = glm::length(activePos - keyPos);
-        if (distToKey < 2.0f && !keyCollected)
-        {
-            if (window.isPressed(GLFW_KEY_E))
-            {
-                keyCollected = true;
-                hasKey = true;
-                std::cout << ">>> You picked up the key!" << std::endl;
-            }
-            else
-            {
-                static bool shownPrompt = false;
-                if (!shownPrompt)
-                {
-                    std::cout << "Press E to pick up the key" << std::endl;
-                    shownPrompt = true;
-                }
-            }
         }
 
         // ======================
@@ -344,29 +291,6 @@ int main()
             }
         }
 
-
-
-        // ======================
-        // DOOR INTERACTION
-        // ======================
-        float distToDoor = glm::length(activePos - doorPos);
-        if (distToDoor < 3.0f)
-        {
-            if (window.isPressed(GLFW_KEY_E))
-            {
-                if (hasKey && !doorUnlocked)
-                {
-                    doorUnlocked = true;
-                    std::cout << ">>> The door unlocks with a click!" << std::endl;
-                    std::cout << ">>> You are free to leave..." << std::endl;
-                }
-                else if (!hasKey)
-                {
-                    std::cout << ">>> The door is locked. You need a key." << std::endl;
-                }
-            }
-        }
-
         // =============================
         // DIALOGUE CYCLING (Press R)
         // =============================
@@ -386,6 +310,12 @@ int main()
         {
             rPressedLastFrame = false;
         }
+
+        // ======================
+        // COLLIDERS
+        // ======================
+
+        std::vector<AABB> colliders;
 
         // ======================
         // DRAW PAWNS
@@ -408,44 +338,234 @@ int main()
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         knight.draw(shader);
 
-        // ======================
-        // DRAW KEY
-        // ======================
-        if (!keyCollected)
-        {
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, keyPos);
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.02f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            keyMesh.draw(shader);
-        }
+        // active character position
+        glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
 
-        // ======================
-        // DRAW DOOR
-        // ======================
-        if (!doorUnlocked)
+        if (currentRoom == 1)
         {
+            if (firstLoad == 1)
+            {
+                glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
+                glm::vec3 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
+                firstLoad = 0;
+            }
+
+            exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
+
+            // room 1 colliders
+            colliders.push_back(backWall.getAABB());
+            colliders.push_back(frontWall.getAABB());
+            colliders.push_back(leftWall.getAABB());
+            colliders.push_back(rightWall.getAABB());
+            colliders.push_back(middleWall.getAABB());
+
+            if (!doorUnlocked)
+            {
+                colliders.push_back(
+                    makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
+                );
+            }
+
+            // ======================
+            // KEY PICKUP
+            // ======================
+            
+            float distToKey = glm::length(activePos - keyPos);
+            if (distToKey < 2.0f && !keyCollected)
+            {
+                if (window.isPressed(GLFW_KEY_E))
+                {
+                    keyCollected = true;
+                    hasKey = true;
+                    std::cout << ">>> You picked up the key!" << std::endl;
+                }
+                else
+                {
+                    static bool shownPrompt = false;
+                    if (!shownPrompt)
+                    {
+                        std::cout << "Press E to pick up the key" << std::endl;
+                        shownPrompt = true;
+                    }
+                }
+            }
+
+            // ======================
+            // DOOR INTERACTION
+            // ======================
+            float distToDoor = glm::length(activePos - doorPos);
+            if (distToDoor < 3.0f)
+            {
+                if (window.isPressed(GLFW_KEY_E))
+                {
+                    if (hasKey && !doorUnlocked)
+                    {
+                        doorUnlocked = true;
+                    }
+                    else if (!hasKey)
+                    {
+                        std::cout << "door locked";
+                    }
+                }
+            }
+
+            // ======================
+            // DRAW KEY
+            // ======================
+            if (!keyCollected)
+            {
+                ModelMatrix = glm::mat4(1.0f);
+                ModelMatrix = glm::translate(ModelMatrix, keyPos);
+                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.02f));
+                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+                keyMesh.draw(shader);
+            }
+
+            // ======================
+            // DRAW DOOR
+            // ======================
+            if (!doorUnlocked)
+            {
+                ModelMatrix = glm::mat4(1.0f);
+                ModelMatrix = glm::translate(ModelMatrix, doorPos);
+                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+                doorMesh.draw(shader);
+            }
+
+            // ======================
+            // DRAW EXIT
+            // ======================
             ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, doorPos);
+            ModelMatrix = glm::translate(ModelMatrix, exitPos);
             ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
             MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
             glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
             glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
             doorMesh.draw(shader);
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            middleWall.draw(shader, ViewMatrix, ProjectionMatrix);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 7.0f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(shader);
+
+            // ======================
+            // TORCH
+            // ======================
+            wallTorch->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+        }
+        else 
+        if (currentRoom == 2)
+        {
+            if (firstLoad == 1)
+            {
+                warlockPos = glm::vec3(1.0f, 2.0f, 6.5f);
+                knightPos = glm::vec3(-1.0f, 2.0f, 6.5f);
+                firstLoad = 0;
+            }
+            exitPos = glm::vec3(0.0f, 2.0f, 6.8f);
+
+            // room 2 colliders
+            colliders.push_back(backWall_2.getAABB());
+            colliders.push_back(frontWall_2.getAABB());
+            colliders.push_back(leftWall_2_a.getAABB());
+            colliders.push_back(leftWall_2_b.getAABB());
+            colliders.push_back(leftWall_2_c.getAABB());
+            colliders.push_back(rightWall_2_a.getAABB());
+            colliders.push_back(rightWall_2_b.getAABB());
+            colliders.push_back(rightWall_2_c.getAABB());
+
+            // ======================
+            // DRAW EXIT
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, exitPos);
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            doorMesh.draw(shader);
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall_2.draw(shader, ViewMatrix, ProjectionMatrix);
+            frontWall_2.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_a.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_b.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_a.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_b.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -3.5f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 3.5f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(shader);
+
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 3.5f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 0.1f, 3.5f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(shader);
+            
+            // ======================
+            // DRAW TORCHES
+            // ======================
+            hallTorch_1->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_2->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_3->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_4->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_5->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
         }
 
         // ======================
-        // DRAW EXIT
+        // PAWN MOVEMENT
         // ======================
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, exitPos);
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        doorMesh.draw(shader);
+        float speed = 5.0f * deltaTime;
+        glm::vec3 delta(0.0f);
+
+        if (window.isPressed(GLFW_KEY_W)) delta.z -= speed;
+        if (window.isPressed(GLFW_KEY_S)) delta.z += speed;
+        if (window.isPressed(GLFW_KEY_A)) delta.x -= speed;
+        if (window.isPressed(GLFW_KEY_D)) delta.x += speed;
+
+        if (activeIsWarlock)
+        {
+            movement(warlockPos, delta, pawnHalfSize, colliders);
+        }
+        else
+        {
+            movement(knightPos, delta, pawnHalfSize, colliders);
+        }
+
 
 
         // ==================================
@@ -497,7 +617,6 @@ int main()
 
     return 0;
 }
-
 
 // ======================
 // CAMERA INPUT (commented out)
