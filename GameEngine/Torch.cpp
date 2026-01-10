@@ -33,6 +33,12 @@ void Torch::draw(Shader& defaultShader, Shader& glowShader, glm::mat4 viewMatrix
     // only draw flame if the torch is on
     if (isOn) {
         defaultShader.use();
+
+        // lower opacity stuff
+        glEnable(GL_BLEND);
+		// GL_ONE for additive blending (glow effect)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glDepthMask(GL_FALSE);
         glm::mat4 flameModel = orientationMatrix;
 
         // move flame up
@@ -47,7 +53,14 @@ void Torch::draw(Shader& defaultShader, Shader& glowShader, glm::mat4 viewMatrix
 
         GLint viewPosLoc = glGetUniformLocation(defaultShader.getId(), "viewPos");
 
+        // drawn twice cuz i realised it looks nicer
         flameMesh->draw(glowShader);
+        flameMesh->draw(glowShader);
+
+		// cleanup (neccesary!! breaks walls otherwise)
+        glDepthMask(GL_TRUE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         defaultShader.use();
     }
 }
