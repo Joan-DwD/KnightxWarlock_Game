@@ -156,13 +156,18 @@ int main()
     wallTorch = new Torch(&stickCube, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
 
     // room 2 torches
-    Torch* hallTorch_4 = new Torch(&stickCube, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_5 = new Torch(&stickCube, &flameCube, glm::vec3(2.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_3 = new Torch(&stickCube, &flameCube, glm::vec3(-2.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_6 = new Torch(&stickCube, &flameCube, glm::vec3(4.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_2 = new Torch(&stickCube, &flameCube, glm::vec3(-4.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_1 = new Torch(&stickCube, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_7 = new Torch(&stickCube, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorches[] = 
+    {
+     new Torch(&stickCube, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&stickCube, &flameCube, glm::vec3(-4.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&stickCube, &flameCube, glm::vec3(-2.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&stickCube, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&stickCube, &flameCube, glm::vec3(2.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&stickCube, &flameCube, glm::vec3(4.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&stickCube, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f)
+    };
+
+    const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -269,28 +274,6 @@ int main()
         else
         {
             spacePressedLastFrame = false;
-        }
-
-        // ======================
-        // TORCH INTERACTION
-        // ======================
-
-        static bool eKeyWasPressed = false;
-
-        if (wallTorch->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 2.0f))
-        {
-            if (window.isPressed(GLFW_KEY_E))
-            {
-                // debounce
-                if (!eKeyWasPressed) {
-                    wallTorch->toggle();
-                    std::cout << ">>> Torch toggled!" << std::endl;
-                    eKeyWasPressed = true;
-                }
-            }
-            else {
-                eKeyWasPressed = false;
-            }
         }
 
         // =============================
@@ -541,13 +524,32 @@ int main()
             // ======================
             // DRAW TORCHES
             // ======================
-            hallTorch_1->draw(shader, ViewMatrix, ProjectionMatrix);
-            hallTorch_2->draw(shader, ViewMatrix, ProjectionMatrix);
-            hallTorch_3->draw(shader, ViewMatrix, ProjectionMatrix);
-            hallTorch_4->draw(shader, ViewMatrix, ProjectionMatrix);
-            hallTorch_5->draw(shader, ViewMatrix, ProjectionMatrix);
-            hallTorch_6->draw(shader, ViewMatrix, ProjectionMatrix);
-            hallTorch_7->draw(shader, ViewMatrix, ProjectionMatrix);
+            
+            for (int i = 0; i < HALL_TORCH_COUNT; i++) 
+            {
+                hallTorches[i]->draw(shader, ViewMatrix, ProjectionMatrix);
+
+                static bool eKeyWasPressed = false;
+
+                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 2.0f))
+                {
+                    if (window.isPressed(GLFW_KEY_E))
+                    {
+                        // debounce
+                        if (!eKeyWasPressed) {
+                            hallTorches[i]->toggle();
+                            std::cout << ">>> Torch toggled!" << std::endl;
+                            eKeyWasPressed = true;
+                        }
+                    }
+                    else {
+                        eKeyWasPressed = false;
+                    }
+                }
+            }
+
+
+            
         }
 
         // ======================
@@ -621,6 +623,7 @@ int main()
 
     return 0;
 }
+
 
 // ======================
 // CAMERA INPUT (commented out)
