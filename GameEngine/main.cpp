@@ -156,11 +156,13 @@ int main()
     wallTorch = new Torch(&stickCube, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
 
     // room 2 torches
-    Torch* hallTorch_1 = new Torch(&stickCube, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_2 = new Torch(&stickCube, &flameCube, glm::vec3(3.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_3 = new Torch(&stickCube, &flameCube, glm::vec3(-3.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_4 = new Torch(&stickCube, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f);
-    Torch* hallTorch_5 = new Torch(&stickCube, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_4 = new Torch(&stickCube, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_5 = new Torch(&stickCube, &flameCube, glm::vec3(2.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_3 = new Torch(&stickCube, &flameCube, glm::vec3(-2.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_6 = new Torch(&stickCube, &flameCube, glm::vec3(4.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_2 = new Torch(&stickCube, &flameCube, glm::vec3(-4.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_1 = new Torch(&stickCube, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f);
+    Torch* hallTorch_7 = new Torch(&stickCube, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -544,6 +546,8 @@ int main()
             hallTorch_3->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
             hallTorch_4->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
             hallTorch_5->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_6->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_7->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
         }
 
         // ======================
