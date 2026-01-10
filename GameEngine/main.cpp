@@ -473,7 +473,7 @@ int main()
             // ======================
             // TORCH
             // ======================
-            wallTorch->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            wallTorch->draw(shader, ViewMatrix, ProjectionMatrix);
         }
         else 
         if (currentRoom == 2)
@@ -541,13 +541,13 @@ int main()
             // ======================
             // DRAW TORCHES
             // ======================
-            hallTorch_1->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-            hallTorch_2->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-            hallTorch_3->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-            hallTorch_4->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-            hallTorch_5->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-            hallTorch_6->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
-            hallTorch_7->draw(shader, sunShader, ViewMatrix, ProjectionMatrix);
+            hallTorch_1->draw(shader, ViewMatrix, ProjectionMatrix);
+            hallTorch_2->draw(shader, ViewMatrix, ProjectionMatrix);
+            hallTorch_3->draw(shader, ViewMatrix, ProjectionMatrix);
+            hallTorch_4->draw(shader, ViewMatrix, ProjectionMatrix);
+            hallTorch_5->draw(shader, ViewMatrix, ProjectionMatrix);
+            hallTorch_6->draw(shader, ViewMatrix, ProjectionMatrix);
+            hallTorch_7->draw(shader, ViewMatrix, ProjectionMatrix);
         }
 
         // ======================

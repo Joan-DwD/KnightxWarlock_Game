@@ -13,7 +13,7 @@ bool Torch::isPlayerClose(glm::vec3 playerPos, float radius) const {
     return glm::distance(position, playerPos) < radius;
 }
 
-void Torch::draw(Shader& defaultShader, Shader& glowShader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) {
+void Torch::draw(Shader& defaultShader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) {
 
     glm::mat4 model = glm::mat4(1.0f);
 
@@ -33,6 +33,12 @@ void Torch::draw(Shader& defaultShader, Shader& glowShader, glm::mat4 viewMatrix
     // only draw flame if the torch is on
     if (isOn) {
         defaultShader.use();
+
+        // lower opacity stuff
+        glEnable(GL_BLEND);
+        // GL_ONE for additive blending (glow effect)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glDepthMask(GL_FALSE);
         glm::mat4 flameModel = orientationMatrix;
 
         // move flame up
@@ -47,7 +53,14 @@ void Torch::draw(Shader& defaultShader, Shader& glowShader, glm::mat4 viewMatrix
 
         GLint viewPosLoc = glGetUniformLocation(defaultShader.getId(), "viewPos");
 
-        flameMesh->draw(glowShader);
+        // drawn twice cuz i realised it looks nicer
+        flameMesh->draw(defaultShader);
+        flameMesh->draw(defaultShader);
+
+        // cleanup (neccesary!! breaks walls otherwise)
+        glDepthMask(GL_TRUE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         defaultShader.use();
     }
 }
