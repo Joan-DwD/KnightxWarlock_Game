@@ -1,1 +1,7 @@
-﻿  GameEngine.vcxproj -> C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\Debug\GameEngine.exe
+﻿  main.cpp
+C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\main.cpp(306,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\main.cpp(365,38): warning C4018: '<': signed/unsigned mismatch
+C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\main.cpp(743,35): warning C4018: '<': signed/unsigned mismatch
+  GameEngine.vcxproj -> C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\Debug\GameEngine.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

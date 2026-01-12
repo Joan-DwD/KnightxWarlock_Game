@@ -19,7 +19,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 3;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -73,38 +73,81 @@ int main()
     // ======================
     // TEXTURES
     // ======================
-    GLuint woodTex = loadBMP("Resources/Textures/wood.bmp");
-    GLuint rockTex = loadBMP("Resources/Textures/rock.bmp");
-    GLuint orangeTex = loadBMP("Resources/Textures/orange.bmp");
-    GLuint purpleTex = loadBMP("Resources/Textures/purple.bmp");
-    GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
-    GLuint bookTex = loadBMP("Resources/Textures/books.bmp");
+    //GLuint woodTex = loadBMP("Resources/Textures/wood.bmp");
+    //GLuint rockTex = loadBMP("Resources/Textures/rock.bmp");
+    //GLuint orangeTex = loadBMP("Resources/Textures/orange.bmp");
+    //GLuint purpleTex = loadBMP("Resources/Textures/purple.bmp");
+    //GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
+    //GLuint bookTex = loadBMP("Resources/Textures/books.bmp");
 
-    std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
-    std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
-    std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
-    std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
-    std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
-    std::vector<Texture> bookTextures = { { bookTex, "texture_diffuse" } };
+    //std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
+    //std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
+    //std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
+    //std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
+    //std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
+    //std::vector<Texture> bookTextures = { { bookTex, "texture_diffuse" } };
+
+    GLuint paint_beige = loadBMP("Resources/Textures/PAINT_BEIGE.bmp");
+    GLuint paint_black = loadBMP("Resources/Textures/PAINT_BLACK.bmp");
+    GLuint paint_blue = loadBMP("Resources/Textures/PAINT_BLUE.bmp");
+    GLuint paint_cyan = loadBMP("Resources/Textures/PAINT_CYAN.bmp");
+    GLuint paint_darkblue = loadBMP("Resources/Textures/PAINT_DARKBLUE.bmp");
+    GLuint paint_darkbrown = loadBMP("Resources/Textures/PAINT_DARKBROWN.bmp");
+    GLuint paint_darkgray = loadBMP("Resources/Textures/PAINT_DARKGRAY.bmp");
+    GLuint paint_gold = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
+    GLuint paint_green = loadBMP("Resources/Textures/PAINT_GREEN.bmp");
+    GLuint paint_lavender = loadBMP("Resources/Textures/PAINT_LAVENDER.bmp");
+    GLuint paint_lightblue = loadBMP("Resources/Textures/PAINT_LIGHTBLUE.bmp");
+    GLuint paint_lightbrown = loadBMP("Resources/Textures/PAINT_LIGHTBROWN.bmp");
+    GLuint paint_lightgray = loadBMP("Resources/Textures/PAINT_LIGHTGRAY.bmp");
+    GLuint paint_lime = loadBMP("Resources/Textures/PAINT_LIME.bmp");
+    GLuint paint_orange = loadBMP("Resources/Textures/PAINT_ORANGE.bmp");
+    GLuint paint_pink = loadBMP("Resources/Textures/PAINT_PINK.bmp");
+    GLuint paint_purple = loadBMP("Resources/Textures/PAINT_PURPLE.bmp");
+    GLuint paint_red = loadBMP("Resources/Textures/PAINT_RED.bmp");
+    GLuint paint_white = loadBMP("Resources/Textures/PAINT_WHITE.bmp");
+    GLuint paint_yellow = loadBMP("Resources/Textures/PAINT_YELLOW.bmp");
+
+    std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_difuse" } };
+    std::vector<Texture> paint_black_texture = { { paint_black, "texture_difuse" } };
+    std::vector<Texture> paint_blue_texture = { { paint_blue, "texture_difuse" } };
+    std::vector<Texture> paint_cyan_texture = { { paint_cyan, "texture_difuse" } };
+    std::vector<Texture> paint_darkblue_texture = { { paint_darkblue, "texture_difuse" } };
+    std::vector<Texture> paint_darkbrown_texture = { { paint_darkbrown, "texture_difuse" } };
+    std::vector<Texture> paint_darkgray_texture = { { paint_darkgray, "texture_difuse" } };
+    std::vector<Texture> paint_gold_texture = { { paint_gold, "texture_difuse" } };
+    std::vector<Texture> paint_green_texture = { { paint_green, "texture_difuse" } };
+    std::vector<Texture> paint_lavender_texture = { { paint_lavender, "texture_difuse" } };
+    std::vector<Texture> paint_lightblue_texture = { { paint_lightblue, "texture_difuse" } };
+    std::vector<Texture> paint_lightbrown_texture = { { paint_lightbrown, "texture_difuse" } };
+    std::vector<Texture> paint_lightgray_texture = { { paint_lightgray, "texture_difuse" } };
+    std::vector<Texture> paint_lime_texture = { { paint_lime, "texture_difuse" } };
+    std::vector<Texture> paint_orange_texture = { { paint_orange, "texture_difuse" } };
+    std::vector<Texture> paint_pink_texture = { { paint_pink, "texture_difuse" } };
+    std::vector<Texture> paint_purple_texture = { { paint_purple, "texture_difuse" } };
+    std::vector<Texture> paint_red_texture = { { paint_red, "texture_difuse" } };
+    std::vector<Texture> paint_white_texture = { { paint_white, "texture_difuse" } };
+    std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_difuse" } };
 
     // ======================
     // LOAD MODELS
     // ======================
     MeshLoaderObj loader;
 
-    Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
-    Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
-    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
-    Mesh bookcaseCube = loader.loadObj("Resources/Models/cube.obj", woodTextures);
-    Mesh booksCube = loader.loadObj("Resources/Models/cube.obj", bookTextures);
+    //walls and others
+    Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
+    Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
+    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", paint_black_texture);
+    Mesh bookcaseCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
+    Mesh booksCube = loader.loadObj("Resources/Models/cube.obj", paint_yellow_texture);
 
     // Pawns
-    Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", purpleTextures);
-    Mesh knight = loader.loadObj("Resources/Models/pawn.obj", goldTextures);
+    Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
+    Mesh knight = loader.loadObj("Resources/Models/pawn.obj", paint_gold_texture);
 
     // Key and door
-    Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", goldTextures);
-    Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+    Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
+    Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", paint_red_texture);
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     std::vector<Texture> noTextures;
@@ -159,8 +202,10 @@ int main()
     {
         Wall(&booksCube, glm::vec3(-3.5, 2.0f, -3.4f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(-3.5, 2.0f, 1.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(-3.5, 2.0f, 5.6f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, -3.4f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, 1.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(3.5, 2.0f, 5.6f), glm::vec3(1.8f, 1.8f, 0.1f)),
     };
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
@@ -176,8 +221,8 @@ int main()
     // currently on left wall a bit below cell
     wallTorch = new Torch(&wallCube, &wallCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
 
-    Mesh flameCube = loader.loadObj("Resources/Models/cube.obj", orangeTextures);
-    Mesh stickCube = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+    Mesh flameCube = loader.loadObj("Resources/Models/cube.obj", paint_orange_texture);
+    Mesh stickCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
 
     // re-initialize using specific textures
     delete wallTorch;
