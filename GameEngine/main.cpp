@@ -7,6 +7,8 @@
 #include <cmath>
 #include <map>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 // --- Custom Class Includes ---
 #include "TextRenderer.h"
@@ -21,6 +23,19 @@
 int currentTask = 1;
 int currentRoom = 1;
 int firstLoad = 1;
+
+// ======================
+// DIALOGUE SYSTEM STATE
+// ======================
+
+struct DialogueLine {
+    std::string CharacterName;
+    std::string Text;
+};
+
+std::vector<DialogueLine> currentDialogue;
+size_t currentLineIndex = 0;
+bool rPressedLastFrame = false;
 
 // ======================
 // FUNCTION DECLARATIONS
@@ -71,6 +86,50 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
 
     // Draw the mesh
     mesh.draw(shader);
+}
+
+// =======================
+// DIALOGUE FUNCTION
+// =======================
+
+void LoadDialogue(int taskId) {
+    currentDialogue.clear();
+    currentLineIndex = 0;
+
+    // Construct filename: e.g: "Dialogue/dialogue_0.txt"
+    std::string filename = "Dialogue/dialogue_" + std::to_string(taskId) + ".txt";
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "ERROR::DIALOGUE: Could not open file " << filename << std::endl;
+        // Fallback line so the game doesn't break
+        currentDialogue.push_back({ "System", "Error loading dialogue file." });
+        return;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        std::string name;
+        std::string text;
+
+        // 1. Read first word as Character Name
+        ss >> name;
+
+        // 2. Read the rest of the line as the Dialogue Text
+        std::getline(ss, text);
+
+        // Remove leading space from text (leftover from >> operator)
+        if (!text.empty() && text[0] == ' ') {
+            text = text.substr(1);
+        }
+
+        currentDialogue.push_back({ name, text });
+    }
+    file.close();
+    std::cout << "Loaded Dialogue Task " << taskId << ": " << currentDialogue.size() << " lines." << std::endl;
 }
 
 
@@ -132,6 +191,11 @@ int main()
     GLuint paint_red = loadBMP("Resources/Textures/PAINT_RED.bmp");
     GLuint paint_white = loadBMP("Resources/Textures/PAINT_WHITE.bmp");
     GLuint paint_yellow = loadBMP("Resources/Textures/PAINT_YELLOW.bmp");
+    // Character portraits
+    std::map<std::string, GLuint> portraits;
+    portraits["Warlock"] = loadBMP("Resources/Textures/PAINT_PURPLE.bmp");
+    portraits["Knight"] = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
+    Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
 
     std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_difuse" } };
     std::vector<Texture> paint_black_texture = { { paint_black, "texture_difuse" } };
@@ -325,19 +389,8 @@ int main()
 
     glm::vec3 exitPos;
 
-    // ======================
-    // DIALOGUE SYSTEM STATE (needs changing to read from .txt)
-    // ======================
-    std::vector<std::string> dialogueLines = {
-        "Hi!! Press R to advance through dialogue",
-        "You made it yay!",
-        "Use WASD to move your characters.",
-        "The Warlock can reach places the Knight cannot.",
-        "Press space to swap character control!",
-    };
-    int currentLineIndex = 0;
-    bool rPressedLastFrame = false; // Prevents skipping 60 lines per second
-
+    // Load dialogue
+    LoadDialogue(0);
 
     // ======================
     // MAIN LOOP
@@ -406,9 +459,8 @@ int main()
         {
             if (!rPressedLastFrame)
             {
-                // Only increment if we haven't finished the dialogue yet.
-                // When currentLineIndex equals dialogueLines.size(), dialogue ends
-                if (currentLineIndex < dialogueLines.size()) {
+                // Only increment if we haven't finished the dialogue yet
+                if (currentLineIndex < currentDialogue.size()) {
                     currentLineIndex++;
                 }
                 rPressedLastFrame = true;
@@ -847,36 +899,59 @@ int main()
             movement(knightPos, delta, pawnHalfSize, colliders);
         }
 
-
-
         // ==================================
         // DRAW UI / DIALOGUE BOX
         // ==================================
 
         glDisable(GL_DEPTH_TEST);
 
-        // Only draw the box and text if we haven't reached the end of the list
-        if (currentLineIndex + 67 < dialogueLines.size())
+        // Only render if we have lines left
+        if (!currentDialogue.empty() && currentLineIndex < currentDialogue.size())
         {
-            // --- Render the Background Box ---
+            // Get current line data
+            DialogueLine& line = currentDialogue[currentLineIndex];
+
+            // --------------------------
+            // 1. Draw Background Box
+            // --------------------------
             diagShader.use();
-
-            // Set Model Matrix for UI: Bottom Center
-            glm::mat4 boxModel = glm::mat4(1.0f);
-            boxModel = glm::translate(boxModel, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f));
-            boxModel = glm::scale(boxModel, glm::vec3(1200.0f, 200.0f, 1.0f));
-
-            // Pass "model" uniform
-            glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "model"), 1, GL_FALSE, &boxModel[0][0]);
-
-            // Pass "color" uniform (Navy Blue)
+            // Pass Color (Navy)
             glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.1f, 0.15f, 0.5f);
 
-            dialogueBoxMesh.draw(diagShader);
 
-            // --- Render Text On Top ---
-            // We use the string from our vector based on the current index
-            textRenderer.RenderText(textShader, dialogueLines[currentLineIndex], 700.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
+            // Use your helper function!
+            // ViewMatrix is Identity (glm::mat4(1.0f)) for UI
+            drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f), glm::vec3(1200.0f, 200.0f, 1.0f), diagShader, glm::mat4(1.0f), textProjection);
+
+
+            // --------------------------
+            // 2. Draw Character Portrait
+            // --------------------------
+            if (portraits.find(line.CharacterName) != portraits.end())
+            {
+                GLuint portraitTex = portraits[line.CharacterName];
+
+                portraitShader.use();
+
+                // Bind the texture to Unit 0
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, portraitTex);
+                glUniform1i(glGetUniformLocation(portraitShader.getId(), "image"), 0);
+
+                // Position: Left side of the dialogue box
+                // Center X is 960. Box width is 1200. Left edge approx 360.
+                // Placed it at x=450, y=100
+                drawObject(dialogueBoxMesh, glm::vec3(450.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection);
+            }
+
+            // --------------------------
+            // 3. Render Text
+            // --------------------------
+            // Character Name (Yellow)
+            textRenderer.RenderText(textShader, line.CharacterName, 550.0f, 130.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+
+            // Dialogue Line (White)
+            textRenderer.RenderText(textShader, line.Text, 550.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
         }
 
         // --- Render Hints (Always visible) ---

@@ -90,6 +90,8 @@
     <None Include="Shaders\text_vertex.glsl" />
     <None Include="Shaders\dialogue_fragment.glsl" />
     <None Include="Shaders\dialogue_vertex.glsl" />
+    <None Include="Shaders\ui_texture_fragment.glsl" />
+    <None Include="Shaders\ui_texture_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\wood.bmp">
@@ -101,5 +103,8 @@
   </ItemGroup>
   <ItemGroup>
     <Object Include="Resources\Models\sphere.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Dialogue\dialogue_0.txt" />
   </ItemGroup>
 </Project>
