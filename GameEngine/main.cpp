@@ -41,13 +41,38 @@ Window window("KNIGHTXWARLOCK", 1600, 900);
 // ======================
 // CAMERA
 // ======================
-Camera camera(glm::vec3(0.0f, 15.0f, 4.2f)); // Above center of room
+Camera camera(glm::vec3(0.0f, 15.0f, 5.0f));
 
 // ======================
 // LIGHT
 // ======================
 glm::vec3 lightColor = glm::vec3(0.8f, 0.6f, 0.4f);
 glm::vec3 lightPos = glm::vec3(0.0f, 6.5f, 1.0f);
+
+
+// =======================
+// DRAWING FUNCTION
+// =======================
+
+void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) {
+    // Calculate Model Matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    model = glm::scale(model, scale);
+
+    glm::mat4 mvp = projectionMatrix * viewMatrix * model;
+
+    GLuint matrixID = glGetUniformLocation(shader.getId(), "MVP");
+    GLuint modelID = glGetUniformLocation(shader.getId(), "model");
+
+    // Send to shader
+    glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+    // Draw the mesh
+    mesh.draw(shader);
+}
+
 
 int main()
 {
@@ -134,12 +159,19 @@ int main()
     // ======================
     MeshLoaderObj loader;
 
-    //walls and others
+    // walls and floors
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
     Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", paint_black_texture);
+    Mesh gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_lime_texture);
+
+    // books
     Mesh bookcaseCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
     Mesh booksCube = loader.loadObj("Resources/Models/cube.obj", paint_yellow_texture);
+
+    // garden things
+    Mesh tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
+    Mesh frog = loader.loadObj("Resources/Models/frog.obj", paint_lavender_texture);
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
@@ -174,7 +206,7 @@ int main()
     Wall backWall_2(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(2.0f, 3.5f, 0.1f));
     // Front wallec)
     // same as above
-    Wall frontWall_2(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //front is up
+    Wall frontWall_2(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
     //Left side walls
     Wall leftWall_2_a(&wallCube, glm::vec3(-7.0f, 3.5f, -3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
     Wall leftWall_2_b(&wallCube, glm::vec3(-4.5f, 3.5f, 0.0f), glm::vec3(2.5f, 3.5f, 0.1f));
@@ -185,27 +217,40 @@ int main()
     Wall rightWall_2_c(&wallCube, glm::vec3(2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
 
     // ====================
+    // WALLS FOR ROOM 4 - GARDEN
+    // ====================
+
+    // Back wall
+    Wall backWall_4(&wallCube, glm::vec3(0.0f, 2.0f, 10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
+    // Front wall
+    Wall frontWall_4(&wallCube, glm::vec3(0.0f, 2.0f, -10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
+    // Left wall
+    Wall leftWall_4(&wallCube, glm::vec3(-10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
+    // Right wall
+    Wall rightWall_4(&wallCube, glm::vec3(10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
+
+    // ====================
     // BOOKSHELVES FOR ROOM 3 - LIBRARY
     // ====================
 
     Wall bookshelves[] = 
     {
-     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -4.5f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, 0.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, 4.5f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, -4.5f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, 0.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, 4.5f), glm::vec3(2.0f, 2.0f, 1.0f))
+     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -6.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, 2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, -6.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, -2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, 2.0f), glm::vec3(2.0f, 2.0f, 1.0f))
     };
 
     Wall books[]
     {
-        Wall(&booksCube, glm::vec3(-3.5, 2.0f, -3.4f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(-3.5, 2.0f, 1.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(-3.5, 2.0f, 5.6f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(3.5, 2.0f, -3.4f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(3.5, 2.0f, 1.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(3.5, 2.0f, 5.6f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(-3.5, 2.0f, -4.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(-3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(-3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(3.5, 2.0f, -4.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
     };
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
@@ -261,7 +306,7 @@ int main()
     glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 
     // ======================
-    // OBJECT POSITIONS
+    // OBJECT POSITIONS + SOLVED PUZZLES
     // ======================
     glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
     glm::vec3 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
@@ -275,7 +320,8 @@ int main()
     glm::vec3 doorPos = glm::vec3(5.0f, 2.0f, 0.0f);
     bool doorUnlocked = false;
 
-    bool isSolved = false; // room 2 puzzle
+    bool isSolved_torch = false; // room 2 puzzle
+    bool isSolved_books = false; // room 3 puzzle
 
     glm::vec3 exitPos;
 
@@ -383,22 +429,10 @@ int main()
         // DRAW PAWNS
         // ======================
         // Warlock
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, warlockPos);
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.4f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        warlock.draw(shader);
+        drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix);
 
         // Knight
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, knightPos);
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.4f));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        knight.draw(shader);
+        drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix);
 
         // active character position
         glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
@@ -407,12 +441,12 @@ int main()
         {
             if (firstLoad == 1)
             {
-                glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
-                glm::vec3 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
+                warlockPos = glm::vec3(3.0f, 0.5f, 3.0f);
+                knightPos = glm::vec3(3.0f, 0.6f, -3.0f);
                 firstLoad = 0;
             }
 
-            exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
+            exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
 
             // room 1 colliders
             colliders.push_back(backWall.getAABB());
@@ -456,7 +490,7 @@ int main()
             // DOOR INTERACTION
             // ======================
             float distToDoor = glm::length(activePos - doorPos);
-            if (distToDoor < 3.0f)
+            if (distToDoor < 2.0f)
             {
                 if (window.isPressed(GLFW_KEY_E))
                 {
@@ -514,7 +548,7 @@ int main()
             // EXIT INTERACTION
             // ======================
             float distToExit = glm::length(warlockPos - exitPos);
-            if (distToExit < 1.0f)
+            if (distToExit < 2.0f)
             {
                 firstLoad = 1;
                 currentRoom = 2;
@@ -550,11 +584,11 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(4.0f, 2.0f, -6.9f);
+            exitPos = glm::vec3(4.0f, 2.0f, -6.8f);
 
             // room 2 colliders
             colliders.push_back(backWall_2.getAABB());
@@ -607,7 +641,7 @@ int main()
 
                 static bool eKeyWasPressed = false;
 
-                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 2.0f))
+                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 3.0f))
                 {
                     if (window.isPressed(GLFW_KEY_E))
                     {
@@ -624,8 +658,8 @@ int main()
                 }
             }
 
-            glm::vec3 leftPos = glm::vec3(-6.5f, 2.0f, -0.5f);
-            glm::vec3 rightPos = glm::vec3(6.5f, 2.0f, -0.5f);
+            glm::vec3 leftPos = glm::vec3(-6.5f, 0.5f, -0.5f);
+            glm::vec3 rightPos = glm::vec3(6.5f, 0.6f, -0.5f);
 
             float distToLeft = glm::length(warlockPos - leftPos);
             float distToRight = glm::length(knightPos - rightPos);
@@ -634,10 +668,10 @@ int main()
                 && !hallTorches[3]->isOn && !hallTorches[4]->isOn && hallTorches[5]->isOn
                 && hallTorches[6]->isOn && distToLeft < 1.5f && distToRight < 1.5f)
             {
-                isSolved = true;
+                isSolved_torch = true;
             }
 
-            if (isSolved == true)
+            if (isSolved_torch == true)
             {
                 // ======================
                 // DRAW EXIT
@@ -654,7 +688,7 @@ int main()
                 // EXIT INTERACTION
                 // ======================
                 float distToExit = glm::length(warlockPos - exitPos);
-                if (distToExit < 1.0f)
+                if (distToExit < 2.0f)
                 {
                     firstLoad = 1;
                     currentRoom = 3;
@@ -666,11 +700,11 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
+            exitPos = glm::vec3(-3.5f, 2.0f, -6.8f);
 
             // ======================
             // DRAW WALLS
@@ -694,7 +728,13 @@ int main()
             // =====================
             // DRAW BOOKSHELVES
             // =====================
-            for (int i = 0; i < BOOKSHELF_COUNT; i++) 
+            if (!isSolved_books)
+            {
+                bookshelves[0].draw(shader, ViewMatrix, ProjectionMatrix);
+                books[0].draw(shader, ViewMatrix, ProjectionMatrix);
+                colliders.push_back(bookshelves[0].getAABB());
+            }
+            for (int i = 1; i < BOOKSHELF_COUNT; i++) 
             {
                 bookshelves[i].draw(shader, ViewMatrix, ProjectionMatrix);
                 colliders.push_back(bookshelves[i].getAABB());
@@ -705,10 +745,86 @@ int main()
             colliders.push_back(leftWall.getAABB());
             colliders.push_back(rightWall.getAABB());
 
-            for (int i = 0; i < BOOK_COUNT; i++)
+            for (int i = 1; i < BOOK_COUNT; i++)
             {
                 books[i].draw(shader, ViewMatrix, ProjectionMatrix);
             }
+
+            glm::vec3 endPos = glm::vec3(7.0f, 2.0f, -7.0f);
+
+            float distToEnd = glm::length(warlockPos - endPos);
+
+            if (distToEnd < 2.0f)
+                isSolved_books = true;
+
+            if (isSolved_books == true)
+            {
+                // ======================
+                // DRAW EXIT
+                // ======================
+                ModelMatrix = glm::mat4(1.0f);
+                ModelMatrix = glm::translate(ModelMatrix, exitPos);
+                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+                doorMesh.draw(shader);
+
+                // ======================
+                // EXIT INTERACTION
+                // ======================
+                float distToExit = glm::length(warlockPos - exitPos);
+                if (distToExit < 2.0f)
+                {
+                    firstLoad = 1;
+                    currentRoom = 4;
+                }
+            }
+        }
+        else
+        if (currentRoom == 4)
+        {
+            if (firstLoad == 1)
+            {
+                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                firstLoad = 0;
+            }
+            exitPos = glm::vec3(-3.5f, 2.0f, -6.8f);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(10.0f, 0.1f, 10.0f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            gardenFloorCube.draw(shader);
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
+            frontWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
+
+            colliders.push_back(backWall_4.getAABB());
+            colliders.push_back(frontWall_4.getAABB());
+            colliders.push_back(leftWall_4.getAABB());
+            colliders.push_back(rightWall_4.getAABB());
+
+            // ======================
+            // DRAW TREES
+            // ======================
+
+            glm::vec3 treePos(0.0f, 0.0f, 0.0f);
+            glm::vec3 treeScale(0.05f, 0.05f, 0.05f);
+
+            drawObject(tree, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix);
+
         }
 
         // ======================
@@ -782,7 +898,6 @@ int main()
 
     return 0;
 }
-
 
 // ======================
 // CAMERA INPUT (commented out)
