@@ -19,7 +19,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 2;
+int currentRoom = 3;
 int firstLoad = 1;
 
 // ======================
@@ -78,12 +78,14 @@ int main()
     GLuint orangeTex = loadBMP("Resources/Textures/orange.bmp");
     GLuint purpleTex = loadBMP("Resources/Textures/purple.bmp");
     GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
+    GLuint bookTex = loadBMP("Resources/Textures/books.bmp");
 
     std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
     std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
     std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
     std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
     std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
+    std::vector<Texture> bookTextures = { { bookTex, "texture_diffuse" } };
 
     // ======================
     // LOAD MODELS
@@ -93,6 +95,8 @@ int main()
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
     Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", stoneTextures);
+    Mesh bookcaseCube = loader.loadObj("Resources/Models/cube.obj", woodTextures);
+    Mesh booksCube = loader.loadObj("Resources/Models/cube.obj", bookTextures);
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", purpleTextures);
@@ -136,6 +140,32 @@ int main()
     Wall rightWall_2_a(&wallCube, glm::vec3(7.0f, 3.5f, -3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
     Wall rightWall_2_b(&wallCube, glm::vec3(4.5f, 3.5f, 0.0f), glm::vec3(2.5f, 3.5f, 0.1f));
     Wall rightWall_2_c(&wallCube, glm::vec3(2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
+
+    // ====================
+    // BOOKSHELVES FOR ROOM 3 - LIBRARY
+    // ====================
+
+    Wall bookshelves[] = 
+    {
+     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -4.5f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, 0.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, 4.5f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, -4.5f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, 0.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
+     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, 4.5f), glm::vec3(2.0f, 2.0f, 1.0f))
+    };
+
+    Wall books[]
+    {
+        Wall(&booksCube, glm::vec3(-3.5, 2.0f, -3.4f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(-3.5, 2.0f, 1.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(3.5, 2.0f, -3.4f), glm::vec3(1.8f, 1.8f, 0.1f)),
+        Wall(&booksCube, glm::vec3(3.5, 2.0f, 1.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
+    };
+
+    const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
+    const int BOOK_COUNT = sizeof(books) / sizeof(books[0]);
+
 
 
     // ======================
@@ -199,6 +229,8 @@ int main()
 
     glm::vec3 doorPos = glm::vec3(5.0f, 2.0f, 0.0f);
     bool doorUnlocked = false;
+
+    bool isSolved = false; // room 2 puzzle
 
     glm::vec3 exitPos;
 
@@ -434,6 +466,16 @@ int main()
             doorMesh.draw(shader);
 
             // ======================
+            // EXIT INTERACTION
+            // ======================
+            float distToExit = glm::length(warlockPos - exitPos);
+            if (distToExit < 1.0f)
+            {
+                firstLoad = 1;
+                currentRoom = 2;
+            }
+
+            // ======================
             // DRAW WALLS
             // ======================
             backWall.draw(shader, ViewMatrix, ProjectionMatrix);
@@ -463,11 +505,11 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.0f, 2.0f, 6.5f);
-                knightPos = glm::vec3(-1.0f, 2.0f, 6.5f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(0.0f, 2.0f, 6.8f);
+            exitPos = glm::vec3(4.0f, 2.0f, -6.9f);
 
             // room 2 colliders
             colliders.push_back(backWall_2.getAABB());
@@ -478,17 +520,6 @@ int main()
             colliders.push_back(rightWall_2_a.getAABB());
             colliders.push_back(rightWall_2_b.getAABB());
             colliders.push_back(rightWall_2_c.getAABB());
-
-            // ======================
-            // DRAW EXIT
-            // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, exitPos);
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            doorMesh.draw(shader);
 
             // ======================
             // DRAW WALLS
@@ -548,8 +579,91 @@ int main()
                 }
             }
 
+            glm::vec3 leftPos = glm::vec3(-6.5f, 2.0f, -0.5f);
+            glm::vec3 rightPos = glm::vec3(6.5f, 2.0f, -0.5f);
 
-            
+            float distToLeft = glm::length(warlockPos - leftPos);
+            float distToRight = glm::length(knightPos - rightPos);
+
+            if (hallTorches[0]->isOn && !hallTorches[1]->isOn && !hallTorches[2]->isOn
+                && !hallTorches[3]->isOn && !hallTorches[4]->isOn && hallTorches[5]->isOn
+                && hallTorches[6]->isOn && distToLeft < 1.5f && distToRight < 1.5f)
+            {
+                isSolved = true;
+            }
+
+            if (isSolved == true)
+            {
+                // ======================
+                // DRAW EXIT
+                // ======================
+                ModelMatrix = glm::mat4(1.0f);
+                ModelMatrix = glm::translate(ModelMatrix, exitPos);
+                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+                doorMesh.draw(shader);
+
+                // ======================
+                // EXIT INTERACTION
+                // ======================
+                float distToExit = glm::length(warlockPos - exitPos);
+                if (distToExit < 1.0f)
+                {
+                    firstLoad = 1;
+                    currentRoom = 3;
+                }
+            } 
+        }
+        else
+        if (currentRoom == 3)
+        {
+            if (firstLoad == 1)
+            {
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                firstLoad = 0;
+            }
+            exitPos = glm::vec3(0.0f, 2.0f, -6.9f);
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 7.0f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(shader);
+
+            // =====================
+            // DRAW BOOKSHELVES
+            // =====================
+            for (int i = 0; i < BOOKSHELF_COUNT; i++) 
+            {
+                bookshelves[i].draw(shader, ViewMatrix, ProjectionMatrix);
+                colliders.push_back(bookshelves[i].getAABB());
+            }
+
+            colliders.push_back(backWall.getAABB());
+            colliders.push_back(frontWall.getAABB());
+            colliders.push_back(leftWall.getAABB());
+            colliders.push_back(rightWall.getAABB());
+
+            for (int i = 0; i < BOOK_COUNT; i++)
+            {
+                books[i].draw(shader, ViewMatrix, ProjectionMatrix);
+            }
         }
 
         // ======================
@@ -581,7 +695,7 @@ int main()
         glDisable(GL_DEPTH_TEST);
 
         // Only draw the box and text if we haven't reached the end of the list
-        if (currentLineIndex < dialogueLines.size())
+        if (currentLineIndex + 67 < dialogueLines.size())
         {
             // --- Render the Background Box ---
             diagShader.use();
