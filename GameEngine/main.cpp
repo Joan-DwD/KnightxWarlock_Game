@@ -349,7 +349,7 @@ int main()
             // ======================
             // KEY PICKUP
             // ======================
-            
+
             float distToKey = glm::length(activePos - keyPos);
             if (distToKey < 2.0f && !keyCollected)
             {
@@ -452,7 +452,7 @@ int main()
             // TORCH
             // ======================
             // TORCH LIGHT HERE
-            //  offset to be "inside" the flame
+            // offset to be "inside" the flame
             glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
             glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
             glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
@@ -460,12 +460,11 @@ int main()
             glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
 
             wallTorch->draw(shader, ViewMatrix, ProjectionMatrix);
-        } 
+        }
         else if (currentRoom == 2)
         {
             room2Shader.use();
 
-            // We must use the Uniform Locations specific to room2Shader
             GLuint room2MVPID = glGetUniformLocation(room2Shader.getId(), "MVP");
             GLuint room2ModelID = glGetUniformLocation(room2Shader.getId(), "model");
 
@@ -483,9 +482,64 @@ int main()
             exitPos = glm::vec3(0.0f, 2.0f, 6.8f);
 
             // ======================
+            // DRAW EXIT
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, exitPos);
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
+
+            doorMesh.draw(room2Shader);
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            frontWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -3.5f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 3.5f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(room2Shader);
+
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 3.5f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 0.1f, 3.5f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(room2Shader);
+
+            // room 2 colliders
+            colliders.push_back(backWall_2.getAABB());
+            colliders.push_back(frontWall_2.getAABB());
+            colliders.push_back(leftWall_2_a.getAABB());
+            colliders.push_back(leftWall_2_b.getAABB());
+            colliders.push_back(leftWall_2_c.getAABB());
+            colliders.push_back(rightWall_2_a.getAABB());
+            colliders.push_back(rightWall_2_b.getAABB());
+            colliders.push_back(rightWall_2_c.getAABB());
+
+            // ======================
             // DRAW TORCHES
             // ======================
-            // Set lighting uniforms for the array
             for (int i = 0; i < HALL_TORCH_COUNT; i++)
             {
                 std::string posName = "torchPos[" + std::to_string(i) + "]";
@@ -499,10 +553,8 @@ int main()
                 glUniform1i(glGetUniformLocation(room2Shader.getId(), onName.c_str()), hallTorches[i]->isOn ? 1 : 0);
             }
 
-            // Draw Torch Bodies
             for (int i = 0; i < HALL_TORCH_COUNT; i++)
             {
-                // Ensure Torch::draw uses the correct shader internally
                 hallTorches[i]->draw(room2Shader, ViewMatrix, ProjectionMatrix);
 
                 static bool eKeyWasPressed = false;
@@ -521,68 +573,7 @@ int main()
                     }
                 }
             }
-
-            // ======================
-            // DRAW EXIT
-            // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, exitPos);
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-            // FIX: Use room2 variable IDs
-            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
-
-            // FIX: Pass room2Shader to the mesh
-            doorMesh.draw(room2Shader);
-
-            // ======================
-            // DRAW WALLS (FIXED SHADER ARGUMENTS)
-            // ======================
-            // All walls must be drawn using room2Shader
-            backWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            frontWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
-
-            // ======================
-            // DRAW FLOOR
-            // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -3.5f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 3.5f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-            // FIX: Use room2 variable IDs
-            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(room2Shader);
-
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 3.5f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 0.1f, 3.5f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-            // FIX: Use room2 variable IDs
-            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(room2Shader);
-
-            // room 2 colliders
-            colliders.push_back(backWall_2.getAABB());
-            colliders.push_back(frontWall_2.getAABB());
-            colliders.push_back(leftWall_2_a.getAABB());
-            colliders.push_back(leftWall_2_b.getAABB());
-            colliders.push_back(leftWall_2_c.getAABB());
-            colliders.push_back(rightWall_2_a.getAABB());
-            colliders.push_back(rightWall_2_b.getAABB());
-            colliders.push_back(rightWall_2_c.getAABB());
-            }
+        }
 
         // ======================
         // PAWN MOVEMENT
