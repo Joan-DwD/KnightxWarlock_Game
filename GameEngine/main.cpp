@@ -67,6 +67,7 @@ int main()
     // ======================
     Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
+    Shader room2Shader("Shaders/vertex_shader_room2.glsl", "Shaders/fragment_shader_room2.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
     Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
 
@@ -252,13 +253,6 @@ int main()
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
 
-        //  offset to be "inside" the flame
-        glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
-        glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
-        glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
-        // torch state
-        glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
-
         // ======================
         // CHARACTER SWAP (SPACE)
         // ======================
@@ -328,6 +322,7 @@ int main()
 
         if (currentRoom == 1)
         {
+            shader.use();
             if (firstLoad == 1)
             {
                 glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
@@ -456,11 +451,29 @@ int main()
             // ======================
             // TORCH
             // ======================
+            // TORCH LIGHT HERE
+            //  offset to be "inside" the flame
+            glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
+            // torch state
+            glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
+
             wallTorch->draw(shader, ViewMatrix, ProjectionMatrix);
-        }
-        else 
-        if (currentRoom == 2)
+        } 
+        else if (currentRoom == 2)
         {
+            room2Shader.use();
+
+            // We must use the Uniform Locations specific to room2Shader
+            GLuint room2MVPID = glGetUniformLocation(room2Shader.getId(), "MVP");
+            GLuint room2ModelID = glGetUniformLocation(room2Shader.getId(), "model");
+
+            glUniform3f(glGetUniformLocation(room2Shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+            glUniform3f(glGetUniformLocation(room2Shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+            glUniform3f(glGetUniformLocation(room2Shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+            glUniform1i(glGetUniformLocation(room2Shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT);
+
             if (firstLoad == 1)
             {
                 warlockPos = glm::vec3(1.0f, 2.0f, 6.5f);
@@ -469,73 +482,34 @@ int main()
             }
             exitPos = glm::vec3(0.0f, 2.0f, 6.8f);
 
-            // room 2 colliders
-            colliders.push_back(backWall_2.getAABB());
-            colliders.push_back(frontWall_2.getAABB());
-            colliders.push_back(leftWall_2_a.getAABB());
-            colliders.push_back(leftWall_2_b.getAABB());
-            colliders.push_back(leftWall_2_c.getAABB());
-            colliders.push_back(rightWall_2_a.getAABB());
-            colliders.push_back(rightWall_2_b.getAABB());
-            colliders.push_back(rightWall_2_c.getAABB());
-
-            // ======================
-            // DRAW EXIT
-            // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, exitPos);
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            doorMesh.draw(shader);
-
-            // ======================
-            // DRAW WALLS
-            // ======================
-            backWall_2.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall_2.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_a.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_b.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_a.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_b.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
-
-            // ======================
-            // DRAW FLOOR
-            // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -3.5f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 3.5f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(shader);
-
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 3.5f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 0.1f, 3.5f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(shader);
-            
             // ======================
             // DRAW TORCHES
             // ======================
-            
-            for (int i = 0; i < HALL_TORCH_COUNT; i++) 
+            // Set lighting uniforms for the array
+            for (int i = 0; i < HALL_TORCH_COUNT; i++)
             {
-                hallTorches[i]->draw(shader, ViewMatrix, ProjectionMatrix);
+                std::string posName = "torchPos[" + std::to_string(i) + "]";
+                std::string colorName = "torchColor[" + std::to_string(i) + "]";
+                std::string onName = "torchOn[" + std::to_string(i) + "]";
+
+                glm::vec3 p = hallTorches[i]->position + glm::vec3(0.0f, 0.4f, 0.0f);
+
+                glUniform3f(glGetUniformLocation(room2Shader.getId(), posName.c_str()), p.x, p.y, p.z);
+                glUniform3f(glGetUniformLocation(room2Shader.getId(), colorName.c_str()), 1.0f, 0.5f, 0.2f);
+                glUniform1i(glGetUniformLocation(room2Shader.getId(), onName.c_str()), hallTorches[i]->isOn ? 1 : 0);
+            }
+
+            // Draw Torch Bodies
+            for (int i = 0; i < HALL_TORCH_COUNT; i++)
+            {
+                // Ensure Torch::draw uses the correct shader internally
+                hallTorches[i]->draw(room2Shader, ViewMatrix, ProjectionMatrix);
 
                 static bool eKeyWasPressed = false;
-
                 if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 2.0f))
                 {
                     if (window.isPressed(GLFW_KEY_E))
                     {
-                        // debounce
                         if (!eKeyWasPressed) {
                             hallTorches[i]->toggle();
                             std::cout << ">>> Torch toggled!" << std::endl;
@@ -548,9 +522,67 @@ int main()
                 }
             }
 
+            // ======================
+            // DRAW EXIT
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, exitPos);
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
-            
-        }
+            // FIX: Use room2 variable IDs
+            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
+
+            // FIX: Pass room2Shader to the mesh
+            doorMesh.draw(room2Shader);
+
+            // ======================
+            // DRAW WALLS (FIXED SHADER ARGUMENTS)
+            // ======================
+            // All walls must be drawn using room2Shader
+            backWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            frontWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -3.5f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 3.5f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+            // FIX: Use room2 variable IDs
+            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(room2Shader);
+
+            ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 3.5f));
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 0.1f, 3.5f));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+            // FIX: Use room2 variable IDs
+            glUniformMatrix4fv(room2MVPID, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(room2ModelID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            floorCube.draw(room2Shader);
+
+            // room 2 colliders
+            colliders.push_back(backWall_2.getAABB());
+            colliders.push_back(frontWall_2.getAABB());
+            colliders.push_back(leftWall_2_a.getAABB());
+            colliders.push_back(leftWall_2_b.getAABB());
+            colliders.push_back(leftWall_2_c.getAABB());
+            colliders.push_back(rightWall_2_a.getAABB());
+            colliders.push_back(rightWall_2_b.getAABB());
+            colliders.push_back(rightWall_2_c.getAABB());
+            }
 
         // ======================
         // PAWN MOVEMENT

@@ -42,6 +42,9 @@
     <ClCompile Include="TextRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Torch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\window.h">
@@ -74,6 +77,9 @@
     <ClInclude Include="Collision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Torch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\vertex_shader.glsl" />
@@ -82,6 +88,10 @@
     <None Include="Shaders\sun_vertex_shader.glsl" />
     <None Include="Shaders\text_fragment.glsl" />
     <None Include="Shaders\text_vertex.glsl" />
+    <None Include="Shaders\dialogue_fragment.glsl" />
+    <None Include="Shaders\dialogue_vertex.glsl" />
+    <None Include="Shaders\fragment_shader_room2.glsl" />
+    <None Include="Shaders\vertex_shader_room2.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\wood.bmp">
