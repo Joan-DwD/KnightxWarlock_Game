@@ -1236,6 +1236,12 @@ int main()
             // Get current line data
             DialogueLine& line = currentDialogue[currentLineIndex];
 
+            // Draw black background for narrator when the case
+            if (line.CharacterName == "black"){
+                glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f); // Set Color to Black
+            drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f), glm::vec3(window.getWidth(), window.getHeight(), 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
+            }
+
             // --------------------------
             // 1. Draw Background Box
             // --------------------------
@@ -1275,7 +1281,7 @@ int main()
             // --------------------------
             // 3. Render Text
             // --------------------------
-            if(line.CharacterName!="none")
+            if((line.CharacterName!="none") && (line.CharacterName !="black"))
                 // Character Name (Yellow)
                 textRenderer.RenderText(textShader, line.CharacterName, 550.0f, 130.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
 
