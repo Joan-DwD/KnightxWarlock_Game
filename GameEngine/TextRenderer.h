@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <sstream>
+
 
 #include "Shaders/shader.h"
 
@@ -26,6 +28,8 @@ public:
 
     // Main draw function
     void RenderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
+
+    void RenderWrappedText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color, int maxLineLength);
 
 private:
     std::map<GLchar, Character> Characters;
