@@ -195,6 +195,7 @@ int main()
     std::map<std::string, GLuint> portraits;
     portraits["Warlock"] = loadBMP("Resources/Textures/PAINT_PURPLE.bmp");
     portraits["Knight"] = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
+    portraits["Princess"] = loadBMP("Resources/Textures/PAINT_PINK.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
 
     std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_difuse" } };
@@ -941,14 +942,18 @@ int main()
                 // Position: Left side of the dialogue box
                 // Center X is 960. Box width is 1200. Left edge approx 360.
                 // Placed it at x=450, y=100
-                drawObject(dialogueBoxMesh, glm::vec3(450.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection);
+                if(line.CharacterName=="Warlock")
+                    drawObject(dialogueBoxMesh, glm::vec3(360.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection);
+                else
+                    drawObject(dialogueBoxMesh, glm::vec3(1200.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection);
             }
 
             // --------------------------
             // 3. Render Text
             // --------------------------
-            // Character Name (Yellow)
-            textRenderer.RenderText(textShader, line.CharacterName, 550.0f, 130.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+            if(line.CharacterName!="none")
+                // Character Name (Yellow)
+                textRenderer.RenderText(textShader, line.CharacterName, 550.0f, 130.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
 
             // Dialogue Line (White)
             textRenderer.RenderText(textShader, line.Text, 550.0f, 85.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
