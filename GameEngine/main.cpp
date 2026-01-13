@@ -109,7 +109,7 @@ void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader&
 }
 
 // =======================
-// DIALOGUE FUNCTIONS
+// DIALOGUE FUNCTION
 // =======================
 
 void LoadDialogue(int taskId) {
@@ -150,41 +150,6 @@ void LoadDialogue(int taskId) {
     }
     file.close();
     std::cout << "Loaded Dialogue Task " << taskId << ": " << currentDialogue.size() << " lines." << std::endl;
-}
-
-void RenderWrappedText(TextRenderer& tr, Shader& s, std::string text, float x, float y, float scale, glm::vec3 color, int maxLineLength)
-{
-    std::stringstream ss(text);
-    std::string word;
-    std::string currentLine = "";
-
-    // Vertical spacing between lines
-    float lineHeight = 50.0f * scale;
-
-    while (ss >> word)
-    {
-        // Calculate length of line if we added the next word
-        if (currentLine.length() + word.length() + 1 > maxLineLength)
-        {
-            tr.RenderText(s, currentLine, x, y, scale, color);
-
-            // Move "cursor" down for the next line
-            y -= lineHeight;
-
-            // Line starts with the word that didn't fit
-            currentLine = word + " ";
-        }
-        else
-        {
-            // Word is simply added to the current line
-            currentLine += word + " ";
-        }
-    }
-
-    // Last remaining line
-    if (!currentLine.empty()) {
-        tr.RenderText(s, currentLine, x, y, scale, color);
-    }
 }
 
 // final door puzzle struct
@@ -1315,7 +1280,7 @@ int main()
                 textRenderer.RenderText(textShader, line.CharacterName, 550.0f, 130.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
 
             // Dialogue Line (White)
-            RenderWrappedText(textRenderer, textShader, line.Text, 550.0f, 100.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), 50);
+            textRenderer.RenderWrappedText(textShader, line.Text, 550.0f, 100.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), 50);
         }
 
         // --- Render Hints (Always visible) ---

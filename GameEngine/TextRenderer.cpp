@@ -1,6 +1,7 @@
 #include "TextRenderer.h"
 #include <iostream>
 #include <glm.hpp>
+#include <sstream>
 
 TextRenderer::TextRenderer(const char* fontPath, int fontSize)
 {
@@ -120,4 +121,57 @@ void TextRenderer::RenderText(Shader& shader, std::string text, float x, float y
     }
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+// Add this at the end of the file:
+void TextRenderer::RenderWrappedText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color, int maxLineLength)
+{
+    // Stop crash if font didn't load
+    if (!isInitialized) return;
+
+    std::stringstream ss(text);
+    std::string word;
+    std::string currentLine = "";
+
+    // Vertical spacing between lines
+    float lineHeight = 50.0f * scale;
+
+    while (ss >> word)
+    {
+        // 1. Check if the word itself is huge (Force break if word > max length)
+        if (word.length() > maxLineLength)
+        {
+            if (!currentLine.empty()) {
+                RenderText(shader, currentLine, x, y, scale, color);
+                y -= lineHeight;
+                currentLine = "";
+            }
+            RenderText(shader, word, x, y, scale, color);
+            y -= lineHeight;
+            continue;
+        }
+
+        // 2. Standard Wrapping Logic
+        if (currentLine.length() + word.length() + 1 > maxLineLength)
+        {
+            // Draw the current line
+            RenderText(shader, currentLine, x, y, scale, color);
+
+            // Move "cursor" down for the next line
+            y -= lineHeight;
+
+            // Start the new line with the word that didn't fit
+            currentLine = word + " ";
+        }
+        else
+        {
+            // Just add the word to the current line
+            currentLine += word + " ";
+        }
+    }
+
+    // Don't forget to draw the last remaining line!
+    if (!currentLine.empty()) {
+        RenderText(shader, currentLine, x, y, scale, color);
+    }
 }
