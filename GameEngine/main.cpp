@@ -459,7 +459,7 @@ int main()
     // TEXT RENDERER SETUP
     // ======================
     // Initialize the TextRenderer class
-    TextRenderer textRenderer("C:/Windows/Fonts/arial.ttf", 48);
+    TextRenderer textRenderer("C:/Windows/Fonts/georgia.ttf", 48);
 
     // Setup Text Projection (Orthographic) for the shader
     // We still do this here because we have access to 'window' dimensions
@@ -1246,8 +1246,8 @@ int main()
             // 1. Draw Background Box
             // --------------------------
             diagShader.use();
-            // Pass Color (Navy)
-            glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.1f, 0.15f, 0.5f);
+            // Pass Color
+            glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.2f, 0.212f, 0.239f);
 
 
             // Use your helper function!
@@ -1273,9 +1273,9 @@ int main()
                 // Center X is 960. Box width is 1200. Left edge approx 360.
                 // Placed it at x=450, y=100
                 if(line.CharacterName=="Warlock")
-                    drawObject(dialogueBoxMesh, glm::vec3(360.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
+                    drawObject(dialogueBoxMesh, glm::vec3(200.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
                 else
-                    drawObject(dialogueBoxMesh, glm::vec3(1200.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
+                    drawObject(dialogueBoxMesh, glm::vec3(1400.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
             }
 
             // --------------------------
@@ -1283,10 +1283,10 @@ int main()
             // --------------------------
             if((line.CharacterName!="none") && (line.CharacterName !="black"))
                 // Character Name (Yellow)
-                textRenderer.RenderText(textShader, line.CharacterName, 550.0f, 130.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+                textRenderer.RenderText(textShader, line.CharacterName, 400.0f, 200.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
 
             // Dialogue Line (White)
-            textRenderer.RenderWrappedText(textShader, line.Text, 550.0f, 100.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), 50);
+            textRenderer.RenderWrappedText(textShader, line.Text, 400.0f, 130.0f, 0.7f, glm::vec3(1.0f, 1.0f, 1.0f), 50);
         }
 
         // --- Render Hints (Always visible) ---
