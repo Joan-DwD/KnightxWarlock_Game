@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 4;
+int currentRoom = 5;
 int firstLoad = 1;
 
 // ======================
@@ -133,6 +133,23 @@ void LoadDialogue(int taskId) {
     std::cout << "Loaded Dialogue Task " << taskId << ": " << currentDialogue.size() << " lines." << std::endl;
 }
 
+// final door puzzle struct
+
+struct puzzleDoor
+{
+    bool isUnlocked;
+    glm::vec3 position;
+    glm::vec3 scale;
+};
+
+struct frogSwitch
+{
+    bool isPressed;
+    glm::vec3 position;
+    glm::vec3 scale;
+
+    std::vector<int> links;
+};
 
 int main()
 {
@@ -239,6 +256,9 @@ int main()
     Mesh tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
     Mesh frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
 
+    // wardrobe buttons
+    Mesh frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
+
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
     Mesh knight = loader.loadObj("Resources/Models/pawn.obj", paint_gold_texture);
@@ -283,23 +303,10 @@ int main()
     Wall rightWall_2_c(&wallCube, glm::vec3(2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
 
     // ====================
-    // WALLS FOR ROOM 4 - GARDEN
-    // ====================
+// BOOKSHELVES FOR ROOM 3 - LIBRARY
+// ====================
 
-    // Back wall
-    Wall backWall_4(&wallCube, glm::vec3(0.0f, 2.0f, 10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
-    // Front wall
-    Wall frontWall_4(&wallCube, glm::vec3(0.0f, 2.0f, -10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
-    // Left wall
-    Wall leftWall_4(&wallCube, glm::vec3(-10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
-    // Right wall
-    Wall rightWall_4(&wallCube, glm::vec3(10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
-
-    // ====================
-    // BOOKSHELVES FOR ROOM 3 - LIBRARY
-    // ====================
-
-    Wall bookshelves[] = 
+    Wall bookshelves[] =
     {
      Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -6.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
      Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
@@ -322,7 +329,54 @@ int main()
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
     const int BOOK_COUNT = sizeof(books) / sizeof(books[0]);
 
+    // ====================
+    // WALLS FOR ROOM 4 - GARDEN
+    // ====================
 
+    // Back wall
+    Wall backWall_4(&wallCube, glm::vec3(0.0f, 2.0f, 10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
+    // Front wall
+    Wall frontWall_4(&wallCube, glm::vec3(0.0f, 2.0f, -10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
+    // Left wall
+    Wall leftWall_4(&wallCube, glm::vec3(-10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
+    // Right wall
+    Wall rightWall_4(&wallCube, glm::vec3(10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
+
+    // ====================
+    // DOORS AND BUTTONS FOR ROOM 5 - WARDROBE
+    // ====================
+
+    Wall wall_5_a(&wallCube, glm::vec3(2.0f, 2.0f, -3.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+    Wall wall_5_b(&wallCube, glm::vec3(-2.0f, 2.0f, 1.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+    Wall wall_5_c(&wallCube, glm::vec3(2.0f, 2.0f, 5.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+
+    puzzleDoor doors[8] = 
+    {
+        { false, glm::vec3(-5.0f, 2.0f, 5.0f), glm::vec3(2.0f, 2.0f, 0.1f) },
+        { false, glm::vec3(-3.0f, 2.0f, 3.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
+        { false, glm::vec3(3.0f, 2.0f, 3.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
+        { false, glm::vec3(5.0f, 2.0f, 1.0f), glm::vec3(2.0f, 2.0f, 0.1f) },
+        { false, glm::vec3(3.0f, 2.0f, -1.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
+        { false, glm::vec3(-3.0f, 2.0f, -1.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
+        { false, glm::vec3(-5.0f, 2.0f, -3.0f), glm::vec3(2.0f, 2.0f, 0.1f) },
+        { false, glm::vec3(-3.0f, 2.0f, -5.0f), glm::vec3(0.1f, 2.0f, 2.0f) }
+    };
+
+    // FROG PUZZLE
+
+    frogSwitch buttons[7] =
+    {
+        { false, glm::vec3(6.0f, 2.0f, -6.8f), glm::vec3(0.2f), {0, 1, 2, 3, 4, 5, 6, 7}},
+        { false, glm::vec3(-6.0f, 2.0f, -6.8f), glm::vec3(0.2f), {0, 1, 2, 3, 4, 5, 6} },
+        { false, glm::vec3(6.0f, 2.0f, -2.8f), glm::vec3(0.2f), {2, 3, 4} },
+        { false, glm::vec3(-1.0f, 2.0f, -2.8f), glm::vec3(0.2f), {4, 5, 6} },
+        { false, glm::vec3(1.0f, 2.0f, 1.2f), glm::vec3(0.2f), {1, 2, 3} },
+        { false, glm::vec3(-6.0f, 2.0f, 1.2f), glm::vec3(0.2f), {0, 1} },
+        { false, glm::vec3(6.0f, 2.0f, 5.2f), glm::vec3(0.2f), {0, 7} }
+    };
+
+    const int DOOR_COUNT = sizeof(doors) / sizeof(doors[0]);
+    const int BUTTON_COUNT = sizeof(buttons) / sizeof(buttons[0]);
 
     // ======================
     // TORCH
@@ -367,7 +421,7 @@ int main()
     textShader.use();
     glUniformMatrix4fv(glGetUniformLocation(textShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 
-    // Setup Dialogue Shader (Important: Set projection here!)
+    // Setup Dialogue Shader
     diagShader.use();
     glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 
@@ -387,7 +441,9 @@ int main()
     bool doorUnlocked = false;
 
     bool isSolved_torch = false; // room 2 puzzle
-    bool isSolved_books = false; // room 3 puzzle
+    bool isSolved_books = false; // NEEDS ACTUAL PUZZLE LOL
+    bool isSolved_frog = true; //TO BE ADDED
+    bool isSolved_wardrobe = true; // TO BE ADDED
 
     // frog stuff
     float frogRadius = 5.0f;
@@ -896,20 +952,112 @@ int main()
 
             colliders.push_back(makeAABB(frogPos, glm::vec3(1.0f, 1.0f, 1.0f)));
 
-            // ======================
-            // DRAW EXIT
-            // ======================
-
-            drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
-
-            // ======================
-            // EXIT INTERACTION
-            // ======================
-            float distToExit = glm::length(warlockPos - exitPos);
-            if (distToExit < 2.0f)
+            if (isSolved_frog)
             {
-                firstLoad = 1;
-                currentRoom = 5;
+                // ======================
+                // DRAW EXIT
+                // ======================
+
+                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+                // ======================
+                // EXIT INTERACTION
+                // ======================
+                float distToExit = glm::length(warlockPos - exitPos);
+                if (distToExit < 2.0f)
+                {
+                    firstLoad = 1;
+                    currentRoom = 5;
+                }
+            }
+
+        }
+        else
+        if (currentRoom == 5)
+        {
+            if (firstLoad == 1)
+            {
+                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                firstLoad = 0;
+            }
+            exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            wall_5_a.draw(shader, ViewMatrix, ProjectionMatrix);
+            wall_5_b.draw(shader, ViewMatrix, ProjectionMatrix);
+            wall_5_c.draw(shader, ViewMatrix, ProjectionMatrix);
+
+            colliders.push_back(backWall.getAABB());
+            colliders.push_back(frontWall.getAABB());
+            colliders.push_back(leftWall.getAABB());
+            colliders.push_back(rightWall.getAABB());
+            colliders.push_back(wall_5_a.getAABB());
+            colliders.push_back(wall_5_b.getAABB());
+            colliders.push_back(wall_5_c.getAABB());
+
+            // ==================
+            // DRAW DOORS LOCK PUZZLE
+            // ==================
+
+            for (int i = 0; i < DOOR_COUNT; i++)
+            {
+                if (doors[i].isUnlocked == false)
+                {
+                    drawObject(doorMesh, doors[i].position, doors[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                    colliders.push_back(makeAABB(doors[i].position, doors[i].scale));
+                }
+                doors[i].isUnlocked = false;
+            }
+
+            // =======================
+            // FROG BUTTONS
+            // =======================
+
+            for (int i = 0; i < BUTTON_COUNT; i++)
+            {
+                drawObject(frogButton, buttons[i].position, buttons[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+                float distToButton_W = glm::length(warlockPos - buttons[i].position);
+                float distToButton_K = glm::length(knightPos - buttons[i].position);
+                if (distToButton_W < 2.0f || distToButton_K < 2.0f)
+                {
+                    for (int link : buttons[i].links)
+                    {
+                        doors[link].isUnlocked = true;
+                    }
+                }
+            }
+
+            if (isSolved_wardrobe)
+            {
+                // ======================
+                // DRAW EXIT
+                // ======================
+
+                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+                // ======================
+                // EXIT INTERACTION
+                // ======================
+                float distToExit = glm::length(warlockPos - exitPos);
+                if (distToExit < 2.0f)
+                {
+                    firstLoad = 1;
+                    currentRoom = 5;
+                }
             }
         }
 

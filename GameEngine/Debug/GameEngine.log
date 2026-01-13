@@ -1,5 +1,1 @@
-﻿  main.cpp
-C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\main.cpp(415,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  GameEngine.vcxproj -> C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\Debug\GameEngine.exe
-  'pwsh.exe' is not recognized as an internal or external command,
-  operable program or batch file.
+﻿  GameEngine.vcxproj -> C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\Debug\GameEngine.exe
