@@ -88,6 +88,25 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
     // Draw the mesh
     mesh.draw(shader);
 }
+void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation) {
+    // Calculate Model Matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    model = glm::rotate(model, rotation, glm::vec3(0, 0, 1));
+    model = glm::scale(model, scale);
+
+    glm::mat4 mvp = projectionMatrix * viewMatrix * model;
+
+    GLuint matrixID = glGetUniformLocation(shader.getId(), "MVP");
+    GLuint modelID = glGetUniformLocation(shader.getId(), "model");
+
+    // Send to shader
+    glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+    // Draw the mesh
+    mesh.draw(shader);
+}
 
 // =======================
 // DIALOGUE FUNCTION
@@ -247,6 +266,12 @@ int main()
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
     Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", paint_black_texture);
     Mesh gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_lime_texture);
+    Mesh bedroomWallCube = loader.loadObj("Resources/Models/cube.obj", paint_lavender_texture);
+    Mesh bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_cyan_texture);
+    Mesh bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", paint_purple_texture);
+
+    // window
+    Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture);
 
     // books
     Mesh bookcaseCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
@@ -259,9 +284,16 @@ int main()
     // wardrobe buttons
     Mesh frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
 
+    // bedroom stuff
+    Mesh bedroomBed = loader.loadObj("Resources/Models/bed.obj", paint_pink_texture);
+    Mesh bedroomPiano = loader.loadObj("Resources/Models/piano.obj", paint_black_texture);
+    Mesh bedroomDresser = loader.loadObj("Resources/Models/dresser.obj", paint_darkbrown_texture);
+    Mesh bedroomTeddy = loader.loadObj("Resources/Models/teddy.obj", paint_purple_texture);
+
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
     Mesh knight = loader.loadObj("Resources/Models/pawn.obj", paint_gold_texture);
+    Mesh princess = loader.loadObj("Resources/Models/pawn.obj", paint_yellow_texture);
 
     // Key and door
     Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
@@ -290,7 +322,7 @@ int main()
     // ======================
     // Back wall
     Wall backWall_2(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(2.0f, 3.5f, 0.1f));
-    // Front wallec)
+    // Front wall
     // same as above
     Wall frontWall_2(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
     //Left side walls
@@ -303,8 +335,8 @@ int main()
     Wall rightWall_2_c(&wallCube, glm::vec3(2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
 
     // ====================
-// BOOKSHELVES FOR ROOM 3 - LIBRARY
-// ====================
+    // BOOKSHELVES FOR ROOM 3 - LIBRARY
+    // ====================
 
     Wall bookshelves[] =
     {
@@ -324,7 +356,7 @@ int main()
         Wall(&booksCube, glm::vec3(3.5, 2.0f, -4.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
-    }; // lowkirkenuinely might remove this
+    };
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
     const int BOOK_COUNT = sizeof(books) / sizeof(books[0]);
@@ -377,6 +409,18 @@ int main()
 
     const int DOOR_COUNT = sizeof(doors) / sizeof(doors[0]);
     const int BUTTON_COUNT = sizeof(buttons) / sizeof(buttons[0]);
+
+    //=======================
+    // ROOM 6 - BEDROOM STUFF
+    // ======================
+    // Back wall
+    Wall backWall_6(&bedroomWallCube, glm::vec3(0.0f, 3.0f, 9.0f), glm::vec3(9.0f, 3.0f, 0.1f));
+    // Front wall
+    Wall frontWall_6(&bedroomWallCube, glm::vec3(0.0f, 3.0f, -9.0f), glm::vec3(9.0f, 3.0f, 0.1f));
+    // Left wall
+    Wall leftWall_6(&bedroomWallCube, glm::vec3(-9.0f, 3.0f, 0.0f), glm::vec3(0.1f, 3.0f, 9.0f));
+    // Right wall
+    Wall rightWall_6(&bedroomWallCube, glm::vec3(9.0f, 3.0f, 0.0f), glm::vec3(0.1f, 3.0f, 9.0f));
 
     // ======================
     // TORCH
@@ -443,7 +487,7 @@ int main()
     bool isSolved_torch = false; // room 2 puzzle
     bool isSolved_books = false; // NEEDS ACTUAL PUZZLE LOL
     bool isSolved_frog = true; //TO BE ADDED
-    bool isSolved_wardrobe = true; // TO BE ADDED
+    bool isSolved_wardrobe = false; // room 5 puzzle
 
     // frog stuff
     float frogRadius = 5.0f;
@@ -505,7 +549,7 @@ int main()
         // CHARACTER SWAP (SPACE)
         // ======================
         static bool spacePressedLastFrame = false;
-        if (window.isPressed(GLFW_KEY_SPACE))
+        if (window.isPressed(GLFW_KEY_SPACE) && currentRoom != 6)
         {
             if (!spacePressedLastFrame)
             {
@@ -550,7 +594,8 @@ int main()
         drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
         // Knight
-        drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+        if(currentRoom != 6)
+            drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
         // active character position
         glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
@@ -1026,6 +1071,8 @@ int main()
             // FROG BUTTONS
             // =======================
 
+            isSolved_wardrobe = false;
+
             for (int i = 0; i < BUTTON_COUNT; i++)
             {
                 drawObject(frogButton, buttons[i].position, buttons[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
@@ -1034,6 +1081,9 @@ int main()
                 float distToButton_K = glm::length(knightPos - buttons[i].position);
                 if (distToButton_W < 2.0f || distToButton_K < 2.0f)
                 {
+                    if (i == 0)
+                        isSolved_wardrobe = true;
+
                     for (int link : buttons[i].links)
                     {
                         doors[link].isUnlocked = true;
@@ -1056,9 +1106,96 @@ int main()
                 if (distToExit < 2.0f)
                 {
                     firstLoad = 1;
-                    currentRoom = 5;
+                    currentRoom = 6;
                 }
             }
+        }
+        else
+        if (currentRoom == 6)
+        {
+            activeIsWarlock = true;
+
+            if (firstLoad == 1)
+            {
+                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                firstLoad = 0;
+            }
+
+            // ======================
+            // DRAW WALLS
+            // ======================
+            backWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
+            frontWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
+
+            colliders.push_back(backWall_6.getAABB());
+            colliders.push_back(frontWall_6.getAABB());
+            colliders.push_back(leftWall_6.getAABB());
+            colliders.push_back(rightWall_6.getAABB());
+
+            // ======================
+            // DRAW FLOOR
+            // ======================
+
+            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 0.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+
+            // ======================
+            // DRAW DECORATIONS
+            // ======================
+
+            glm::vec3 bedPos(0.0f, 0.0f, -5.5f);
+            glm::vec3 dresserPos(-6.0f, 0.0f, 5.5f);
+            glm::vec3 pianoPos(6.0f, 0.0f, 5.5f);
+            glm::vec3 teddyPos(-6.0, 0.0f, -5.5f);
+
+            glm::vec3 windowPos(6.0f, 3.0f, -8.9f);
+            glm::vec3 princessPos(5.5f, 0.5f, -3.0f);
+            glm::vec3 armorPos(-2.0f, 0.3f, 6.0f);
+
+            drawObject(bedroomBed, bedPos, glm::vec3(0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(bedroomDresser, dresserPos, glm::vec3(0.09f), shader, ViewMatrix, ProjectionMatrix, 120.0f);
+            drawObject(bedroomPiano, pianoPos, glm::vec3(0.12f), shader, ViewMatrix, ProjectionMatrix, 210.0f);
+            drawObject(bedroomTeddy, teddyPos, glm::vec3(3.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+
+            // window (exit)
+            drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            // princess pawn
+            drawObject(princess, princessPos, glm::vec3(0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            // armor
+            drawObjectSideways(knight, armorPos, glm::vec3(0.5f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
+
+            colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 2.8f)));
+            colliders.push_back(makeAABB(dresserPos, glm::vec3(2.0f, 3.0f, 2.0f)));
+            colliders.push_back(makeAABB(pianoPos, glm::vec3(1.8f, 3.0f, 2.3f)));
+            colliders.push_back(makeAABB(teddyPos, glm::vec3(1.5f, 3.0f, 1.5f)));
+            colliders.push_back(makeAABB(princessPos, glm::vec3(0.8f, 3.0f, 0.8f)));
+            colliders.push_back(makeAABB(armorPos, glm::vec3(1.5f, 3.0f, 1.0f)));
+
+            float distToWindow = glm::length(warlockPos - windowPos);
+
+            static bool eKeyWasPressed = false;
+
+            if (window.isPressed(GLFW_KEY_E))
+            {
+                if (!eKeyWasPressed)
+                {
+                    eKeyWasPressed = true;
+                    if (distToWindow < 3.0f)
+                    {
+                        firstLoad = 1;
+                        currentRoom = 4;
+                    }
+                }
+                else
+                {
+                    eKeyWasPressed = false;
+                }
+            }
+
+
         }
 
         // ======================
