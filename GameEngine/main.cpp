@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 5;
+int currentRoom = 3;
 int firstLoad = 1;
 
 // ======================
@@ -269,6 +269,7 @@ int main()
     Mesh bedroomWallCube = loader.loadObj("Resources/Models/cube.obj", paint_lavender_texture);
     Mesh bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_cyan_texture);
     Mesh bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", paint_purple_texture);
+    Mesh libraryWallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
 
     // window
     Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture);
@@ -357,6 +358,8 @@ int main()
         Wall(&booksCube, glm::vec3(3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
     };
+
+    Wall middleWall_library(&libraryWallCube, glm::vec3(0.0f, 1.0f, -1.0f), glm::vec3(0.5f, 1.0f, 6.0f));
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
     const int BOOK_COUNT = sizeof(books) / sizeof(books[0]);
@@ -838,6 +841,14 @@ int main()
             frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
             leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
             rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            middleWall_library.draw(shader, ViewMatrix, ProjectionMatrix);
+
+
+            colliders.push_back(backWall.getAABB());
+            colliders.push_back(frontWall.getAABB());
+            colliders.push_back(leftWall.getAABB());
+            colliders.push_back(rightWall.getAABB());
+            colliders.push_back(middleWall_library.getAABB());
 
             // ======================
             // DRAW FLOOR
@@ -860,10 +871,6 @@ int main()
                 colliders.push_back(bookshelves[i].getAABB());
             }
 
-            colliders.push_back(backWall.getAABB());
-            colliders.push_back(frontWall.getAABB());
-            colliders.push_back(leftWall.getAABB());
-            colliders.push_back(rightWall.getAABB());
 
             for (int i = 1; i < BOOK_COUNT; i++)
             {
