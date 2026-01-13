@@ -17,11 +17,11 @@
 #include "Collision.h"
 
 // ======================
-// QUEST HANDLING VARIABLES
+// GLOBAL QUEST HANDLING VARIABLES
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 4;
 int firstLoad = 1;
 
 // ======================
@@ -40,7 +40,7 @@ bool rPressedLastFrame = false;
 // ======================
 // FUNCTION DECLARATIONS
 // ======================
-void processKeyboardInput();
+void processKeyboardInput(); // we dont even use this anymore
 
 // ======================
 // TIME
@@ -69,10 +69,11 @@ glm::vec3 lightPos = glm::vec3(0.0f, 6.5f, 1.0f);
 // DRAWING FUNCTION
 // =======================
 
-void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) {
+void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation) {
     // Calculate Model Matrix
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
+    model = glm::rotate(model, rotation, glm::vec3(0, 1, 0));
     model = glm::scale(model, scale);
 
     glm::mat4 mvp = projectionMatrix * viewMatrix * model;
@@ -236,7 +237,7 @@ int main()
 
     // garden things
     Mesh tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
-    Mesh frog = loader.loadObj("Resources/Models/frog.obj", paint_lavender_texture);
+    Mesh frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
@@ -316,7 +317,7 @@ int main()
         Wall(&booksCube, glm::vec3(3.5, 2.0f, -4.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
         Wall(&booksCube, glm::vec3(3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
-    };
+    }; // lowkirkenuinely might remove this
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
     const int BOOK_COUNT = sizeof(books) / sizeof(books[0]);
@@ -371,7 +372,7 @@ int main()
     glUniformMatrix4fv(glGetUniformLocation(diagShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 
     // ======================
-    // OBJECT POSITIONS + SOLVED PUZZLES
+    // IMPORTANT VARIABLES
     // ======================
     glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
     glm::vec3 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
@@ -387,6 +388,14 @@ int main()
 
     bool isSolved_torch = false; // room 2 puzzle
     bool isSolved_books = false; // room 3 puzzle
+
+    // frog stuff
+    float frogRadius = 5.0f;
+    float frogHeight = 3.0f;
+    float frogWalkSpeed = 2.0f;
+    float frogJumpSpeed = 7.0f;
+    float frogTime = 0.0f;
+
 
     glm::vec3 exitPos;
 
@@ -482,10 +491,10 @@ int main()
         // DRAW PAWNS
         // ======================
         // Warlock
-        drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix);
+        drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
         // Knight
-        drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix);
+        drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
         // active character position
         glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
@@ -563,13 +572,7 @@ int main()
             // ======================
             if (!keyCollected)
             {
-                ModelMatrix = glm::mat4(1.0f);
-                ModelMatrix = glm::translate(ModelMatrix, keyPos);
-                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.02f));
-                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-                keyMesh.draw(shader);
+                drawObject(keyMesh, keyPos, glm::vec3(0.02f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
             // ======================
@@ -577,25 +580,14 @@ int main()
             // ======================
             if (!doorUnlocked)
             {
-                ModelMatrix = glm::mat4(1.0f);
-                ModelMatrix = glm::translate(ModelMatrix, doorPos);
-                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-                doorMesh.draw(shader);
+                drawObject(doorMesh, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
             // ======================
             // DRAW EXIT
             // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, exitPos);
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            doorMesh.draw(shader);
+
+            drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // EXIT INTERACTION
@@ -619,13 +611,8 @@ int main()
             // ======================
             // DRAW FLOOR
             // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 7.0f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(shader);
+
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // TORCH
@@ -666,23 +653,12 @@ int main()
             rightWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
 
             // ======================
-            // DRAW FLOOR
+            // DRAW FLOOR (T shape)
             // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -3.5f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 3.5f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(shader);
 
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 3.5f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 0.1f, 3.5f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(shader);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, -3.5f), glm::vec3(7.0f, 0.1f, 3.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 3.5f), glm::vec3(2.0f, 0.1f, 3.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             
             // ======================
             // DRAW TORCHES
@@ -729,13 +705,8 @@ int main()
                 // ======================
                 // DRAW EXIT
                 // ======================
-                ModelMatrix = glm::mat4(1.0f);
-                ModelMatrix = glm::translate(ModelMatrix, exitPos);
-                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-                doorMesh.draw(shader);
+
+                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -770,13 +741,8 @@ int main()
             // ======================
             // DRAW FLOOR
             // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(7.0f, 0.1f, 7.0f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            floorCube.draw(shader);
+
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // =====================
             // DRAW BOOKSHELVES
@@ -815,13 +781,8 @@ int main()
                 // ======================
                 // DRAW EXIT
                 // ======================
-                ModelMatrix = glm::mat4(1.0f);
-                ModelMatrix = glm::translate(ModelMatrix, exitPos);
-                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
-                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-                doorMesh.draw(shader);
+
+                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -839,22 +800,17 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 0.5f, 9.3f);
+                knightPos = glm::vec3(-1.2f, 0.6f, 9.3f);
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(-3.5f, 2.0f, -6.8f);
+            exitPos = glm::vec3(0.0f, 2.0f, -9.8f);
 
             // ======================
             // DRAW FLOOR
             // ======================
-            ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(10.0f, 0.1f, 10.0f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-            gardenFloorCube.draw(shader);
+
+            drawObject(gardenFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // DRAW WALLS
@@ -872,12 +828,89 @@ int main()
             // ======================
             // DRAW TREES
             // ======================
+            for (int i = 0; i < 10; i++)
+            {
+                glm::vec3 treePos;
+                glm::vec3 treeScale;
+                float treeRotation;
 
-            glm::vec3 treePos(0.0f, 0.0f, 0.0f);
-            glm::vec3 treeScale(0.05f, 0.05f, 0.05f);
+                switch (i)
+                {
+                case 0:
+                    treePos = glm::vec3(1.0f, 0.0f, 6.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.0f;
+                    break;
+                case 1:
+                    treePos = glm::vec3(5.0f, 0.0f, 7.0f); treeScale = glm::vec3(0.04f); treeRotation = 0.3f;
+                    break;
+                case 2:
+                    treePos = glm::vec3(-4.0f, 0.0f, -3.0f); treeScale = glm::vec3(0.06f); treeRotation = 0.8f;
+                    break;
+                case 3:
+                    treePos = glm::vec3(-8.0f, 0.0f, -4.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.4f;
+                    break;
+                case 4:
+                    treePos = glm::vec3(3.0f, 0.0f, -7.0f); treeScale = glm::vec3(0.04f); treeRotation = 0.1f;
+                    break;
+                case 5:
+                    treePos = glm::vec3(9.0f, 0.0f, -6.0f); treeScale = glm::vec3(0.06f); treeRotation = 0.8f;
+                    break;
+                case 6:
+                    treePos = glm::vec3(-8.0f, 0.0f, 5.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.2f;
+                    break;
+                case 7:
+                    treePos = glm::vec3(-2.0f, 0.0f, 8.0f); treeScale = glm::vec3(0.04f); treeRotation = 0.9f;
+                    break;
+                case 8:
+                    treePos = glm::vec3(0.0f, 0.0f, 0.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.5f;
+                    break;
+                case 9:
+                    treePos = glm::vec3(2.0f, 0.0f, -2.0f); treeScale = glm::vec3(0.06f); treeRotation = 0.7f;
+                    break;
+                default:
+                    treePos = glm::vec3(0.0f);
+                    treeScale = glm::vec3(0.05f);
+                    treeRotation = 0.0f;
+                    break;
+                }
 
-            drawObject(tree, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix);
+                drawObject(tree, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                colliders.push_back(makeAABB(treePos, glm::vec3(0.5f, 2.0f, 0.5f)));
+            }
+            
 
+            // =======================
+            // FROG
+            // =======================
+            frogTime += deltaTime;
+
+            float frogAngle = frogWalkSpeed * frogTime;
+            float frog_x = frogRadius * cos(frogAngle);
+            float frog_z = frogRadius * sin(frogAngle);
+            float frog_y = frogHeight * abs(sin(frogJumpSpeed * frogTime));
+            float frogRotation = frogAngle + glm::half_pi<float>();
+
+            glm::vec3 frogPos(frog_x, frog_y + 0.2f, frog_z);
+            glm::vec3 frogScale(0.2f, 0.2f, 0.2f);
+
+            drawObject(frog, frogPos, frogScale, shader, ViewMatrix, ProjectionMatrix, frogRotation * -58 - glm::half_pi<float>());
+
+            colliders.push_back(makeAABB(frogPos, glm::vec3(1.0f, 1.0f, 1.0f)));
+
+            // ======================
+            // DRAW EXIT
+            // ======================
+
+            drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+            // ======================
+            // EXIT INTERACTION
+            // ======================
+            float distToExit = glm::length(warlockPos - exitPos);
+            if (distToExit < 2.0f)
+            {
+                firstLoad = 1;
+                currentRoom = 5;
+            }
         }
 
         // ======================
@@ -922,7 +955,7 @@ int main()
 
             // Use your helper function!
             // ViewMatrix is Identity (glm::mat4(1.0f)) for UI
-            drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f), glm::vec3(1200.0f, 200.0f, 1.0f), diagShader, glm::mat4(1.0f), textProjection);
+            drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f), glm::vec3(1200.0f, 200.0f, 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
 
 
             // --------------------------
@@ -943,9 +976,9 @@ int main()
                 // Center X is 960. Box width is 1200. Left edge approx 360.
                 // Placed it at x=450, y=100
                 if(line.CharacterName=="Warlock")
-                    drawObject(dialogueBoxMesh, glm::vec3(360.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection);
+                    drawObject(dialogueBoxMesh, glm::vec3(360.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
                 else
-                    drawObject(dialogueBoxMesh, glm::vec3(1200.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection);
+                    drawObject(dialogueBoxMesh, glm::vec3(1200.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
             }
 
             // --------------------------
