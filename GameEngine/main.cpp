@@ -174,6 +174,13 @@ struct frogSwitch
     std::vector<int> links;
 };
 
+// bookshelf struct
+struct bookshelf
+{
+    glm::vec3 position;
+    glm::vec3 scale;
+};
+
 int main()
 {
     // ======================
@@ -261,56 +268,37 @@ int main()
     std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_difuse" } };
 
     // ======================
-    // LOAD MODELS
+    // LOAD UNIVERSAL MODELS
     // ======================
     MeshLoaderObj loader;
+    std::vector<Texture> noTextures;
 
-    // walls and floors
+    // walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
-    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", paint_black_texture);
-    Mesh gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_lime_texture);
-    Mesh bedroomWallCube = loader.loadObj("Resources/Models/cube.obj", paint_lavender_texture);
-    Mesh bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_cyan_texture);
-    Mesh bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", paint_purple_texture);
-    Mesh libraryWallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
+    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", paint_black_texture); // iron bars
 
     // window
-    Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture);
-
-    // books
-    Mesh bookcaseCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
-    Mesh booksCube = loader.loadObj("Resources/Models/cube.obj", paint_yellow_texture);
-
-    // garden things
-    Mesh tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
-    Mesh frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
-
-    // wardrobe buttons
-    Mesh frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
-
-    // bedroom stuff
-    Mesh bedroomBed = loader.loadObj("Resources/Models/bed.obj", paint_pink_texture);
-    Mesh bedroomPiano = loader.loadObj("Resources/Models/piano.obj", paint_black_texture);
-    Mesh bedroomDresser = loader.loadObj("Resources/Models/dresser.obj", paint_darkbrown_texture);
-    Mesh bedroomTeddy = loader.loadObj("Resources/Models/teddy.obj", paint_purple_texture);
+    Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture); // should be a window
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
     Mesh knight = loader.loadObj("Resources/Models/pawn.obj", paint_gold_texture);
     Mesh princess = loader.loadObj("Resources/Models/pawn.obj", paint_yellow_texture);
 
-    // Key and door
-    Mesh keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
+    // Doors
     Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", paint_red_texture);
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
-    std::vector<Texture> noTextures;
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
 
     // ======================
-    // WALLS FOR ROOM 1 - PRISON
+    // ROOM 1 - PRISON
     // ======================
+
+    Mesh keyMesh;
+    Mesh prisonDoor;
+    
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //back is down
     // Front wall
@@ -323,12 +311,11 @@ int main()
     Wall middleWall(&prisonWall, glm::vec3(-2.0f, 2.0f, 0.0f), glm::vec3(5.0f, 2.0f, 0.1f));
 
     // ======================
-    // WALLS FOR ROOM 2 - HALLWAY
+    // ROOM 2 - HALLWAY
     // ======================
     // Back wall
     Wall backWall_2(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(2.0f, 3.5f, 0.1f));
     // Front wall
-    // same as above
     Wall frontWall_2(&wallCube, glm::vec3(0.0f, 3.5f, -7.0f), glm::vec3(7.0f, 3.5f, 0.1f));
     //Left side walls
     Wall leftWall_2_a(&wallCube, glm::vec3(-7.0f, 3.5f, -3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
@@ -340,37 +327,36 @@ int main()
     Wall rightWall_2_c(&wallCube, glm::vec3(2.0f, 3.5f, 3.5f), glm::vec3(0.1f, 3.5f, 3.5f));
 
     // ====================
-    // BOOKSHELVES FOR ROOM 3 - LIBRARY
+    // ROOM 3 - LIBRARY
     // ====================
 
-    Wall bookshelves[] =
+    // books
+    Mesh libraryWallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture); // hmmm
+    Mesh bookcase;
+
+    bookshelf bookshelves[8] =
     {
-     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -6.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, -2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(-3.5f, 2.0f, 2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, -6.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, -2.0f), glm::vec3(2.0f, 2.0f, 1.0f)),
-     Wall(&bookcaseCube, glm::vec3(3.5f, 2.0f, 2.0f), glm::vec3(2.0f, 2.0f, 1.0f))
+        {glm::vec3(-4.0f, 0.0f, -5.8f), glm::vec3(2.5f) },
+        {glm::vec3(4.0f, 0.0f, -4.5f), glm::vec3(2.5f) },
+        {glm::vec3(4.0f, 0.0f, -1.5f), glm::vec3(2.5f) },
+        {glm::vec3(4.0f, 0.0f, 1.5f), glm::vec3(2.5f) },
+        {glm::vec3(4.0f, 0.0f, 4.5f), glm::vec3(2.5f) },
+        {glm::vec3(-4.0f, 0.0f, -2.5f), glm::vec3(2.5f) },
+        {glm::vec3(-4.0f, 0.0f, 0.5f), glm::vec3(2.5f) },
+        {glm::vec3(-4.0f, 0.0f, 3.5f), glm::vec3(2.5f) }
     };
 
-    Wall books[]
-    {
-        Wall(&booksCube, glm::vec3(-3.5, 2.0f, -4.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(-3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(-3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(3.5, 2.0f, -4.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(3.5, 2.0f, -0.9f), glm::vec3(1.8f, 1.8f, 0.1f)),
-        Wall(&booksCube, glm::vec3(3.5, 2.0f, 3.1f), glm::vec3(1.8f, 1.8f, 0.1f)),
-    };
-
-    Wall middleWall_library(&libraryWallCube, glm::vec3(0.0f, 1.0f, -1.0f), glm::vec3(0.5f, 1.0f, 6.0f));
+    Wall middleWall_library(&libraryWallCube, glm::vec3(0.0f, 0.8f, -1.0f), glm::vec3(0.1f, 0.8f, 6.0f));
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
-    const int BOOK_COUNT = sizeof(books) / sizeof(books[0]);
 
     // ====================
-    // WALLS FOR ROOM 4 - GARDEN
+    // ROOM 4 - GARDEN
     // ====================
+
+    Mesh gardenFloorCube;
+    Mesh tree;
+    Mesh frog;
 
     // Back wall
     Wall backWall_4(&wallCube, glm::vec3(0.0f, 2.0f, 10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
@@ -382,12 +368,14 @@ int main()
     Wall rightWall_4(&wallCube, glm::vec3(10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
 
     // ====================
-    // DOORS AND BUTTONS FOR ROOM 5 - WARDROBE
+    // ROOM 5 - WARDROBE
     // ====================
 
     Wall wall_5_a(&wallCube, glm::vec3(2.0f, 2.0f, -3.0f), glm::vec3(5.0f, 2.0f, 0.1f));
     Wall wall_5_b(&wallCube, glm::vec3(-2.0f, 2.0f, 1.0f), glm::vec3(5.0f, 2.0f, 0.1f));
     Wall wall_5_c(&wallCube, glm::vec3(2.0f, 2.0f, 5.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+
+    Mesh frogButton;
 
     puzzleDoor doors[8] = 
     {
@@ -418,8 +406,19 @@ int main()
     const int BUTTON_COUNT = sizeof(buttons) / sizeof(buttons[0]);
 
     //=======================
-    // ROOM 6 - BEDROOM STUFF
+    // ROOM 6 - BEDROOM
     // ======================
+    
+    Mesh bedroomWallCube = loader.loadObj("Resources/Models/cube.obj", paint_lavender_texture);
+
+    Mesh bedroomFloorCube;
+    Mesh bedroomFloorCarpet;
+
+    Mesh bedroomBed;
+    Mesh bedroomPiano;
+    Mesh bedroomDresser;
+    Mesh bedroomTeddy;
+
     // Back wall
     Wall backWall_6(&bedroomWallCube, glm::vec3(0.0f, 3.0f, 9.0f), glm::vec3(9.0f, 3.0f, 0.1f));
     // Front wall
@@ -509,7 +508,7 @@ int main()
     glm::vec3 exitPos;
 
     // Load dialogue
-    LoadDialogue(0);
+    //LoadDialogue(0);
 
     Camera camera(warlockPos);
 
@@ -610,6 +609,12 @@ int main()
         {
             if (firstLoad == 1)
             {
+                // ======================
+                // ROOM 1 - PRISON
+                // ======================
+
+                keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
+
                 warlockPos = glm::vec3(-3.0f, 2.0f, 3.0f);
                 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
                 warlockYaw = 0.0f;
@@ -744,6 +749,8 @@ int main()
             {
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockYaw = 0.0f;
+                knightYaw = 0.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -844,8 +851,12 @@ int main()
         {
             if (firstLoad == 1)
             {
+                bookcase = loader.loadObj("Resources/Models/bookcaseWideFilled.obj", paint_darkbrown_texture);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockYaw = 0.0f;
+                knightYaw = 0.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -885,20 +896,13 @@ int main()
             // =====================
             if (!isSolved_books)
             {
-                bookshelves[0].draw(shader, ViewMatrix, ProjectionMatrix);
-                books[0].draw(shader, ViewMatrix, ProjectionMatrix);
-                colliders.push_back(bookshelves[0].getAABB());
+                drawObject(bookcase, bookshelves[0].position, bookshelves[0].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
             for (int i = 1; i < BOOKSHELF_COUNT; i++) 
             {
-                bookshelves[i].draw(shader, ViewMatrix, ProjectionMatrix);
-                colliders.push_back(bookshelves[i].getAABB());
-            }
-
-
-            for (int i = 1; i < BOOK_COUNT; i++)
-            {
-                books[i].draw(shader, ViewMatrix, ProjectionMatrix);
+                drawObject(bookcase, bookshelves[i].position, bookshelves[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
 
             glm::vec3 endPos = glm::vec3(7.0f, 2.0f, -7.0f);
@@ -908,7 +912,7 @@ int main()
             if (distToEnd < 2.0f)
                 isSolved_books = true;
 
-            if (isSolved_books == true)
+            if (true)
             {
                 // ======================
                 // DRAW EXIT
@@ -932,8 +936,14 @@ int main()
         {
             if (firstLoad == 1)
             {
+                gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_lime_texture);
+                tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
+                frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 9.3f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 9.3f);
+                warlockYaw = 0.0f;
+                knightYaw = 0.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -1061,8 +1071,12 @@ int main()
         {
             if (firstLoad == 1)
             {
+                frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockYaw = 0.0f;
+                knightYaw = 0.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -1164,8 +1178,18 @@ int main()
 
             if (firstLoad == 1)
             {
+                bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_cyan_texture);
+                bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", paint_purple_texture);
+
+                bedroomBed = loader.loadObj("Resources/Models/bed.obj", paint_pink_texture);
+                bedroomPiano = loader.loadObj("Resources/Models/piano.obj", paint_black_texture);
+                bedroomDresser = loader.loadObj("Resources/Models/dresser.obj", paint_darkbrown_texture);
+                bedroomTeddy = loader.loadObj("Resources/Models/teddy.obj", paint_purple_texture);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockYaw = 0.0f;
+                knightYaw = 0.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -1300,7 +1324,7 @@ int main()
         // ======================
         // ROTATION
         // ======================
-        float rotationSpeed = 90.0f * deltaTime;
+        float rotationSpeed = 180.0f * deltaTime;
         if (window.isPressed(GLFW_KEY_A)) camera.rotateOy(rotationSpeed);
         if (window.isPressed(GLFW_KEY_D)) camera.rotateOy(-rotationSpeed);
 
