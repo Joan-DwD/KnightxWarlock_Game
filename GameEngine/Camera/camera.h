@@ -11,13 +11,14 @@ class Camera
 	private:
 		glm::vec3 cameraPosition;
 		glm::vec3 cameraViewDirection;
-		glm::vec3 cameraViewDirection1; // Added missing member
 		glm::vec3 cameraUp;
 		glm::vec3 cameraRight;
 
-		//rotation - to be removed
+		//rotation
 		float rotationOx;
 		float rotationOy;
+
+		void updateVectors();
 
 	public:
 		Camera();
@@ -27,7 +28,6 @@ class Camera
 		glm::mat4 getViewMatrix();
 		glm::vec3 getCameraPosition();
 		glm::vec3 getCameraViewDirection();
-		glm::vec3 getCameraViewDirection1();
 		glm::vec3 getCameraUp();
 		void setCameraPosition(const glm::vec3& newPos);
 
@@ -40,5 +40,8 @@ class Camera
 
 		void rotateOx(float angle);
 		void rotateOy(float angle);
+
+		float getYaw() const;
+		void setYaw(float yaw);
 };
 

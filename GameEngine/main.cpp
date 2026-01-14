@@ -479,8 +479,10 @@ int main()
     // ======================
     // IMPORTANT VARIABLES
     // ======================
-    glm::vec3 warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
-    glm::vec3 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
+    glm::vec3 warlockPos;
+    glm::vec3 knightPos;
+    float warlockYaw = 0.0f;
+    float knightYaw = 0.0f;
     bool activeIsWarlock = true; // start controlling Warlock
     const glm::vec3 pawnHalfSize(0.3f, 1.0f, 0.3f); // collision box for player
 
@@ -592,13 +594,13 @@ int main()
         // Warlock
 
         if(!activeIsWarlock)
-            drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, warlockYaw);
 
         // Knight
         if (currentRoom != 6)
         {
             if(activeIsWarlock)
-                drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, knightYaw);
         }
 
         // active character position
@@ -608,8 +610,10 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
+                warlockPos = glm::vec3(-3.0f, 2.0f, 3.0f);
                 knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
+                warlockYaw = 0.0f;
+                knightYaw = 180.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -1256,16 +1260,33 @@ int main()
         {
             if (!spacePressedLastFrame)
             {
-                // Swap active character
+                // SAVE current character state
+                if (activeIsWarlock)
+                {
+                    warlockPos = cameraCube.position;
+                    warlockYaw = camera.getYaw();
+                }
+                else
+                {
+                    knightPos = cameraCube.position;
+                    knightYaw = camera.getYaw();
+                }
+
+                // SWITCH character
                 activeIsWarlock = !activeIsWarlock;
 
-                // Set camera cube to new active character's position
+                // LOAD new character state
                 if (activeIsWarlock)
+                {
                     cameraCube.position = warlockPos;
+                    camera.setYaw(warlockYaw);
+                }
                 else
+                {
                     cameraCube.position = knightPos;
+                    camera.setYaw(knightYaw);
+                }
 
-                // Update camera to cube
                 camera.setCameraPosition(cameraCube.position);
 
                 spacePressedLastFrame = true;

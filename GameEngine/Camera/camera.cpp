@@ -3,33 +3,26 @@
 Camera::Camera(glm::vec3 cameraPosition)
 {
 	this->cameraPosition = cameraPosition;
-	// Look toward center/back of cell - straight ahead, slightly down
-	this->cameraViewDirection = glm::normalize(glm::vec3(0.0f, 0.0f, -1.0f));
-	this->cameraViewDirection1 = glm::vec3(-1.0f, 0.0f, 0.0f);
-	this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	this->cameraRight = glm::normalize(glm::cross(cameraViewDirection, cameraUp));
-	this->rotationOx = 0.0f;
-	this->rotationOy = -90.0f;
+	rotationOy = 180.0f;
+	updateVectors();
 }
+
 
 Camera::Camera()
 {
-	this->cameraPosition = glm::vec3(0.0f, 0.0f, 100.0f);
-	this->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-	this->cameraViewDirection1 = glm::vec3(-1.0f, 0.0f, 0.0f);
-	this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	this->cameraRight = glm::cross(cameraViewDirection, cameraUp);
-	this->rotationOx = 0.0f;
-	this->rotationOy = -90.0f;
+	cameraPosition = glm::vec3(0.0f, 0.0f, 100.0f);
+	rotationOy = 180.0f; // look toward -Z
+	updateVectors();
 }
 
-Camera::Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec3 cameraUp)
+
+Camera::Camera(glm::vec3 cameraPosition, glm::vec3, glm::vec3)
 {
 	this->cameraPosition = cameraPosition;
-	this->cameraViewDirection = cameraViewDirection;
-	this->cameraUp = cameraUp;
-	this->cameraRight = glm::cross(cameraViewDirection, cameraUp);
+	rotationOy = 180.0f;
+	updateVectors();
 }
+
 
 Camera::~Camera()
 {
@@ -76,15 +69,8 @@ void Camera::rotateOx(float angle)
 
 void Camera::rotateOy(float angle)
 {
-	// Create rotation matrix around Y axis
-	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-	// Rotate the view direction
-	cameraViewDirection = glm::normalize(glm::vec3(rotationMatrix * glm::vec4(cameraViewDirection, 0.0f)));
-
-	cameraRight = glm::normalize(glm::cross(cameraViewDirection, cameraUp));
-
-	cameraUp = glm::normalize(glm::cross(cameraRight, cameraViewDirection));
+	rotationOy += angle;
+	updateVectors();
 }
 
 glm::mat4 Camera::getViewMatrix()
@@ -101,10 +87,6 @@ glm::vec3 Camera::getCameraViewDirection()
 {
 	return cameraViewDirection;
 }
-glm::vec3 Camera::getCameraViewDirection1()
-{
-	return cameraViewDirection1;
-}
 
 
 glm::vec3 Camera::getCameraUp()
@@ -116,5 +98,31 @@ void Camera::setCameraPosition(const glm::vec3& newPos)
 {
 	cameraPosition = newPos;
 }
+
+float Camera::getYaw() const
+{
+	return rotationOy;
+}
+
+void Camera::setYaw(float yaw)
+{
+	rotationOy = yaw;
+	updateVectors();
+}
+
+void Camera::updateVectors()
+{
+	float yawRad = glm::radians(rotationOy);
+
+	cameraViewDirection = glm::normalize(glm::vec3(
+		sin(yawRad),
+		0.0f,
+		cos(yawRad)
+	));
+
+	cameraRight = glm::normalize(glm::cross(cameraViewDirection, glm::vec3(0, 1, 0)));
+	cameraUp = glm::normalize(glm::cross(cameraRight, cameraViewDirection));
+}
+
 
 
