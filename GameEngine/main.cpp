@@ -1381,13 +1381,13 @@ int main()
         // --- Render Hints (Always visible) ---
         // Hints (Top Left)
         if (!hasKey) {
-            textRenderer.RenderText(textShader, "Find the Key...", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
+            textRenderer.RenderText(textShader, "Find the Key...", 25.0f, 700.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
         }
         else if (!doorUnlocked) {
-            textRenderer.RenderText(textShader, "Go to the Door!", 25.0f, 1000.0f, 0.8f, glm::vec3(0.2f, 1.0f, 0.2f));
+            textRenderer.RenderText(textShader, "Go to the Door!", 25.0f, 700.0f, 0.8f, glm::vec3(0.2f, 1.0f, 0.2f));
         }
         else {
-            textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 1000.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
+            textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 700.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
         }
 
         glEnable(GL_DEPTH_TEST);
