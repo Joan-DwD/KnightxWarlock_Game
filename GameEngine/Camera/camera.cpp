@@ -4,7 +4,7 @@ Camera::Camera(glm::vec3 cameraPosition)
 {
 	this->cameraPosition = cameraPosition;
 	// Look toward center/back of cell - straight ahead, slightly down
-	this->cameraViewDirection = glm::normalize(glm::vec3(0.0f, -0.1f, -1.0f));
+	this->cameraViewDirection = glm::normalize(glm::vec3(0.0f, 0.0f, -1.0f));
 	this->cameraViewDirection1 = glm::vec3(-1.0f, 0.0f, 0.0f);
 	this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->cameraRight = glm::normalize(glm::cross(cameraViewDirection, cameraUp));
@@ -110,6 +110,11 @@ glm::vec3 Camera::getCameraViewDirection1()
 glm::vec3 Camera::getCameraUp()
 {
 	return cameraUp;
+}
+
+void Camera::setCameraPosition(const glm::vec3& newPos)
+{
+	cameraPosition = newPos;
 }
 
 

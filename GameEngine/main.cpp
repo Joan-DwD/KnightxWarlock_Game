@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 3;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -54,9 +54,14 @@ float lastFrame = 0.0f;
 Window window("KNIGHTXWARLOCK", 1600, 900);
 
 // ======================
-// CAMERA
+// CAMERA COLLIDER
 // ======================
-Camera camera(glm::vec3(0.0f, 15.0f, 5.0f));
+
+struct CameraCollider
+{
+    glm::vec3 position;
+    glm::vec3 halfSize;
+};
 
 // ======================
 // LIGHT
@@ -504,6 +509,12 @@ int main()
     // Load dialogue
     LoadDialogue(0);
 
+    Camera camera(warlockPos);
+
+    CameraCollider cameraCube;
+    cameraCube.halfSize = glm::vec3(0.5f, 1.0f, 0.5f);
+    cameraCube.position = camera.getCameraPosition();
+
     // ======================
     // MAIN LOOP
     // ======================
@@ -518,14 +529,17 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        // keyboard input
+        processKeyboardInput();
+
         // ======================
         // MATRICES
         // ======================
         glm::mat4 ProjectionMatrix = glm::perspective(90.0f, window.getWidth() * 1.0f / window.getHeight(), 0.1f, 10000.0f);
         glm::mat4 ViewMatrix = glm::lookAt(
             camera.getCameraPosition(),
-            glm::vec3(camera.getCameraPosition().x, camera.getCameraPosition().y - 0.8f, camera.getCameraPosition().z - 0.25f),
-            glm::vec3(0.0f, 0.0f, -1.0f)
+            camera.getCameraPosition() + camera.getCameraViewDirection(),
+            camera.getCameraUp()
         );
         glm::mat4 ModelMatrix;
         glm::mat4 MVP;
@@ -546,23 +560,6 @@ int main()
         glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
         // torch state
         glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
-
-        // ======================
-        // CHARACTER SWAP (SPACE)
-        // ======================
-        static bool spacePressedLastFrame = false;
-        if (window.isPressed(GLFW_KEY_SPACE) && currentRoom != 6)
-        {
-            if (!spacePressedLastFrame)
-            {
-                activeIsWarlock = !activeIsWarlock;
-                spacePressedLastFrame = true;
-            }
-        }
-        else
-        {
-            spacePressedLastFrame = false;
-        }
 
         // =============================
         // DIALOGUE CYCLING (Press R)
@@ -593,11 +590,16 @@ int main()
         // DRAW PAWNS
         // ======================
         // Warlock
-        drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+        if(!activeIsWarlock)
+            drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
         // Knight
-        if(currentRoom != 6)
-            drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+        if (currentRoom != 6)
+        {
+            if(activeIsWarlock)
+                drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+        }
 
         // active character position
         glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
@@ -606,9 +608,18 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(3.0f, 0.5f, 3.0f);
-                knightPos = glm::vec3(3.0f, 0.6f, -3.0f);
+                warlockPos = glm::vec3(3.0f, 2.0f, 3.0f);
+                knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
+
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                camera.setCameraPosition(cameraCube.position);
+
                 firstLoad = 0;
+
             }
 
             exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
@@ -727,8 +738,16 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                camera.setCameraPosition(cameraCube.position);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(4.0f, 2.0f, -6.8f);
@@ -773,7 +792,7 @@ int main()
 
                 static bool eKeyWasPressed = false;
 
-                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 3.0f))
+                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 1.5f))
                 {
                     if (window.isPressed(GLFW_KEY_E))
                     {
@@ -790,15 +809,9 @@ int main()
                 }
             }
 
-            glm::vec3 leftPos = glm::vec3(-6.5f, 0.5f, -0.5f);
-            glm::vec3 rightPos = glm::vec3(6.5f, 0.6f, -0.5f);
-
-            float distToLeft = glm::length(warlockPos - leftPos);
-            float distToRight = glm::length(knightPos - rightPos);
-
             if (hallTorches[0]->isOn && !hallTorches[1]->isOn && !hallTorches[2]->isOn
                 && !hallTorches[3]->isOn && !hallTorches[4]->isOn && hallTorches[5]->isOn
-                && hallTorches[6]->isOn && distToLeft < 1.5f && distToRight < 1.5f)
+                && hallTorches[6]->isOn )
             {
                 isSolved_torch = true;
             }
@@ -827,8 +840,16 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                camera.setCameraPosition(cameraCube.position);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(-3.5f, 2.0f, -6.8f);
@@ -907,8 +928,16 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 0.5f, 9.3f);
-                knightPos = glm::vec3(-1.2f, 0.6f, 9.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 9.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 9.3f);
+
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                camera.setCameraPosition(cameraCube.position);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(0.0f, 2.0f, -9.8f);
@@ -1028,8 +1057,16 @@ int main()
         {
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                camera.setCameraPosition(cameraCube.position);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
@@ -1123,8 +1160,16 @@ int main()
 
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 0.6f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                camera.setCameraPosition(cameraCube.position);
+
                 firstLoad = 0;
             }
 
@@ -1203,26 +1248,70 @@ int main()
 
 
         }
-
         // ======================
-        // PAWN MOVEMENT
+        // CHARACTER SWAP (SPACE)
         // ======================
-        float speed = 5.0f * deltaTime;
-        glm::vec3 delta(0.0f);
-
-        if (window.isPressed(GLFW_KEY_W)) delta.z -= speed;
-        if (window.isPressed(GLFW_KEY_S)) delta.z += speed;
-        if (window.isPressed(GLFW_KEY_A)) delta.x -= speed;
-        if (window.isPressed(GLFW_KEY_D)) delta.x += speed;
-
-        if (activeIsWarlock)
+        static bool spacePressedLastFrame = false;
+        if (window.isPressed(GLFW_KEY_SPACE) && currentRoom != 6)
         {
-            movement(warlockPos, delta, pawnHalfSize, colliders);
+            if (!spacePressedLastFrame)
+            {
+                // Swap active character
+                activeIsWarlock = !activeIsWarlock;
+
+                // Set camera cube to new active character's position
+                if (activeIsWarlock)
+                    cameraCube.position = warlockPos;
+                else
+                    cameraCube.position = knightPos;
+
+                // Update camera to cube
+                camera.setCameraPosition(cameraCube.position);
+
+                spacePressedLastFrame = true;
+            }
         }
         else
         {
-            movement(knightPos, delta, pawnHalfSize, colliders);
+            spacePressedLastFrame = false;
         }
+
+        // ======================
+        // ROTATION
+        // ======================
+        float rotationSpeed = 90.0f * deltaTime;
+        if (window.isPressed(GLFW_KEY_A)) camera.rotateOy(rotationSpeed);
+        if (window.isPressed(GLFW_KEY_D)) camera.rotateOy(-rotationSpeed);
+
+        // ======================
+        // MOVEMENT
+        // ======================
+        float speed = 5.0f * deltaTime;
+
+        glm::vec3 forward = camera.getCameraViewDirection();
+        forward.y = 0.0f;
+        forward = glm::normalize(forward);
+
+        glm::vec3 delta(0.0f);
+        if (window.isPressed(GLFW_KEY_W)) delta += forward * speed;
+        if (window.isPressed(GLFW_KEY_S)) delta -= forward * speed;
+
+        // Move camera cube with collision
+        movement(cameraCube.position, delta, cameraCube.halfSize, colliders);
+
+        // ======================
+        // UPDATE ACTIVE CHARACTER POSITION
+        // ======================
+        if (activeIsWarlock)
+            warlockPos = cameraCube.position;
+        else
+            knightPos = cameraCube.position;
+
+        // ======================
+        // UPDATE CAMERA POSITION
+        // ======================
+        camera.setCameraPosition(cameraCube.position);
+
 
         // ==================================
         // DRAW UI / DIALOGUE BOX
@@ -1314,17 +1403,9 @@ int main()
 // ======================
 void processKeyboardInput()
 {
-    /*
-    float cameraSpeed = 30 * deltaTime;
-    if (window.isPressed(GLFW_KEY_W)) camera.keyboardMoveFront(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_S)) camera.keyboardMoveBack(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_A)) camera.keyboardMoveLeft(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_D)) camera.keyboardMoveRight(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_R)) camera.keyboardMoveUp(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_F)) camera.keyboardMoveDown(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_LEFT)) camera.rotateOy(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_RIGHT)) camera.rotateOy(-cameraSpeed);
-    if (window.isPressed(GLFW_KEY_UP)) camera.rotateOx(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_DOWN)) camera.rotateOx(-cameraSpeed);
-    */
+    //float cameraSpeed = 5.0 * deltaTime;
+    //if (window.isPressed(GLFW_KEY_W)) camera.keyboardMoveFront(cameraSpeed);
+    //if (window.isPressed(GLFW_KEY_S)) camera.keyboardMoveBack(cameraSpeed);
+    //if (window.isPressed(GLFW_KEY_A)) camera.rotateOy(cameraSpeed * 15);
+    //if (window.isPressed(GLFW_KEY_D)) camera.rotateOy(-cameraSpeed * 15);
 }

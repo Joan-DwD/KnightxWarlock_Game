@@ -24,29 +24,14 @@ inline bool AABBintersect(const AABB& a, const AABB& b)
 
 inline void movement(glm::vec3& pos, const glm::vec3& delta, const glm::vec3& halfSize, const std::vector<AABB>& colliders)
 {
-    glm::vec3 newPos = pos;
-
-    // X axis
-    newPos.x += delta.x;
+    glm::vec3 newPos = pos + delta;
     AABB box = makeAABB(newPos, halfSize);
-    for (const auto& c : colliders)
-    {
-        if (AABBintersect(box, c))
-        {
-            newPos.x = pos.x; // revert X only
-            break;
-        }
-    }
 
-    // Z axis
-    newPos.z += delta.z;
-    box = makeAABB(newPos, halfSize);
     for (const auto& c : colliders)
     {
         if (AABBintersect(box, c))
         {
-            newPos.z = pos.z; // revert Z only
-            break;
+            return;
         }
     }
 

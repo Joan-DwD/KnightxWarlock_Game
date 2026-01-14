@@ -29,6 +29,7 @@ class Camera
 		glm::vec3 getCameraViewDirection();
 		glm::vec3 getCameraViewDirection1();
 		glm::vec3 getCameraUp();
+		void setCameraPosition(const glm::vec3& newPos);
 
 		void keyboardMoveFront(float cameraSpeed);
 		void keyboardMoveBack(float cameraSpeed);
