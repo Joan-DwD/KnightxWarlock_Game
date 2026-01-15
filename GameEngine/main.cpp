@@ -241,6 +241,8 @@ int main()
     GLuint paint_red = loadBMP("Resources/Textures/PAINT_RED.bmp");
     GLuint paint_white = loadBMP("Resources/Textures/PAINT_WHITE.bmp");
     GLuint paint_yellow = loadBMP("Resources/Textures/PAINT_YELLOW.bmp");
+    GLuint stonebmp = loadBMP("Resources/Textures/dlv_stonegen1.bmp");
+
     // Character portraits
     std::map<std::string, GLuint> portraits;
     portraits["Warlock"] = loadBMP("Resources/Textures/PAINT_PURPLE.bmp");
@@ -268,6 +270,7 @@ int main()
     std::vector<Texture> paint_red_texture = { { paint_red, "texture_difuse" } };
     std::vector<Texture> paint_white_texture = { { paint_white, "texture_difuse" } };
     std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_difuse" } };
+    std::vector<Texture> stone_texture = { { stonebmp, "texture_difuse" } };
 
     // ======================
     // LOAD UNIVERSAL MODELS
@@ -301,6 +304,10 @@ int main()
     // ======================
 
     Mesh keyMesh;
+
+    Mesh torch;
+    torch = loader.loadObj("Resources/Models/torch.obj", stone_texture);
+
     Mesh mrSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_white_texture);
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //back is down
@@ -450,18 +457,18 @@ int main()
     delete wallTorch;
 
     // room 1 torch
-    wallTorch = new Torch(&stickCube, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
+    wallTorch = new Torch(&torch, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
 
     // room 2 torches
     Torch* hallTorches[] = 
     {
-     new Torch(&stickCube, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f),
-     new Torch(&stickCube, &flameCube, glm::vec3(-4.0f, 3.0f, -6.8f), 180.0f),
-     new Torch(&stickCube, &flameCube, glm::vec3(-2.0f, 3.0f, -6.8f), 180.0f),
-     new Torch(&stickCube, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f),
-     new Torch(&stickCube, &flameCube, glm::vec3(2.0f, 3.0f, -6.8f), 180.0f),
-     new Torch(&stickCube, &flameCube, glm::vec3(4.0f, 3.0f, -6.8f), 180.0f),
-     new Torch(&stickCube, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f)
+     new Torch(&torch, &flameCube, glm::vec3(-6.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(-4.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(-2.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(0.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(2.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(4.0f, 3.0f, -6.8f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f)
     };
 
     const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
@@ -753,7 +760,7 @@ int main()
             // ======================
             // TORCH
             // ======================
-            wallTorch->draw(shader, ViewMatrix, ProjectionMatrix);
+            wallTorch->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
         }
         else 
         if (currentRoom == 2)
@@ -832,7 +839,7 @@ int main()
             
             for (int i = 0; i < HALL_TORCH_COUNT; i++) 
             {
-                hallTorches[i]->draw(room2shader, ViewMatrix, ProjectionMatrix);
+                hallTorches[i]->draw(room2shader, ViewMatrix, ProjectionMatrix, currentFrame);
 
                 static bool eKeyWasPressed = false;
 
