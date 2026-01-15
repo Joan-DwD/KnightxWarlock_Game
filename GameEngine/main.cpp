@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 5;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -575,13 +575,6 @@ int main()
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
 
-        //  offset to be "inside" the flame
-        glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
-        glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
-        glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
-        // torch state
-        glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
-
         // =============================
         // DIALOGUE CYCLING (Press R)
         // =============================
@@ -766,11 +759,20 @@ int main()
             // ======================
             // TORCH
             // ======================
+            //  offset to be "inside" the flame
+            glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
+            // torch state
+            glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
+
             wallTorch->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
         }
         else 
         if (currentRoom == 2)
         {
+			// turn room1 torch off (could find smarter workaround prob)
+            glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), 0);
             room2shader.use();
             glUniform3f(glGetUniformLocation(room2shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
             glUniform3f(glGetUniformLocation(room2shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
