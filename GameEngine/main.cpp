@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 3;
+int currentRoom = 5;
 int firstLoad = 1;
 
 // ======================
@@ -465,13 +465,19 @@ int main()
      new Torch(&torch, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f)
     };
 
+    const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
+
     // room 3 torch
     Torch* wallTorch31 = nullptr;
     wallTorch31 = new Torch(&torch, &flameCube, glm::vec3(0.0, 2.0f, -6.5f), 180.0f);
     Torch* wallTorch32 = nullptr;
     wallTorch32 = new Torch(&torch, &flameCube, glm::vec3(0.0, 2.0f, 6.8f), 180.0f);
 
-    const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
+    // room 5 torch
+    Torch* wallTorch51 = nullptr;
+    wallTorch51 = new Torch(&torch, &flameCube, glm::vec3(-6.8, 3.0f, 8.0f), 180.0f);
+    Torch* wallTorch52 = nullptr;
+    wallTorch52 = new Torch(&torch, &flameCube, glm::vec3(6.8, 3.0f, 8.0f), 180.0f);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -1201,6 +1207,12 @@ int main()
                     }
                 }
             }
+
+            // ======================
+            // TORCH
+            // ======================
+            wallTorch51->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
+            wallTorch52->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
 
             // ======================
             // DRAW EXIT
