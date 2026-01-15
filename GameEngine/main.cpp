@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 2;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -284,9 +284,10 @@ int main()
     Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture); // should be a window
 
     // Pawns
-    Mesh warlock = loader.loadObj("Resources/Models/pawn.obj", paint_purple_texture);
-    Mesh knight = loader.loadObj("Resources/Models/pawn.obj", paint_gold_texture);
-    Mesh princess = loader.loadObj("Resources/Models/pawn.obj", paint_yellow_texture);
+    Mesh warlock = loader.loadObj("Resources/Models/warlock.obj", paint_purple_texture);
+    Mesh knight = loader.loadObj("Resources/Models/knight.obj", paint_gold_texture);
+
+    Mesh princess;
 
     // Doors
     Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", paint_red_texture);
@@ -300,7 +301,7 @@ int main()
     // ======================
 
     Mesh keyMesh;
-    
+    Mesh mrSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_white_texture);
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //back is down
     // Front wall
@@ -599,13 +600,13 @@ int main()
         // Warlock
 
         if(!activeIsWarlock)
-            drawObject(warlock, warlockPos, glm::vec3(0.5f, 0.5f, 0.5f), shader, ViewMatrix, ProjectionMatrix, warlockYaw);
+            drawObject(warlock, warlockPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, warlockYaw);
 
         // Knight
         if (currentRoom != 6)
         {
             if(activeIsWarlock)
-                drawObject(knight, knightPos, glm::vec3(0.6f, 0.6f, 0.6f), shader, ViewMatrix, ProjectionMatrix, knightYaw);
+                drawObject(knight, knightPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, knightYaw);
         }
 
         // active character position
@@ -653,6 +654,11 @@ int main()
                     makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
                 );
             }
+
+            // THE NEW CHARACTER - MR SKELLY BONES
+            glm::vec3 skellyPos = glm::vec3(-6.0f, 2.35f, 6.0f);
+            drawObject(mrSkelly, skellyPos, glm::vec3(0.02f), shader, ViewMatrix, ProjectionMatrix, 135.0f);
+            colliders.push_back(makeAABB(skellyPos, glm::vec3(0.5f, 3.0f, 0.5f)));
 
             // ======================
             // KEY PICKUP
@@ -710,7 +716,7 @@ int main()
             // ======================
             if (!doorUnlocked)
             {
-                drawObject(prisonDoor, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(prisonDoor, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
             }
 
             // ======================
@@ -760,8 +766,8 @@ int main()
 
             if (firstLoad == 1)
             {
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
                 warlockYaw = 0.0f;
                 knightYaw = 0.0f;
 
@@ -881,8 +887,8 @@ int main()
             {
                 bookcase = loader.loadObj("Resources/Models/bookcaseWideFilled.obj", paint_darkbrown_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
                 warlockYaw = 0.0f;
                 knightYaw = 0.0f;
 
@@ -968,8 +974,8 @@ int main()
                 tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
                 frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 9.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 9.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 9.0f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 9.0f);
                 warlockYaw = 0.0f;
                 knightYaw = 0.0f;
 
@@ -1101,8 +1107,8 @@ int main()
             {
                 frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 9.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 9.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 9.0f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 9.0f);
                 warlockYaw = 0.0f;
                 knightYaw = 180.0f;
 
@@ -1208,6 +1214,7 @@ int main()
         if (currentRoom == 6)
         {
             activeIsWarlock = true;
+            activeIsWarlock = true;
 
             if (firstLoad == 1)
             {
@@ -1218,9 +1225,11 @@ int main()
                 bedroomPiano = loader.loadObj("Resources/Models/piano.obj", paint_black_texture);
                 bedroomDresser = loader.loadObj("Resources/Models/dresser.obj", paint_darkbrown_texture);
                 bedroomTeddy = loader.loadObj("Resources/Models/teddy.obj", paint_purple_texture);
+                
+                princess = loader.loadObj("Resources/Models/princess.obj", paint_yellow_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
                 warlockYaw = 0.0f;
                 knightYaw = 0.0f;
 
@@ -1264,8 +1273,8 @@ int main()
             glm::vec3 teddyPos(-6.0, 0.0f, -5.5f);
 
             glm::vec3 windowPos(6.0f, 3.0f, -8.9f);
-            glm::vec3 princessPos(5.5f, 0.5f, -3.0f);
-            glm::vec3 armorPos(-2.0f, 0.3f, 6.0f);
+            glm::vec3 princessPos(-3.9f, 0.1f, 3.0f);
+            glm::vec3 armorPos(-3.0f, 0.3f, 0.0f);
 
             drawObject(bedroomBed, bedPos, glm::vec3(0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             drawObject(bedroomDresser, dresserPos, glm::vec3(0.09f), shader, ViewMatrix, ProjectionMatrix, 120.0f);
@@ -1275,16 +1284,16 @@ int main()
             // window (exit)
             drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             // princess pawn
-            drawObject(princess, princessPos, glm::vec3(0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(princess, princessPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
             // armor
-            drawObjectSideways(knight, armorPos, glm::vec3(0.5f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
+            drawObjectSideways(knight, armorPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
 
             colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 2.8f)));
             colliders.push_back(makeAABB(dresserPos, glm::vec3(2.0f, 3.0f, 2.0f)));
             colliders.push_back(makeAABB(pianoPos, glm::vec3(1.8f, 3.0f, 2.3f)));
             colliders.push_back(makeAABB(teddyPos, glm::vec3(1.5f, 3.0f, 1.5f)));
-            colliders.push_back(makeAABB(princessPos, glm::vec3(0.8f, 3.0f, 0.8f)));
-            colliders.push_back(makeAABB(armorPos, glm::vec3(1.5f, 3.0f, 1.0f)));
+            colliders.push_back(makeAABB(princessPos, glm::vec3(0.7f, 3.0f, 0.7f)));
+            colliders.push_back(makeAABB(armorPos - glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.5f, 3.0f, 0.6f)));
 
             float distToWindow = glm::length(warlockPos - windowPos);
 
@@ -1456,16 +1465,21 @@ int main()
             textRenderer.RenderWrappedText(textShader, line.Text, 400.0f, 130.0f, 0.7f, glm::vec3(1.0f, 1.0f, 1.0f), 50);
         }
 
+        float hx = 25.0f;
+        float hy = 800.0f;
+        float hz = 0.8f;
+        glm::vec3 white(1.0f, 1.0f, 1.0f);
+
         // --- Render Hints (Always visible) ---
         // Hints (Top Left)
         if (!hasKey) {
-            textRenderer.RenderText(textShader, "Find the Key...", 25.0f, 700.0f, 0.8f, glm::vec3(1.0f, 1.0f, 1.0f));
+            textRenderer.RenderText(textShader, "Find the Key...", hx, hy, hz, white);
         }
         else if (!doorUnlocked) {
-            textRenderer.RenderText(textShader, "Go to the Door!", 25.0f, 700.0f, 0.8f, glm::vec3(0.2f, 1.0f, 0.2f));
+            textRenderer.RenderText(textShader, "Go to the Door!", 25.0f, 800.0f, 0.8f, glm::vec3(0.2f, 1.0f, 0.2f));
         }
         else {
-            textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 700.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
+            textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 800.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
         }
 
         glEnable(GL_DEPTH_TEST);
