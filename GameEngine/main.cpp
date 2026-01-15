@@ -157,6 +157,20 @@ void LoadDialogue(int taskId) {
     std::cout << "Loaded Dialogue Task " << taskId << ": " << currentDialogue.size() << " lines." << std::endl;
 }
 
+// =======================
+// ROOM TRANSITION FUNCTION
+// =======================
+float fadeAlpha = 0.0f;
+bool isFadingOut = false;
+bool isFadingIn = true;
+
+float fadeSpeed = 1.0;
+void TriggerRoomChange() {
+    if (!isFadingOut && !isFadingIn) {
+        isFadingOut = true;
+    }
+}
+
 // final door puzzle struct
 struct puzzleDoor
 {
@@ -745,6 +759,7 @@ int main()
             {
                 firstLoad = 1;
                 currentRoom = 2;
+                TriggerRoomChange();
             }
 
             // ======================
@@ -897,6 +912,7 @@ int main()
                 {
                     firstLoad = 1;
                     currentRoom = 3;
+                    TriggerRoomChange();
                 }
             } 
         }
@@ -1009,6 +1025,7 @@ int main()
                 {
                     firstLoad = 1;
                     currentRoom = 4;
+                    TriggerRoomChange();
                 }
             }
         }
@@ -1144,6 +1161,7 @@ int main()
                 {
                     firstLoad = 1;
                     currentRoom = 5;
+                    TriggerRoomChange();
                 }
             }
 
@@ -1282,6 +1300,7 @@ int main()
                 {
                     firstLoad = 1;
                     currentRoom = 6;
+                    TriggerRoomChange();
                 }
             }
         }
@@ -1498,6 +1517,7 @@ int main()
             // 1. Draw Background Box
             // --------------------------
             diagShader.use();
+            glUniform1f(glGetUniformLocation(diagShader.getId(), "alpha"), 1.0f);
             // Pass Color
             glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.2f, 0.212f, 0.239f);
 
@@ -1556,6 +1576,53 @@ int main()
         }
         else {
             textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 800.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
+        }
+
+        // ==========================================
+        // TRANSITION LOGIC
+        // ==========================================
+
+        if (isFadingOut)
+        {
+            fadeAlpha += fadeSpeed * deltaTime;
+            if (fadeAlpha >= 1.0f)
+            {
+                fadeAlpha = 1.0f;
+                isFadingOut = false;
+                isFadingIn = true;
+            }
+        }
+        else if (isFadingIn)
+        {
+            fadeAlpha -= fadeSpeed * deltaTime;
+            if (fadeAlpha <= 0.0f)
+            {
+                fadeAlpha = 0.0f;
+                isFadingIn = false;
+            }
+        }
+
+        // ==========================================
+        // DRAW FADE OVERLAY
+        // ==========================================
+        if (fadeAlpha > 0.0f)
+        {
+            glEnable(GL_BLEND);
+            glDisable(GL_DEPTH_TEST);
+
+            diagShader.use();
+
+            glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f);
+
+            glUniform1f(glGetUniformLocation(diagShader.getId(), "alpha"), fadeAlpha);
+
+            glm::vec3 fadeScale = glm::vec3(window.getWidth(), window.getHeight(), 1.0f);
+            glm::vec3 fadePos = glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f);
+            drawObject(dialogueBoxMesh, fadePos, fadeScale, diagShader, glm::mat4(1.0f), textProjection, 0.0f);
+
+            glUniform1f(glGetUniformLocation(diagShader.getId(), "alpha"), 1.0f);
+
+            glEnable(GL_DEPTH_TEST);
         }
 
         glEnable(GL_DEPTH_TEST);
