@@ -447,14 +447,8 @@ int main()
     // ======================
     Torch* wallTorch = nullptr;
 
-    // currently on left wall a bit below cell
-    wallTorch = new Torch(&wallCube, &wallCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
-
     Mesh flameCube = loader.loadObj("Resources/Models/cube.obj", paint_orange_texture);
     Mesh stickCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
-
-    // re-initialize using specific textures
-    delete wallTorch;
 
     // room 1 torch
     wallTorch = new Torch(&torch, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
@@ -472,6 +466,24 @@ int main()
     };
 
     const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
+
+    // room 3 torch
+    Torch* hallTorches3[] =
+    {
+     new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, -6.5f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, 6.8f), 180.0f)
+    };
+
+    const int HALL_TORCH_COUNT3 = sizeof(hallTorches3) / sizeof(hallTorches3[0]);
+
+    // room 5 torch
+    Torch* hallTorches5[] =
+    {
+     new Torch(&torch, &flameCube, glm::vec3(-6.8f, 3.0f, 8.0f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(6.8f, 3.0f, 8.0f), 180.0f)
+    };
+
+    const int HALL_TORCH_COUNT5 = sizeof(hallTorches5) / sizeof(hallTorches5[0]);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -568,13 +580,6 @@ int main()
         glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), camera.getCameraPosition().x,
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
-
-        //  offset to be "inside" the flame
-        glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
-        glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
-        glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
-        // torch state
-        glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
 
         // =============================
         // DIALOGUE CYCLING (Press R)
@@ -760,11 +765,20 @@ int main()
             // ======================
             // TORCH
             // ======================
+            //  offset to be "inside" the flame
+            glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
+            // torch state
+            glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
+
             wallTorch->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
         }
         else 
         if (currentRoom == 2)
         {
+			// turn room1 torch off (could find smarter workaround prob)
+            glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), 0);
             room2shader.use();
             glUniform3f(glGetUniformLocation(room2shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
             glUniform3f(glGetUniformLocation(room2shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
@@ -889,7 +903,11 @@ int main()
         else
         if (currentRoom == 3)
         {
-            shader.use();
+            room2shader.use();
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+            glUniform1i(glGetUniformLocation(room2shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT3);
             if (firstLoad == 1)
             {
                 bookcase = loader.loadObj("Resources/Models/bookcaseWideFilled.obj", paint_darkbrown_texture);
@@ -913,11 +931,11 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            middleWall_library.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            middleWall_library.draw(room2shader, ViewMatrix, ProjectionMatrix);
 
 
             colliders.push_back(backWall.getAABB());
@@ -930,19 +948,19 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // =====================
             // DRAW BOOKSHELVES
             // =====================
             if (!isSolved_books)
             {
-                drawObject(bookcase, bookshelves[0].position, bookshelves[0].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(bookcase, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
             for (int i = 1; i < BOOKSHELF_COUNT; i++) 
             {
-                drawObject(bookcase, bookshelves[i].position, bookshelves[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(bookcase, bookshelves[i].position, bookshelves[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
 
@@ -953,13 +971,35 @@ int main()
             if (distToEnd < 2.0f)
                 isSolved_books = true;
 
+            // ======================
+            // TORCH
+            // ======================
+            // light iters
+            for (int i = 0; i < HALL_TORCH_COUNT3; i++)
+            {
+                std::string posName = "torchPos[" + std::to_string(i) + "]";
+                std::string colorName = "torchColor[" + std::to_string(i) + "]";
+                std::string onName = "torchOn[" + std::to_string(i) + "]";
+
+                glm::vec3 p = hallTorches3[i]->position + glm::vec3(0.0f, 0.4f, 0.0f);
+
+                glUniform3f(glGetUniformLocation(room2shader.getId(), posName.c_str()), p.x, p.y, p.z);
+                glUniform3f(glGetUniformLocation(room2shader.getId(), colorName.c_str()), 1.0f, 0.5f, 0.2f);
+                glUniform1i(glGetUniformLocation(room2shader.getId(), onName.c_str()), hallTorches3[i]->isOn ? 1 : 0);
+            }
+
+            for (int i = 0; i < HALL_TORCH_COUNT3; i++)
+            {
+                hallTorches3[i]->draw(room2shader, ViewMatrix, ProjectionMatrix, currentFrame);
+            }
+
             if (true)
             {
                 // ======================
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -975,6 +1015,7 @@ int main()
         else
         if (currentRoom == 4)
         {
+            shader.use();
             if (firstLoad == 1)
             {
                 gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_lime_texture);
@@ -1110,6 +1151,11 @@ int main()
         else
         if (currentRoom == 5)
         {
+            room2shader.use();
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+            glUniform1i(glGetUniformLocation(room2shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT5);
             if (firstLoad == 1)
             {
                 frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
@@ -1139,13 +1185,13 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall_5.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_5.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_5.draw(shader, ViewMatrix, ProjectionMatrix);
-            wall_5_a.draw(shader, ViewMatrix, ProjectionMatrix);
-            wall_5_b.draw(shader, ViewMatrix, ProjectionMatrix);
-            wall_5_c.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            leftWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            rightWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            wall_5_a.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            wall_5_b.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            wall_5_c.draw(room2shader, ViewMatrix, ProjectionMatrix);
 
             colliders.push_back(backWall_5.getAABB());
             colliders.push_back(frontWall.getAABB());
@@ -1163,7 +1209,7 @@ int main()
             {
                 if (doors[i].isUnlocked == false)
                 {
-                    drawObject(prisonDoor, doors[i].position, doors[i].scale, shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
+                    drawObject(prisonDoor, doors[i].position, doors[i].scale, room2shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
                     if (i == 1 || i == 2 || i == 4 || i == 5 || i == 7)
                         colliders.push_back(makeAABB(doors[i].position, glm::vec3(0.1f, 2.0f, 2.0f)));
                     else
@@ -1180,7 +1226,7 @@ int main()
 
             for (int i = 0; i < BUTTON_COUNT; i++)
             {
-                drawObject(frogButton, buttons[i].position, buttons[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(frogButton, buttons[i].position, buttons[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 float distToButton_W = glm::length(warlockPos - buttons[i].position);
                 float distToButton_K = glm::length(knightPos - buttons[i].position);
@@ -1197,10 +1243,32 @@ int main()
             }
 
             // ======================
+            // TORCH
+            // ======================
+            // light iters
+            for (int i = 0; i < HALL_TORCH_COUNT5; i++)
+            {
+                std::string posName = "torchPos[" + std::to_string(i) + "]";
+                std::string colorName = "torchColor[" + std::to_string(i) + "]";
+                std::string onName = "torchOn[" + std::to_string(i) + "]";
+
+                glm::vec3 p = hallTorches5[i]->position + glm::vec3(0.0f, 0.4f, 0.0f);
+
+                glUniform3f(glGetUniformLocation(room2shader.getId(), posName.c_str()), p.x, p.y, p.z);
+                glUniform3f(glGetUniformLocation(room2shader.getId(), colorName.c_str()), 1.0f, 0.5f, 0.2f);
+                glUniform1i(glGetUniformLocation(room2shader.getId(), onName.c_str()), hallTorches5[i]->isOn ? 1 : 0);
+            }
+
+            for (int i = 0; i < HALL_TORCH_COUNT5; i++)
+            {
+                hallTorches5[i]->draw(room2shader, ViewMatrix, ProjectionMatrix, currentFrame);
+            }
+
+            // ======================
             // DRAW EXIT
             // ======================
 
-            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             if (isSolved_wardrobe)
             {
@@ -1220,6 +1288,7 @@ int main()
         else
         if (currentRoom == 6)
         {
+            shader.use();
             activeIsWarlock = true;
             activeIsWarlock = true;
 
