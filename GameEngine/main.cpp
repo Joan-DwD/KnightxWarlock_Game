@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 5;
 int firstLoad = 1;
 
 // ======================
@@ -163,6 +163,7 @@ struct puzzleDoor
     bool isUnlocked;
     glm::vec3 position;
     glm::vec3 scale;
+    float rotation;
 };
 
 struct frogSwitch
@@ -276,7 +277,7 @@ int main()
     // walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
-    Mesh prisonWall = loader.loadObj("Resources/Models/cube.obj", paint_black_texture); // iron bars
+    Mesh prisonWall = loader.loadObj("Resources/Models/barsCube.obj", paint_black_texture); // iron bars
 
     // window
     Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture); // should be a window
@@ -287,7 +288,8 @@ int main()
     Mesh princess = loader.loadObj("Resources/Models/pawn.obj", paint_yellow_texture);
 
     // Doors
-    Mesh doorMesh = loader.loadObj("Resources/Models/cube.obj", paint_red_texture);
+    Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", paint_red_texture);
+    Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", paint_lavender_texture);
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
@@ -297,7 +299,6 @@ int main()
     // ======================
 
     Mesh keyMesh;
-    Mesh prisonDoor;
     
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 3.5f, 7.0f), glm::vec3(7.0f, 3.5f, 0.1f)); //back is down
@@ -371,35 +372,39 @@ int main()
     // ROOM 5 - WARDROBE
     // ====================
 
-    Wall wall_5_a(&wallCube, glm::vec3(2.0f, 2.0f, -3.0f), glm::vec3(5.0f, 2.0f, 0.1f));
-    Wall wall_5_b(&wallCube, glm::vec3(-2.0f, 2.0f, 1.0f), glm::vec3(5.0f, 2.0f, 0.1f));
-    Wall wall_5_c(&wallCube, glm::vec3(2.0f, 2.0f, 5.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+    Wall wall_5_a(&prisonWall, glm::vec3(2.0f, 2.0f, -3.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+    Wall wall_5_b(&prisonWall, glm::vec3(-2.0f, 2.0f, 1.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+    Wall wall_5_c(&prisonWall, glm::vec3(2.0f, 2.0f, 5.0f), glm::vec3(5.0f, 2.0f, 0.1f));
+
+    Wall leftWall_5(&wallCube, glm::vec3(-7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 12.0f));
+    Wall rightWall_5(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 12.0f));
+    Wall backWall_5(&wallCube, glm::vec3(0.0f, 3.5f, 12.0f), glm::vec3(7.0f, 3.5f, 0.1f));
 
     Mesh frogButton;
 
     puzzleDoor doors[8] = 
     {
-        { false, glm::vec3(-5.0f, 2.0f, 5.0f), glm::vec3(2.0f, 2.0f, 0.1f) },
-        { false, glm::vec3(-3.0f, 2.0f, 3.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
-        { false, glm::vec3(3.0f, 2.0f, 3.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
-        { false, glm::vec3(5.0f, 2.0f, 1.0f), glm::vec3(2.0f, 2.0f, 0.1f) },
-        { false, glm::vec3(3.0f, 2.0f, -1.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
-        { false, glm::vec3(-3.0f, 2.0f, -1.0f), glm::vec3(0.1f, 2.0f, 2.0f) },
-        { false, glm::vec3(-5.0f, 2.0f, -3.0f), glm::vec3(2.0f, 2.0f, 0.1f) },
-        { false, glm::vec3(-3.0f, 2.0f, -5.0f), glm::vec3(0.1f, 2.0f, 2.0f) }
+        { false, glm::vec3(-5.0f, 2.0f, 5.0f), glm::vec3(2.0f, 2.0f, 0.1f), 0.0f },
+        { false, glm::vec3(-3.0f, 2.0f, 3.0f), glm::vec3(2.0f, 2.0f, 0.1f), 90.0f },
+        { false, glm::vec3(3.0f, 2.0f, 3.0f), glm::vec3(2.0f, 2.0f, 0.1f), 90.0f},
+        { false, glm::vec3(5.0f, 2.0f, 1.0f), glm::vec3(2.0f, 2.0f, 0.1f), 0.0f },
+        { false, glm::vec3(3.0f, 2.0f, -1.0f), glm::vec3(2.0f, 2.0f, 0.1f), 90.0f },
+        { false, glm::vec3(-3.0f, 2.0f, -1.0f), glm::vec3(2.0f, 2.0f, 0.1f), 90.0f },
+        { false, glm::vec3(-5.0f, 2.0f, -3.0f), glm::vec3(2.0f, 2.0f, 0.1f), 0.0f },
+        { false, glm::vec3(-3.0f, 2.0f, -5.0f), glm::vec3(2.0f, 2.0f, 0.1f), 90.0f }
     };
 
     // FROG PUZZLE
 
     frogSwitch buttons[7] =
     {
-        { false, glm::vec3(6.0f, 2.0f, -6.8f), glm::vec3(0.2f), {0, 1, 2, 3, 4, 5, 6, 7}},
-        { false, glm::vec3(-6.0f, 2.0f, -6.8f), glm::vec3(0.2f), {0, 1, 2, 3, 4, 5, 6} },
-        { false, glm::vec3(6.0f, 2.0f, -2.8f), glm::vec3(0.2f), {2, 3, 4} },
-        { false, glm::vec3(-1.0f, 2.0f, -2.8f), glm::vec3(0.2f), {4, 5, 6} },
-        { false, glm::vec3(1.0f, 2.0f, 1.2f), glm::vec3(0.2f), {1, 2, 3} },
-        { false, glm::vec3(-6.0f, 2.0f, 1.2f), glm::vec3(0.2f), {0, 1} },
-        { false, glm::vec3(6.0f, 2.0f, 5.2f), glm::vec3(0.2f), {0, 7} }
+        { false, glm::vec3(6.0f, 2.0f, -6.8f), glm::vec3(0.1f), {0, 1, 2, 3, 4, 5, 6, 7}},
+        { false, glm::vec3(-6.0f, 2.0f, -6.8f), glm::vec3(0.1f), {0, 1, 2, 3, 4, 5, 6} },
+        { false, glm::vec3(6.0f, 2.0f, -2.8f), glm::vec3(0.1f), {2, 3, 4} },
+        { false, glm::vec3(-1.0f, 2.0f, -2.8f), glm::vec3(0.1f), {4, 5, 6} },
+        { false, glm::vec3(1.0f, 2.0f, 1.2f), glm::vec3(0.1f), {1, 2, 3} },
+        { false, glm::vec3(-6.0f, 2.0f, 1.2f), glm::vec3(0.1f), {0, 1} },
+        { false, glm::vec3(6.0f, 2.0f, 5.2f), glm::vec3(0.1f), {0, 7} }
     };
 
     const int DOOR_COUNT = sizeof(doors) / sizeof(doors[0]);
@@ -513,7 +518,7 @@ int main()
     Camera camera(warlockPos);
 
     CameraCollider cameraCube;
-    cameraCube.halfSize = glm::vec3(0.5f, 1.0f, 0.5f);
+    cameraCube.halfSize = glm::vec3(0.3f, 1.0f, 0.3f);
     cameraCube.position = camera.getCameraPosition();
 
     // ======================
@@ -615,10 +620,10 @@ int main()
 
                 keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
 
-                warlockPos = glm::vec3(-3.0f, 2.0f, 3.0f);
-                knightPos = glm::vec3(3.0f, 2.0f, -3.0f);
+                warlockPos = glm::vec3(0.0f, 2.0f, 6.0f);
+                knightPos = glm::vec3(0.0f, 2.0f, -6.0f);
                 warlockYaw = 0.0f;
-                knightYaw = 180.0f;
+                knightYaw = 0.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -703,14 +708,14 @@ int main()
             // ======================
             if (!doorUnlocked)
             {
-                drawObject(doorMesh, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(prisonDoor, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
             // ======================
             // DRAW EXIT
             // ======================
 
-            drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // EXIT INTERACTION
@@ -833,7 +838,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -918,7 +923,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -1052,7 +1057,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -1073,10 +1078,10 @@ int main()
             {
                 frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.3f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.3f);
+                warlockPos = glm::vec3(1.2f, 2.0f, 9.3f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 9.3f);
                 warlockYaw = 0.0f;
-                knightYaw = 0.0f;
+                knightYaw = 180.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -1093,23 +1098,23 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 0.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // DRAW WALLS
             // ======================
-            backWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall_5.draw(shader, ViewMatrix, ProjectionMatrix);
             frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
+            leftWall_5.draw(shader, ViewMatrix, ProjectionMatrix);
+            rightWall_5.draw(shader, ViewMatrix, ProjectionMatrix);
             wall_5_a.draw(shader, ViewMatrix, ProjectionMatrix);
             wall_5_b.draw(shader, ViewMatrix, ProjectionMatrix);
             wall_5_c.draw(shader, ViewMatrix, ProjectionMatrix);
 
-            colliders.push_back(backWall.getAABB());
+            colliders.push_back(backWall_5.getAABB());
             colliders.push_back(frontWall.getAABB());
-            colliders.push_back(leftWall.getAABB());
-            colliders.push_back(rightWall.getAABB());
+            colliders.push_back(leftWall_5.getAABB());
+            colliders.push_back(rightWall_5.getAABB());
             colliders.push_back(wall_5_a.getAABB());
             colliders.push_back(wall_5_b.getAABB());
             colliders.push_back(wall_5_c.getAABB());
@@ -1122,8 +1127,11 @@ int main()
             {
                 if (doors[i].isUnlocked == false)
                 {
-                    drawObject(doorMesh, doors[i].position, doors[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
-                    colliders.push_back(makeAABB(doors[i].position, doors[i].scale));
+                    drawObject(prisonDoor, doors[i].position, doors[i].scale, shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
+                    if (i == 1 || i == 2 || i == 4 || i == 5 || i == 7)
+                        colliders.push_back(makeAABB(doors[i].position, glm::vec3(0.1f, 2.0f, 2.0f)));
+                    else
+                        colliders.push_back(makeAABB(doors[i].position, doors[i].scale));
                 }
                 doors[i].isUnlocked = false;
             }
@@ -1140,7 +1148,7 @@ int main()
 
                 float distToButton_W = glm::length(warlockPos - buttons[i].position);
                 float distToButton_K = glm::length(knightPos - buttons[i].position);
-                if (distToButton_W < 2.0f || distToButton_K < 2.0f)
+                if (distToButton_W < 1.0f || distToButton_K < 1.0f)
                 {
                     if (i == 0)
                         isSolved_wardrobe = true;
@@ -1152,13 +1160,15 @@ int main()
                 }
             }
 
+            // ======================
+            // DRAW EXIT
+            // ======================
+
+            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
             if (isSolved_wardrobe)
             {
-                // ======================
-                // DRAW EXIT
-                // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
