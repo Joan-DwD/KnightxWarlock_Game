@@ -145,6 +145,7 @@
     <None Include="Shaders\dialogue_fragment.glsl" />
     <None Include="Shaders\dialogue_vertex.glsl" />
     <None Include="Shaders\fragment_shader.glsl" />
+    <None Include="Shaders\fragment_shader_room2.glsl" />
     <None Include="Shaders\sun_fragment_shader.glsl" />
     <None Include="Shaders\sun_vertex_shader.glsl" />
     <None Include="Shaders\text_fragment.glsl" />
@@ -152,6 +153,7 @@
     <None Include="Shaders\ui_texture_fragment.glsl" />
     <None Include="Shaders\ui_texture_vertex.glsl" />
     <None Include="Shaders\vertex_shader.glsl" />
+    <None Include="Shaders\vertex_shader_room2.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\rock.bmp" />
