@@ -17,7 +17,7 @@ public:
 
     Torch(Mesh* body, Mesh* flame, glm::vec3 pos, float rotY);
 
-    void draw(Shader& defaultShader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix);
+    void draw(Shader& defaultShader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float time);
 
     void toggle();
 
