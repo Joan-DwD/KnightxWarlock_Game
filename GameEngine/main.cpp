@@ -404,7 +404,7 @@ int main()
         { false, glm::vec3(-1.0f, 2.0f, -2.8f), glm::vec3(0.1f), {4, 5, 6} },
         { false, glm::vec3(1.0f, 2.0f, 1.2f), glm::vec3(0.1f), {1, 2, 3} },
         { false, glm::vec3(-6.0f, 2.0f, 1.2f), glm::vec3(0.1f), {0, 1} },
-        { false, glm::vec3(6.0f, 2.0f, 5.2f), glm::vec3(0.1f), {0, 7} }
+        { false, glm::vec3(6.0f, 2.0f, 5.2f), glm::vec3(0.1f), {0, 6, 7} }
     };
 
     const int DOOR_COUNT = sizeof(doors) / sizeof(doors[0]);
