@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 3;
+int currentRoom = 2;
 int firstLoad = 1;
 
 // ======================
@@ -88,6 +88,7 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
     // Draw the mesh
     mesh.draw(shader);
 }
+
 void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation) {
     // Calculate Model Matrix
     glm::mat4 model = glm::mat4(1.0f);
@@ -186,6 +187,7 @@ int main()
     // SHADERS
     // ======================
     Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
+    Shader room2Shader("Shaders/vertex_shader_room2.glsl", "Shaders/fragment_shader_room2.glsl");
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
     Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
@@ -200,12 +202,12 @@ int main()
     //GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
     //GLuint bookTex = loadBMP("Resources/Textures/books.bmp");
 
-    //std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
-    //std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
-    //std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
-    //std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
-    //std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
-    //std::vector<Texture> bookTextures = { { bookTex, "texture_diffuse" } };
+    //std::vector<Texture> woodTextures = { { woodTex, "texture_difuse" } };
+    //std::vector<Texture> stoneTextures = { { rockTex, "texture_difuse" } };
+    //std::vector<Texture> orangeTextures = { { orangeTex, "texture_difuse" } };
+    //std::vector<Texture> purpleTextures = { { purpleTex, "texture_difuse" } };
+    //std::vector<Texture> goldTextures = { { goldTex, "texture_difuse" } };
+    //std::vector<Texture> bookTextures = { { bookTex, "texture_difuse" } };
 
     GLuint paint_beige = loadBMP("Resources/Textures/PAINT_BEIGE.bmp");
     GLuint paint_black = loadBMP("Resources/Textures/PAINT_BLACK.bmp");
@@ -604,6 +606,7 @@ int main()
 
         if (currentRoom == 1)
         {
+            shader.use();
             if (firstLoad == 1)
             {
                 warlockPos = glm::vec3(3.0f, 0.5f, 3.0f);
@@ -725,6 +728,12 @@ int main()
         else 
         if (currentRoom == 2)
         {
+            room2Shader.use();
+            glUniform3f(glGetUniformLocation(room2Shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+            glUniform3f(glGetUniformLocation(room2Shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+            glUniform3f(glGetUniformLocation(room2Shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+            glUniform1i(glGetUniformLocation(room2Shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT);
+
             if (firstLoad == 1)
             {
                 warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
@@ -746,30 +755,43 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall_2.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall_2.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_a.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_b.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_a.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_b.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_2_c.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            frontWall_2.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            leftWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_a.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_b.draw(room2Shader, ViewMatrix, ProjectionMatrix);
+            rightWall_2_c.draw(room2Shader, ViewMatrix, ProjectionMatrix);
 
             // ======================
             // DRAW FLOOR (T shape)
             // ======================
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, -3.5f), glm::vec3(7.0f, 0.1f, 3.5f), room2Shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, -3.5f), glm::vec3(7.0f, 0.1f, 3.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
-
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 3.5f), glm::vec3(2.0f, 0.1f, 3.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 3.5f), glm::vec3(2.0f, 0.1f, 3.5f), room2Shader, ViewMatrix, ProjectionMatrix, 0.0f);
             
             // ======================
             // DRAW TORCHES
             // ======================
+
+            // light iters
+            for (int i = 0; i < HALL_TORCH_COUNT; i++)
+            {
+                std::string posName = "torchPos[" + std::to_string(i) + "]";
+                std::string colorName = "torchColor[" + std::to_string(i) + "]";
+                std::string onName = "torchOn[" + std::to_string(i) + "]";
+
+                glm::vec3 p = hallTorches[i]->position + glm::vec3(0.0f, 0.4f, 0.0f);
+
+                glUniform3f(glGetUniformLocation(room2Shader.getId(), posName.c_str()), p.x, p.y, p.z);
+                glUniform3f(glGetUniformLocation(room2Shader.getId(), colorName.c_str()), 1.0f, 0.5f, 0.2f);
+                glUniform1i(glGetUniformLocation(room2Shader.getId(), onName.c_str()), hallTorches[i]->isOn ? 1 : 0);
+            }
             
             for (int i = 0; i < HALL_TORCH_COUNT; i++) 
             {
-                hallTorches[i]->draw(shader, ViewMatrix, ProjectionMatrix);
+                hallTorches[i]->draw(room2Shader, ViewMatrix, ProjectionMatrix);
 
                 static bool eKeyWasPressed = false;
 
@@ -809,7 +831,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(2.0f, 2.0f, 0.1f), room2Shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -825,6 +847,7 @@ int main()
         else
         if (currentRoom == 3)
         {
+			shader.use();
             if (firstLoad == 1)
             {
                 warlockPos = glm::vec3(1.2f, 0.5f, 6.3f);
