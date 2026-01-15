@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 5;
+int currentRoom = 4;
 int firstLoad = 1;
 
 // ======================
@@ -360,13 +360,13 @@ int main()
     Mesh frog;
 
     // Back wall
-    Wall backWall_4(&wallCube, glm::vec3(0.0f, 2.0f, 10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
+    Wall backWall_4(&wallCube, glm::vec3(0.0f, 1.5f, 10.0f), glm::vec3(10.0f, 1.5f, 0.1f));
     // Front wall
-    Wall frontWall_4(&wallCube, glm::vec3(0.0f, 2.0f, -10.0f), glm::vec3(10.0f, 2.0f, 0.1f));
+    Wall frontWall_4(&wallCube, glm::vec3(0.0f, 1.5f, -10.0f), glm::vec3(10.0f, 1.5f, 0.1f));
     // Left wall
-    Wall leftWall_4(&wallCube, glm::vec3(-10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
+    Wall leftWall_4(&wallCube, glm::vec3(-10.0f, 1.5f, 0.0f), glm::vec3(0.1f, 1.5f, 10.0f));
     // Right wall
-    Wall rightWall_4(&wallCube, glm::vec3(10.0f, 2.0f, 0.0f), glm::vec3(0.1f, 2.0f, 10.0f));
+    Wall rightWall_4(&wallCube, glm::vec3(10.0f, 1.5f, 0.0f), glm::vec3(0.1f, 1.5f, 10.0f));
 
     // ====================
     // ROOM 5 - WARDROBE
@@ -1044,8 +1044,8 @@ int main()
             float frog_y = frogHeight * abs(sin(frogJumpSpeed * frogTime));
             float frogRotation = frogAngle + glm::half_pi<float>();
 
-            glm::vec3 frogPos(frog_x, frog_y + 0.2f, frog_z);
-            glm::vec3 frogScale(0.2f, 0.2f, 0.2f);
+            glm::vec3 frogPos(frog_x, frog_y + 0.1f, frog_z);
+            glm::vec3 frogScale(0.1f, 0.1f, 0.1f);
 
             drawObject(frog, frogPos, frogScale, shader, ViewMatrix, ProjectionMatrix, frogRotation * -58 - glm::half_pi<float>());
 

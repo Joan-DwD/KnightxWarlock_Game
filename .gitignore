@@ -3,14 +3,6 @@
 bin/
 obj/
 
-# Ignore Debug files
-Debug/
-Release/
-x64/
-*.obj
-*.pdb
-*.idb
-*.exe
 
 # Ignore Mac system files
 .DS_Store
