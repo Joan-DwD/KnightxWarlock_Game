@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 2;
 int firstLoad = 1;
 
 // ======================
@@ -468,16 +468,19 @@ int main()
     const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
 
     // room 3 torch
-    Torch* wallTorch31 = nullptr;
-    wallTorch31 = new Torch(&torch, &flameCube, glm::vec3(0.0, 2.0f, -6.5f), 180.0f);
-    Torch* wallTorch32 = nullptr;
-    wallTorch32 = new Torch(&torch, &flameCube, glm::vec3(0.0, 2.0f, 6.8f), 180.0f);
+    Torch* hallTorches3[] =
+    {
+     new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, -6.5f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, 6.8f), 180.0f)
+    };
+
+    const int HALL_TORCH_COUNT3 = sizeof(hallTorches3) / sizeof(hallTorches3[0]);
 
     // room 5 torch
     Torch* wallTorch51 = nullptr;
-    wallTorch51 = new Torch(&torch, &flameCube, glm::vec3(-6.8, 3.0f, 8.0f), 180.0f);
+    wallTorch51 = new Torch(&torch, &flameCube, glm::vec3(-6.8f, 3.0f, 8.0f), 180.0f);
     Torch* wallTorch52 = nullptr;
-    wallTorch52 = new Torch(&torch, &flameCube, glm::vec3(6.8, 3.0f, 8.0f), 180.0f);
+    wallTorch52 = new Torch(&torch, &flameCube, glm::vec3(6.8f, 3.0f, 8.0f), 180.0f);
 
     // ======================
     // TEXT RENDERER SETUP
@@ -897,7 +900,11 @@ int main()
         else
         if (currentRoom == 3)
         {
-            shader.use();
+            room2shader.use();
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+            glUniform3f(glGetUniformLocation(room2shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+            glUniform1i(glGetUniformLocation(room2shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT3);
             if (firstLoad == 1)
             {
                 bookcase = loader.loadObj("Resources/Models/bookcaseWideFilled.obj", paint_darkbrown_texture);
@@ -921,11 +928,11 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall.draw(shader, ViewMatrix, ProjectionMatrix);
-            middleWall_library.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            middleWall_library.draw(room2shader, ViewMatrix, ProjectionMatrix);
 
 
             colliders.push_back(backWall.getAABB());
@@ -938,19 +945,19 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // =====================
             // DRAW BOOKSHELVES
             // =====================
             if (!isSolved_books)
             {
-                drawObject(bookcase, bookshelves[0].position, bookshelves[0].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(bookcase, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
             for (int i = 1; i < BOOKSHELF_COUNT; i++) 
             {
-                drawObject(bookcase, bookshelves[i].position, bookshelves[i].scale, shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(bookcase, bookshelves[i].position, bookshelves[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
 
@@ -964,8 +971,24 @@ int main()
             // ======================
             // TORCH
             // ======================
-            wallTorch31->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
-            wallTorch32->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
+            // light iters
+            for (int i = 0; i < HALL_TORCH_COUNT3; i++)
+            {
+                std::string posName = "torchPos[" + std::to_string(i) + "]";
+                std::string colorName = "torchColor[" + std::to_string(i) + "]";
+                std::string onName = "torchOn[" + std::to_string(i) + "]";
+
+                glm::vec3 p = hallTorches3[i]->position + glm::vec3(0.0f, 0.4f, 0.0f);
+
+                glUniform3f(glGetUniformLocation(room2shader.getId(), posName.c_str()), p.x, p.y, p.z);
+                glUniform3f(glGetUniformLocation(room2shader.getId(), colorName.c_str()), 1.0f, 0.5f, 0.2f);
+                glUniform1i(glGetUniformLocation(room2shader.getId(), onName.c_str()), hallTorches3[i]->isOn ? 1 : 0);
+            }
+
+            for (int i = 0; i < HALL_TORCH_COUNT3; i++)
+            {
+                hallTorches3[i]->draw(room2shader, ViewMatrix, ProjectionMatrix, currentFrame);
+            }
 
             if (true)
             {
@@ -973,7 +996,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
