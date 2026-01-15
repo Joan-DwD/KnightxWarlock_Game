@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 3;
 int firstLoad = 1;
 
 // ======================
@@ -447,14 +447,8 @@ int main()
     // ======================
     Torch* wallTorch = nullptr;
 
-    // currently on left wall a bit below cell
-    wallTorch = new Torch(&wallCube, &wallCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
-
     Mesh flameCube = loader.loadObj("Resources/Models/cube.obj", paint_orange_texture);
     Mesh stickCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
-
-    // re-initialize using specific textures
-    delete wallTorch;
 
     // room 1 torch
     wallTorch = new Torch(&torch, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
@@ -470,6 +464,12 @@ int main()
      new Torch(&torch, &flameCube, glm::vec3(4.0f, 3.0f, -6.8f), 180.0f),
      new Torch(&torch, &flameCube, glm::vec3(6.0f, 3.0f, -6.8f), 180.0f)
     };
+
+    // room 3 torch
+    Torch* wallTorch31 = nullptr;
+    wallTorch31 = new Torch(&torch, &flameCube, glm::vec3(0.0, 2.0f, -6.5f), 180.0f);
+    Torch* wallTorch32 = nullptr;
+    wallTorch32 = new Torch(&torch, &flameCube, glm::vec3(0.0, 2.0f, 6.8f), 180.0f);
 
     const int HALL_TORCH_COUNT = sizeof(hallTorches) / sizeof(hallTorches[0]);
 
@@ -952,6 +952,12 @@ int main()
 
             if (distToEnd < 2.0f)
                 isSolved_books = true;
+
+            // ======================
+            // TORCH
+            // ======================
+            wallTorch31->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
+            wallTorch32->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
 
             if (true)
             {
