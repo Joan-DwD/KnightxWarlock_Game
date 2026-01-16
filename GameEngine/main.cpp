@@ -164,7 +164,8 @@ float fadeAlpha = 0.0f;
 bool isFadingOut = false;
 bool isFadingIn = true;
 
-float fadeSpeed = 1.0;
+float fadeSpeed = 3.0;
+float fadeInSpeed = 1.0;
 void TriggerRoomChange() {
     if (!isFadingOut && !isFadingIn) {
         isFadingOut = true;
@@ -759,7 +760,7 @@ int main()
             {
                 firstLoad = 1;
                 currentRoom = 2;
-                TriggerRoomChange();
+                // TriggerRoomChange(); timing/function to be adjusted to suit room 1 as well
             }
 
             // ======================
@@ -1594,7 +1595,7 @@ int main()
         }
         else if (isFadingIn)
         {
-            fadeAlpha -= fadeSpeed * deltaTime;
+            fadeAlpha -= fadeInSpeed * deltaTime;
             if (fadeAlpha <= 0.0f)
             {
                 fadeAlpha = 0.0f;
