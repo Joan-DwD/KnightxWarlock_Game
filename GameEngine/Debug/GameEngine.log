@@ -1,5 +1,5 @@
 ﻿  main.cpp
-C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\main.cpp(582,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\GameEngine\main.cpp(627,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
 LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
 glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\mihah\OneDrive\Documents\GitHub\ECG_project\Debug\vc120.pdb'; linking object as if no debug info

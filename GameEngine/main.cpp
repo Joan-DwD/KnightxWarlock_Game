@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 5;
+int currentRoom = 4;
 int firstLoad = 1;
 
 // ======================
@@ -198,6 +198,14 @@ struct bookshelf
 {
     glm::vec3 position;
     glm::vec3 scale;
+};
+
+// tree struct
+struct TreeStruct
+{
+    glm::vec3 position;
+    glm::vec3 scale;
+    float rotation;
 };
 
 int main()
@@ -391,17 +399,54 @@ int main()
     // ====================
 
     Mesh gardenFloorCube;
-    Mesh tree;
+    Mesh tree_a, tree_b, tree_c, tree_d, tree_e, tree_f;
     Mesh frog;
+    Mesh bush_a, bush_b, plant_a, plant_b, rock_a, rock_b;
+    Mesh pond_water, pond_frame;
 
     // Back wall
-    Wall backWall_4(&wallCube, glm::vec3(0.0f, -10.9f, 15.0f), glm::vec3(15.0f, 15.0f, 0.1f));
+    Wall backWall_4(&wallCube, glm::vec3(0.0f, -9.9f, 15.0f), glm::vec3(15.0f, 15.0f, 0.1f));
     // Front wall
-    Wall frontWall_4(&wallCube, glm::vec3(0.0f, -10.9f, -15.0f), glm::vec3(15.0f, 15.0f, 0.1f));
+    Wall frontWall_4(&wallCube, glm::vec3(0.0f, -9.9f, -15.0f), glm::vec3(15.0f, 15.0f, 0.1f));
     // Left wall
-    Wall leftWall_4(&wallCube, glm::vec3(-15.0f, -10.9f, 0.0f), glm::vec3(0.1f, 15.0f, 15.0f));
+    Wall leftWall_4(&wallCube, glm::vec3(-15.0f, -9.9f, 0.0f), glm::vec3(0.1f, 15.0f, 15.0f));
     // Right wall
-    Wall rightWall_4(&wallCube, glm::vec3(15.0f, -10.9f, 0.0f), glm::vec3(0.1f, 15.0f, 15.0f));
+    Wall rightWall_4(&wallCube, glm::vec3(15.0f, -9.9f, 0.0f), glm::vec3(0.1f, 15.0f, 15.0f));
+
+
+    TreeStruct trees[25] =
+    {
+        { glm::vec3(-13.5f, 0.0f,  0.0f), glm::vec3(3.2f),  45.0f },
+        { glm::vec3(3.0f, 0.0f, -9.5f), glm::vec3(2.7f), 102.0f },
+        { glm::vec3(10.5f, 0.0f,  5.5f), glm::vec3(3.1f),  75.0f },
+        { glm::vec3(-8.0f, 0.0f, -7.0f), glm::vec3(2.9f), 160.0f },
+        { glm::vec3(6.5f, 0.0f, 10.0f), glm::vec3(2.8f),  33.0f },
+
+        { glm::vec3(-11.0f,0.0f,  4.5f), glm::vec3(3.3f),  88.0f },
+        { glm::vec3(12.0f,0.0f, -6.0f), glm::vec3(2.6f),  12.0f },
+        { glm::vec3(-9.5f, 0.0f, -10.5f), glm::vec3(3.0f), 141.0f },
+        { glm::vec3(8.0f, 0.0f, 12.0f), glm::vec3(3.1f),  64.0f },
+        { glm::vec3(11.2f,0.0f, -2.0f), glm::vec3(2.5f), 170.0f },
+
+        { glm::vec3(-7.0f, 0.0f, 12.5f), glm::vec3(2.8f),  20.0f },
+        { glm::vec3(7.5f,0.0f, -8.5f), glm::vec3(3.0f), 112.0f },
+        { glm::vec3(-10.0f,0.0f,  6.0f), glm::vec3(3.3f),  96.0f },
+        { glm::vec3(6.0f,0.0f, -11.0f), glm::vec3(2.6f),  51.0f },
+        { glm::vec3(13.0f,0.0f,  7.0f), glm::vec3(3.0f), 178.0f },
+
+        { glm::vec3(-12.0f,0.0f,  8.5f), glm::vec3(3.5f), 137.0f },
+        { glm::vec3(9.0f,0.0f, -5.0f), glm::vec3(2.8f),  18.0f },
+        { glm::vec3(10.0f,0.0f, -12.0f), glm::vec3(2.5f), 163.0f },
+        { glm::vec3(-6.5f, 0.0f, 10.0f), glm::vec3(3.3f),  72.0f },
+        { glm::vec3(12.5f,0.0f, -7.5f), glm::vec3(3.0f), 102.0f },
+
+        { glm::vec3(-6.0f, 0.0f, 12.0f), glm::vec3(2.7f), 150.0f },
+        { glm::vec3(-12.5f,0.0f, -5.0f), glm::vec3(3.2f),  45.0f },
+        { glm::vec3(11.5f,0.0f, -10.0f), glm::vec3(2.9f), 125.0f },
+        { glm::vec3(-10.5f,0.0f, -12.0f), glm::vec3(3.1f),  82.0f },
+        { glm::vec3(9.0f,0.0f,  3.0f), glm::vec3(2.6f), 155.0f }
+    };
+
 
     // ====================
     // ROOM 5 - WARDROBE
@@ -1044,8 +1089,25 @@ int main()
             if (firstLoad == 1)
             {
                 gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", garden_floor_texture);
-                tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
+
+                tree_a = loader.loadObj("Resources/Models/Nature Pack/PineTree_1.obj", paint_green_texture);
+                tree_b = loader.loadObj("Resources/Models/Nature Pack/PineTree_2.obj", paint_green_texture);
+                tree_c = loader.loadObj("Resources/Models/Nature Pack/CommonTree_5.obj", paint_green_texture);
+                tree_d = loader.loadObj("Resources/Models/Nature Pack/CommonTree_2.obj", paint_green_texture);
+                tree_e = loader.loadObj("Resources/Models/Nature Pack/Willow_5.obj", paint_green_texture);
+                tree_f = loader.loadObj("Resources/Models/Nature Pack/Willow_4.obj", paint_green_texture);
+
                 frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
+
+                bush_a = loader.loadObj("Resources/Models/Nature Pack/Bush_1.obj", paint_lime_texture);
+                bush_b = loader.loadObj("Resources/Models/Nature Pack/BushBerries_2.obj", paint_lime_texture);
+                plant_a = loader.loadObj("Resources/Models/Nature Pack/Plant_4.obj", paint_lime_texture);
+                plant_b = loader.loadObj("Resources/Models/Nature Pack/Plant_5.obj", paint_lime_texture);
+                rock_a = loader.loadObj("Resources/Models/Nature Pack/Rock_6.obj", paint_lightgray_texture);
+                rock_b = loader.loadObj("Resources/Models/Nature Pack/Rock_Moss_7.obj", paint_lightgray_texture);
+
+                pond_frame = loader.loadObj("Resources/Models/Pond Pack/pond_frame.obj", paint_lightgray_texture);
+                pond_water = loader.loadObj("Resources/Models/Pond Pack/water.obj", paint_blue_texture);
 
                 warlockPos = glm::vec3(1.2f, 2.0f, 14.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 14.0f);
@@ -1084,57 +1146,62 @@ int main()
             colliders.push_back(rightWall_4.getAABB());
 
             // ======================
-            // DRAW TREES
+            // DRAW POND
             // ======================
-            for (int i = 0; i < 10; i++)
-            {
-                glm::vec3 treePos;
-                glm::vec3 treeScale;
-                float treeRotation;
 
-                switch (i)
+            drawObject(pond_frame, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+            // THIS NEEDS TO BE WAVY JWAN
+            drawObject(pond_water, glm::vec3(0.0f, 0.22f, 0.0f), glm::vec3(0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+            colliders.push_back(makeAABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(3.5f, 3.0f, 3.5f)));
+
+            // ======================
+            // EFFED UP GARDEN GENERATION (TRUST ME BRO)
+            // ======================
+            for (int i = 0; i < 25; i++)
+            {
+                glm::vec3 treePos = trees[i].position;
+                glm::vec3 treeScale = glm::vec3(trees[i].scale);
+                float treeRotation = trees[i].rotation;
+
+                switch (i % 6)
                 {
                 case 0:
-                    treePos = glm::vec3(1.0f, 0.0f, 6.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.0f;
-                    break;
+                {
+                    drawObject(bush_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                    drawObject(tree_a, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+
+                }
                 case 1:
-                    treePos = glm::vec3(5.0f, 0.0f, 7.0f); treeScale = glm::vec3(0.04f); treeRotation = 0.3f;
-                    break;
+                {
+                    drawObject(bush_b, -treePos - glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                    drawObject(tree_b, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                }
                 case 2:
-                    treePos = glm::vec3(-4.0f, 0.0f, -3.0f); treeScale = glm::vec3(0.06f); treeRotation = 0.8f;
-                    break;
+                {
+                    drawObject(plant_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                    drawObject(tree_c, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                }
                 case 3:
-                    treePos = glm::vec3(-8.0f, 0.0f, -4.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.4f;
-                    break;
+                {
+                    drawObject(plant_b, -treePos - glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                    drawObject(tree_d, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                }
                 case 4:
-                    treePos = glm::vec3(3.0f, 0.0f, -7.0f); treeScale = glm::vec3(0.04f); treeRotation = 0.1f;
-                    break;
+                {
+                    drawObject(rock_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                    drawObject(tree_e, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                }
                 case 5:
-                    treePos = glm::vec3(9.0f, 0.0f, -6.0f); treeScale = glm::vec3(0.06f); treeRotation = 0.8f;
-                    break;
-                case 6:
-                    treePos = glm::vec3(-8.0f, 0.0f, 5.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.2f;
-                    break;
-                case 7:
-                    treePos = glm::vec3(-2.0f, 0.0f, 8.0f); treeScale = glm::vec3(0.04f); treeRotation = 0.9f;
-                    break;
-                case 8:
-                    treePos = glm::vec3(0.0f, 0.0f, 0.0f); treeScale = glm::vec3(0.05f); treeRotation = 0.5f;
-                    break;
-                case 9:
-                    treePos = glm::vec3(2.0f, 0.0f, -2.0f); treeScale = glm::vec3(0.06f); treeRotation = 0.7f;
-                    break;
-                default:
-                    treePos = glm::vec3(0.0f);
-                    treeScale = glm::vec3(0.05f);
-                    treeRotation = 0.0f;
-                    break;
+                {
+                    drawObject(rock_b, -treePos - glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
+                    drawObject(tree_f, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                }
                 }
 
-                drawObject(tree, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
                 colliders.push_back(makeAABB(treePos, glm::vec3(0.5f, 2.0f, 0.5f)));
             }
-            
 
             // =======================
             // FROG
@@ -1148,11 +1215,9 @@ int main()
             float frogRotation = frogAngle + glm::half_pi<float>();
 
             glm::vec3 frogPos(frog_x, frog_y + 0.1f, frog_z);
-            glm::vec3 frogScale(0.1f, 0.1f, 0.1f);
+            glm::vec3 frogScale(0.15f);
 
             drawObject(frog, frogPos, frogScale, shader, ViewMatrix, ProjectionMatrix, frogRotation * -58 - glm::half_pi<float>());
-
-            colliders.push_back(makeAABB(frogPos, glm::vec3(1.0f, 1.0f, 1.0f)));
 
             if (isSolved_frog)
             {
