@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 5;
 int firstLoad = 1;
 
 // ======================
@@ -260,13 +260,15 @@ int main()
     GLuint paint_white = loadBMP("Resources/Textures/PAINT_WHITE.bmp");
     GLuint paint_yellow = loadBMP("Resources/Textures/PAINT_YELLOW.bmp");
 
-    GLuint stonebmp = loadBMP("Resources/Textures/dlv_stonegen1.bmp");
-
     GLuint polishedAndesite = loadBMP("Resources/Textures/polished_andesite.bmp");
     GLuint deepslateBricks = loadBMP("Resources/Textures/deepslate_bricks.bmp");
     GLuint ironBlock = loadBMP("Resources/Textures/iron_block.bmp");
     GLuint copper = loadBMP("Resources/Textures/copper.bmp");
     GLuint spruce = loadBMP("Resources/Textures/spruce.bmp");
+    GLuint grass = loadBMP("Resources/Textures/grass.bmp");
+    GLuint magenta = loadBMP("Resources/Textures/magenta.bmp");
+    GLuint oak = loadBMP("Resources/Textures/oak.bmp");
+    GLuint concrete = loadBMP("Resources/Textures/concrete.bmp");
 
     // Character portraits
     std::map<std::string, GLuint> portraits;
@@ -298,7 +300,6 @@ int main()
     std::vector<Texture> paint_white_texture = { { paint_white, "texture_difuse" } };
     std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_difuse" } };
 
-    std::vector<Texture> stone_texture = { { stonebmp, "texture_difuse" } };
     std::vector<Texture> brick_texture = { { floor_brick, "texture_diffuse" } };
 
     std::vector<Texture> floor_texture = { { polishedAndesite, "texture_diffuse" } };
@@ -306,6 +307,10 @@ int main()
     std::vector<Texture> bars_texture = { { ironBlock, "texture_diffuse" } };
     std::vector<Texture> prison_door_texture = { { copper, "texture_diffuse" } };
     std::vector<Texture> door_texture = { { spruce, "texture_diffuse" } };
+    std::vector<Texture> garden_floor_texture = { { grass, "texture_diffuse" } };
+    std::vector<Texture> bedroom_floor_texture = { { oak, "texture_diffuse" } };
+    std::vector<Texture> bedroom_carpet_texture = { { magenta, "texture_diffuse" } };
+    std::vector<Texture> bedroom_wall_texture = { { concrete, "texture_diffuse" } };
 
     // ======================
     // LOAD UNIVERSAL MODELS
@@ -341,17 +346,17 @@ int main()
     Mesh keyMesh;
 
     Mesh torch;
-    torch = loader.loadObj("Resources/Models/torch.obj", stone_texture);
+    torch = loader.loadObj("Resources/Models/torch.obj", paint_black_texture);
 
     Mesh mrSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_white_texture);
     // Back wall
-    Wall backWall(&wallCube, glm::vec3(0.0f, 0.0f, 7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //back is down
+    Wall backWall(&wallCube, glm::vec3(0.0f, 0.1f, 7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //back is down
     // Front wall
-    Wall frontWall(&wallCube, glm::vec3(0.0f, 0.0f, -7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //front is up
+    Wall frontWall(&wallCube, glm::vec3(0.0f, 0.1f, -7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //front is up
     // Left wall
-    Wall leftWall(&wallCube, glm::vec3(-7.0f, 0.0f, 0.0f), glm::vec3(0.1f, 7.0f, 7.0f));
+    Wall leftWall(&wallCube, glm::vec3(-7.0f, 0.1f, 0.0f), glm::vec3(0.1f, 7.0f, 7.0f));
     // Right wall
-    Wall rightWall(&wallCube, glm::vec3(7.0f, 0.0f, 0.0f), glm::vec3(0.1f, 7.0f, 7.0f));
+    Wall rightWall(&wallCube, glm::vec3(7.0f, 0.1f, 0.0f), glm::vec3(0.1f, 7.0f, 7.0f));
     // Middle wall
     Wall middleWall(&prisonWall, glm::vec3(-2.0f, 2.0f, 0.0f), glm::vec3(5.0f, 2.0f, 0.1f));
 
@@ -364,7 +369,6 @@ int main()
     // ====================
 
     // books
-    Mesh libraryWallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture); // hmmm
     Mesh bookcase;
 
     bookshelf bookshelves[8] =
@@ -379,7 +383,6 @@ int main()
         {glm::vec3(-4.0f, 0.0f, 3.5f), glm::vec3(2.5f) }
     };
 
-    Wall middleWall_library(&libraryWallCube, glm::vec3(0.0f, 0.8f, -1.0f), glm::vec3(0.1f, 0.8f, 6.0f));
 
     const int BOOKSHELF_COUNT = sizeof(bookshelves) / sizeof(bookshelves[0]);
 
@@ -392,13 +395,13 @@ int main()
     Mesh frog;
 
     // Back wall
-    Wall backWall_4(&wallCube, glm::vec3(0.0f, 1.5f, 10.0f), glm::vec3(10.0f, 1.5f, 0.1f));
+    Wall backWall_4(&wallCube, glm::vec3(0.0f, -10.9f, 15.0f), glm::vec3(15.0f, 15.0f, 0.1f));
     // Front wall
-    Wall frontWall_4(&wallCube, glm::vec3(0.0f, 1.5f, -10.0f), glm::vec3(10.0f, 1.5f, 0.1f));
+    Wall frontWall_4(&wallCube, glm::vec3(0.0f, -10.9f, -15.0f), glm::vec3(15.0f, 15.0f, 0.1f));
     // Left wall
-    Wall leftWall_4(&wallCube, glm::vec3(-10.0f, 1.5f, 0.0f), glm::vec3(0.1f, 1.5f, 10.0f));
+    Wall leftWall_4(&wallCube, glm::vec3(-15.0f, -10.9f, 0.0f), glm::vec3(0.1f, 15.0f, 15.0f));
     // Right wall
-    Wall rightWall_4(&wallCube, glm::vec3(10.0f, 1.5f, 0.0f), glm::vec3(0.1f, 1.5f, 10.0f));
+    Wall rightWall_4(&wallCube, glm::vec3(15.0f, -10.9f, 0.0f), glm::vec3(0.1f, 15.0f, 15.0f));
 
     // ====================
     // ROOM 5 - WARDROBE
@@ -408,9 +411,10 @@ int main()
     Wall wall_5_b(&prisonWall, glm::vec3(-2.0f, 2.0f, 1.0f), glm::vec3(5.0f, 2.0f, 0.1f));
     Wall wall_5_c(&prisonWall, glm::vec3(2.0f, 2.0f, 5.0f), glm::vec3(5.0f, 2.0f, 0.1f));
 
-    Wall leftWall_5(&wallCube, glm::vec3(-7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 12.0f));
-    Wall rightWall_5(&wallCube, glm::vec3(7.0f, 3.5f, 0.0f), glm::vec3(0.1f, 3.5f, 12.0f));
-    Wall backWall_5(&wallCube, glm::vec3(0.0f, 3.5f, 12.0f), glm::vec3(7.0f, 3.5f, 0.1f));
+    Wall leftWall_5(&wallCube, glm::vec3(-7.0f, -4.0f, 0.0f), glm::vec3(0.1f, 12.0f, 12.0f));
+    Wall rightWall_5(&wallCube, glm::vec3(7.0f, -4.0f, 0.0f), glm::vec3(0.1f, 12.0f, 12.0f));
+    Wall backWall_5(&wallCube, glm::vec3(0.0f, -4.0f, 12.0f), glm::vec3(12.0f, 12.0f, 0.1f));
+    Wall frontWall_5(&wallCube, glm::vec3(0.0f, -4.0f, -7.0f), glm::vec3(12.0f, 12.0f, 0.1f));
 
     Mesh frogButton;
 
@@ -446,7 +450,7 @@ int main()
     // ROOM 6 - BEDROOM
     // ======================
     
-    Mesh bedroomWallCube = loader.loadObj("Resources/Models/cube.obj", paint_lavender_texture);
+    Mesh bedroomWallCube = loader.loadObj("Resources/Models/cube.obj", bedroom_wall_texture);
 
     Mesh bedroomFloorCube;
     Mesh bedroomFloorCarpet;
@@ -457,13 +461,13 @@ int main()
     Mesh bedroomTeddy;
 
     // Back wall
-    Wall backWall_6(&bedroomWallCube, glm::vec3(0.0f, 3.0f, 9.0f), glm::vec3(9.0f, 3.0f, 0.1f));
+    Wall backWall_6(&bedroomWallCube, glm::vec3(0.0f, -0.9f, 9.0f), glm::vec3(9.0f, 9.0f, 0.1f));
     // Front wall
-    Wall frontWall_6(&bedroomWallCube, glm::vec3(0.0f, 3.0f, -9.0f), glm::vec3(9.0f, 3.0f, 0.1f));
+    Wall frontWall_6(&bedroomWallCube, glm::vec3(0.0f, -0.9f, -9.0f), glm::vec3(9.0f, 9.0f, 0.1f));
     // Left wall
-    Wall leftWall_6(&bedroomWallCube, glm::vec3(-9.0f, 3.0f, 0.0f), glm::vec3(0.1f, 3.0f, 9.0f));
+    Wall leftWall_6(&bedroomWallCube, glm::vec3(-9.0f, -0.9f, 0.0f), glm::vec3(0.1f, 9.0f, 9.0f));
     // Right wall
-    Wall rightWall_6(&bedroomWallCube, glm::vec3(9.0f, 3.0f, 0.0f), glm::vec3(0.1f, 3.0f, 9.0f));
+    Wall rightWall_6(&bedroomWallCube, glm::vec3(9.0f, -0.9f, 0.0f), glm::vec3(0.1f, 9.0f, 9.0f));
 
     // ======================
     // TORCH
@@ -493,7 +497,7 @@ int main()
     // room 3 torch
     Torch* hallTorches3[] =
     {
-     new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, -6.5f), 180.0f),
+     new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, -6.8f), 180.0f),
      new Torch(&torch, &flameCube, glm::vec3(0.0f, 2.0f, 6.8f), 180.0f)
     };
 
@@ -660,7 +664,7 @@ int main()
 
                 warlockPos = glm::vec3(0.0f, 2.0f, 6.0f);
                 knightPos = glm::vec3(0.0f, 2.0f, -6.0f);
-                warlockYaw = 0.0f;
+                warlockYaw = 180.0f;
                 knightYaw = 0.0f;
 
                 if (activeIsWarlock)
@@ -669,6 +673,7 @@ int main()
                     cameraCube.position = knightPos;
 
                 camera.setCameraPosition(cameraCube.position);
+                camera.setYaw(warlockYaw);
 
                 firstLoad = 0;
 
@@ -679,18 +684,19 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall.draw(shader, ViewMatrix, ProjectionMatrix, 30.0f);
-            frontWall.draw(shader, ViewMatrix, ProjectionMatrix, 30.0f);
-            leftWall.draw(shader, ViewMatrix, ProjectionMatrix, 30.0f);
-            rightWall.draw(shader, ViewMatrix, ProjectionMatrix, 30.0f);
+            backWall.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            frontWall.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            leftWall.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            rightWall.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
-            middleWall.draw(shader, ViewMatrix, ProjectionMatrix, 10.0f);
+            middleWall.draw(shader, ViewMatrix, ProjectionMatrix, 4.0f);
 
             // ======================
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 30.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             // room 1 colliders
             colliders.push_back(backWall.getAABB());
@@ -767,14 +773,14 @@ int main()
             // ======================
             if (!doorUnlocked)
             {
-                drawObject(prisonDoor, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 180.0f, 10.0f);
+                drawObject(prisonDoor, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
             }
 
             // ======================
             // DRAW EXIT
             // ======================
 
-            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
 
             // ======================
             // EXIT INTERACTION
@@ -814,8 +820,8 @@ int main()
             {
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
-                warlockYaw = 0.0f;
-                knightYaw = 0.0f;
+                warlockYaw = 180.0f;
+                knightYaw = 180.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -823,10 +829,11 @@ int main()
                     cameraCube.position = knightPos;
 
                 camera.setCameraPosition(cameraCube.position);
+                camera.setYaw(warlockYaw);
 
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(4.0f, 2.0f, -6.8f);
+            exitPos = glm::vec3(0.0f, 2.0f, 0.0f);
 
             // room 1 colliders
             colliders.push_back(backWall.getAABB());
@@ -837,16 +844,17 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 30.0f);
-            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 30.0f);
-            leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 30.0f);
-            rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 30.0f);
+            backWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
             // ======================
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 30.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             
             // ======================
             // DRAW TORCHES
@@ -902,7 +910,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -930,8 +938,8 @@ int main()
 
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
-                warlockYaw = 0.0f;
-                knightYaw = 0.0f;
+                warlockYaw = 180.0f;
+                knightYaw = 180.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -939,6 +947,7 @@ int main()
                     cameraCube.position = knightPos;
 
                 camera.setCameraPosition(cameraCube.position);
+                camera.setYaw(warlockYaw);
 
                 firstLoad = 0;
             }
@@ -947,24 +956,23 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            middleWall_library.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            backWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
 
             colliders.push_back(backWall.getAABB());
             colliders.push_back(frontWall.getAABB());
             colliders.push_back(leftWall.getAABB());
             colliders.push_back(rightWall.getAABB());
-            colliders.push_back(middleWall_library.getAABB());
 
             // ======================
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             // =====================
             // DRAW BOOKSHELVES
@@ -1015,7 +1023,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -1035,14 +1043,14 @@ int main()
             shader.use();
             if (firstLoad == 1)
             {
-                gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_lime_texture);
+                gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", garden_floor_texture);
                 tree = loader.loadObj("Resources/Models/tree.obj", paint_green_texture);
                 frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 9.0f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 9.0f);
-                warlockYaw = 0.0f;
-                knightYaw = 0.0f;
+                warlockPos = glm::vec3(1.2f, 2.0f, 14.0f);
+                knightPos = glm::vec3(-1.2f, 2.0f, 14.0f);
+                warlockYaw = 180.0f;
+                knightYaw = 180.0f;
 
                 if (activeIsWarlock)
                     cameraCube.position = warlockPos;
@@ -1050,24 +1058,25 @@ int main()
                     cameraCube.position = knightPos;
 
                 camera.setCameraPosition(cameraCube.position);
+                camera.setYaw(warlockYaw);
 
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(0.0f, 2.0f, -9.8f);
+            exitPos = glm::vec3(0.0f, 2.0f, -14.8f);
 
             // ======================
             // DRAW FLOOR
             // ======================
 
-            drawObject(gardenFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(gardenFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(15.0f, 0.1f, 15.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             // ======================
             // DRAW WALLS
             // ======================
-            backWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_4.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall_4.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            frontWall_4.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            leftWall_4.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            rightWall_4.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
             colliders.push_back(backWall_4.getAABB());
             colliders.push_back(frontWall_4.getAABB());
@@ -1151,7 +1160,7 @@ int main()
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -1180,7 +1189,7 @@ int main()
 
                 warlockPos = glm::vec3(1.2f, 2.0f, 9.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 9.0f);
-                warlockYaw = 0.0f;
+                warlockYaw = 180.0f;
                 knightYaw = 180.0f;
 
                 if (activeIsWarlock)
@@ -1189,6 +1198,7 @@ int main()
                     cameraCube.position = knightPos;
 
                 camera.setCameraPosition(cameraCube.position);
+                camera.setYaw(warlockYaw);
 
                 firstLoad = 0;
             }
@@ -1198,21 +1208,22 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 0.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 0.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 8.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             // ======================
             // DRAW WALLS
             // ======================
-            backWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            frontWall.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            leftWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            rightWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            wall_5_a.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            wall_5_b.draw(room2shader, ViewMatrix, ProjectionMatrix);
-            wall_5_c.draw(room2shader, ViewMatrix, ProjectionMatrix);
+            backWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            frontWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            leftWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            rightWall_5.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            wall_5_a.draw(room2shader, ViewMatrix, ProjectionMatrix, 4.0f);
+            wall_5_b.draw(room2shader, ViewMatrix, ProjectionMatrix, 4.0f);
+            wall_5_c.draw(room2shader, ViewMatrix, ProjectionMatrix, 4.0f);
 
             colliders.push_back(backWall_5.getAABB());
-            colliders.push_back(frontWall.getAABB());
+            colliders.push_back(frontWall_5.getAABB());
             colliders.push_back(leftWall_5.getAABB());
             colliders.push_back(rightWall_5.getAABB());
             colliders.push_back(wall_5_a.getAABB());
@@ -1233,6 +1244,8 @@ int main()
                     else
                         colliders.push_back(makeAABB(doors[i].position, doors[i].scale));
                 }
+                else
+                    drawObject(prisonDoor, doors[i].position + glm::vec3(0.0f, 4.0f, 0.0f), doors[i].scale, room2shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
                 doors[i].isUnlocked = false;
             }
 
@@ -1286,7 +1299,7 @@ int main()
             // DRAW EXIT
             // ======================
 
-            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
 
             if (isSolved_wardrobe)
             {
@@ -1313,8 +1326,8 @@ int main()
 
             if (firstLoad == 1)
             {
-                bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", paint_cyan_texture);
-                bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", paint_purple_texture);
+                bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", bedroom_floor_texture);
+                bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", bedroom_carpet_texture);
 
                 bedroomBed = loader.loadObj("Resources/Models/bed.obj", paint_pink_texture);
                 bedroomPiano = loader.loadObj("Resources/Models/piano.obj", paint_black_texture);
@@ -1325,7 +1338,7 @@ int main()
 
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
-                warlockYaw = 0.0f;
+                warlockYaw = 180.0f;
                 knightYaw = 0.0f;
 
                 if (activeIsWarlock)
@@ -1334,6 +1347,7 @@ int main()
                     cameraCube.position = knightPos;
 
                 camera.setCameraPosition(cameraCube.position);
+                camera.setYaw(warlockYaw);
 
                 firstLoad = 0;
             }
@@ -1341,10 +1355,10 @@ int main()
             // ======================
             // DRAW WALLS
             // ======================
-            backWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
-            frontWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
-            leftWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
-            rightWall_6.draw(shader, ViewMatrix, ProjectionMatrix);
+            backWall_6.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            frontWall_6.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            leftWall_6.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
+            rightWall_6.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
             colliders.push_back(backWall_6.getAABB());
             colliders.push_back(frontWall_6.getAABB());
@@ -1355,8 +1369,9 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 0.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
-            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 0.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 8.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             // ======================
             // DRAW DECORATIONS
