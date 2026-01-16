@@ -74,7 +74,7 @@ glm::vec3 lightPos = glm::vec3(0.0f, 6.5f, 1.0f);
 // DRAWING FUNCTION
 // =======================
 
-void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation) {
+void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation, float tiling = 1.0f) {
     // Calculate Model Matrix
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
@@ -89,6 +89,9 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
     // Send to shader
     glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
     glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+    // Tiling
+    glUniform2f(glGetUniformLocation(shader.getId(), "uvScale"), tiling, tiling);
 
     // Draw the mesh
     mesh.draw(shader);
@@ -264,6 +267,8 @@ int main()
     portraits["Knight"] = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
     portraits["Princess"] = loadBMP("Resources/Textures/PAINT_PINK.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
+    // Delven pack textures
+    GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
 
     std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_difuse" } };
     std::vector<Texture> paint_black_texture = { { paint_black, "texture_difuse" } };
@@ -296,6 +301,8 @@ int main()
     // walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", paint_darkgray_texture);
+    std::vector<Texture> brick_texture = { { floor_brick, "texture_diffuse" } };
+    Mesh room1Floor = loader.loadObj("Resources/Models/cube.obj", brick_texture);
     Mesh prisonWall = loader.loadObj("Resources/Models/barsCube.obj", paint_black_texture); // iron bars
 
     // window
@@ -776,7 +783,10 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            if(currentRoom == 1)
+                drawObject(room1Floor, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 7.0f);
+            else
+                drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // TORCH

@@ -10,6 +10,7 @@ out vec2 TexCoords;
 
 uniform mat4 MVP;
 uniform mat4 model; // needed to calculate World Space position
+uniform vec2 uvScale; // for tiling
 
 void main()
 {
@@ -20,7 +21,7 @@ void main()
     Normal = mat3(transpose(inverse(model))) * normal;
 
     // texture coordinates
-    TexCoords = texCoords;
+    TexCoords = texCoords * uvScale;
 
     gl_Position = MVP * vec4(pos, 1.0f);
 }
