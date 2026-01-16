@@ -22,5 +22,5 @@ public:
 
     Wall(Mesh* meshRef, glm::vec3 pos, glm::vec3 sc);
 
-    void draw(Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix);
+    void draw(Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float tiling = 1.0f);
 };
