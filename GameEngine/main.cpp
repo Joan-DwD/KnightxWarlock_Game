@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 2;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -790,15 +790,6 @@ int main()
                     keyCollected = true;
                     hasKey = true;
                 }
-                else
-                {
-                    static bool shownPrompt = false;
-                    if (!shownPrompt)
-                    {
-                        std::cout << "Press E to pick up the key" << std::endl;
-                        shownPrompt = true;
-                    }
-                }
             }
 
             // ======================
@@ -849,6 +840,10 @@ int main()
             float distToExit = glm::length(warlockPos - exitPos);
             if (distToExit < 2.0f)
             {
+                if (currentTask == 4)
+                {
+                    currentTask = 5;
+                }
                 firstLoad = 1;
                 currentRoom = 2;
                 // TriggerRoomChange(); timing/function to be adjusted to suit room 1 as well
@@ -895,6 +890,8 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
+                LoadDialogue(4);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(6.8f, 2.0f, 0.0f);
@@ -929,7 +926,29 @@ int main()
             colliders.push_back(makeAABB(barrelPos, glm::vec3(0.8f, 3.0f, 0.8f)));
 
             drawObject(book, barrelPos, glm::vec3(1.6f), room2shader, ViewMatrix, ProjectionMatrix, 90.0f);
-            drawObject(knife, barrelPos + glm::vec3(0.0f, 1.6f, 0.0f), glm::vec3(2.0f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f);
+
+            static bool eKeyWasPressed = false;
+
+            float distToBook = glm::length(activePos - barrelPos);
+            if (distToBook < 3.0f)
+            {
+                if (window.isPressed(GLFW_KEY_E))
+                {
+                    // debounce
+                    if (!eKeyWasPressed) 
+                    {
+                        LoadDialogue(5);
+                        if (currentTask == 5)
+                        {
+                            currentTask = 6;
+                        }
+                        eKeyWasPressed = true;
+                    }
+                }
+                else {
+                    eKeyWasPressed = false;
+                }
+            }
             
             // ======================
             // DRAW TORCHES
@@ -992,6 +1011,12 @@ int main()
 
             if (isSolved_torch == true)
             {
+
+                if (currentTask == 6)
+                {
+                    LoadDialogue(6);
+                    currentTask = 7;
+                }
                 // ======================
                 // DRAW EXIT
                 // ======================
@@ -1004,6 +1029,10 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 2.0f)
                 {
+                    if (currentTask == 7)
+                    {
+                        currentTask = 8;
+                    }
                     firstLoad = 1;
                     currentRoom = 3;
                     TriggerRoomChange();
@@ -1034,6 +1063,8 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                LoadDialogue(7);
 
                 firstLoad = 0;
             }
@@ -1630,9 +1661,10 @@ int main()
             DialogueLine& line = currentDialogue[currentLineIndex];
 
             // Draw black background for narrator when the case
-            if (line.CharacterName == "black"){
+            if (line.CharacterName == "black")
+            {
                 glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f); // Set Color to Black
-            drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f), glm::vec3(window.getWidth(), window.getHeight(), 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
+                drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f), glm::vec3(window.getWidth(), window.getHeight(), 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
             }
 
             // --------------------------
@@ -1697,6 +1729,9 @@ int main()
         case 2: { hint = "Pick up the key. (Press E)"; break; }
         case 3: { hint = "Open the door."; break; }
         case 4: { hint = "Exit the Dungeon."; break; }
+        case 5: { hint = "Read the book."; break; }
+        case 6: { hint = "Solve the riddle. (Press E near a torch to toggle it)"; break; }
+        case 7: { hint = "Escape the Hallway."; break; }
         }
         textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
 
