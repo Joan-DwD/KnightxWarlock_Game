@@ -1576,7 +1576,7 @@ int main()
             drawObjectSideways(knight, armorPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
             // knife
             if(currentTask == 14)
-                drawObject(knife, knifePos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
+                drawObjectSideways(knife, knifePos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
 
             static bool eKeyWasPressed = false;
 
