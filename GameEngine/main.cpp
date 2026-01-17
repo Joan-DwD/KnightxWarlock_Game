@@ -1112,7 +1112,15 @@ int main()
             float distToEnd = glm::length(warlockPos - endPos);
 
             if (distToEnd < 2.0f)
+            {
                 isSolved_books = true;
+                if (currentTask == 8)
+                {
+                    LoadDialogue(8);
+                    currentTask = 9;
+                }
+            }
+                
 
             // ======================
             // TORCH
@@ -1150,6 +1158,8 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 2.0f)
                 {
+                    if (currentTask == 9)
+                        currentTask = 10;
                     firstLoad = 1;
                     currentRoom = 4;
                     TriggerRoomChange();
@@ -1195,6 +1205,8 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                LoadDialogue(9);
 
                 firstLoad = 0;
             }
@@ -1309,6 +1321,8 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 2.0f)
                 {
+                    if (currentTask == 10)
+                        currentTask = 11;
                     firstLoad = 1;
                     currentRoom = 5;
                     TriggerRoomChange();
@@ -1340,6 +1354,8 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                LoadDialogue(10);
 
                 firstLoad = 0;
             }
@@ -1410,7 +1426,14 @@ int main()
                 if (distToButton_W < 1.0f || distToButton_K < 1.0f)
                 {
                     if (i == 0)
+                    {
+                        if (currentTask == 11)
+                        {
+                            LoadDialogue(11);
+                            currentTask = 12;
+                        }
                         isSolved_wardrobe = true;
+                    }
 
                     for (int link : buttons[i].links)
                     {
@@ -1455,6 +1478,8 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 2.0f)
                 {
+                    if (currentTask == 12)
+                        currentTask = 13;
                     firstLoad = 1;
                     currentRoom = 6;
                     TriggerRoomChange();
@@ -1492,6 +1517,8 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                LoadDialogue(12);
 
                 firstLoad = 0;
             }
@@ -1531,6 +1558,7 @@ int main()
             glm::vec3 windowPos(6.0f, 3.0f, -8.9f);
             glm::vec3 princessPos(-3.9f, 0.1f, 3.0f);
             glm::vec3 armorPos(-3.0f, 0.3f, 0.0f);
+            glm::vec3 knifePos(2.0f, 0.1f, -1.0f);
 
             drawObject(bedroomBed, bedPos, glm::vec3(0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             drawObject(bedroomDresser, dresserPos, glm::vec3(0.09f), shader, ViewMatrix, ProjectionMatrix, 120.0f);
@@ -1539,10 +1567,47 @@ int main()
 
             // window
             drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
-            // princess pawn
-            drawObject(princess, princessPos, glm::vec3(1.6f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+            // princess
+            if (currentTask == 16)
+                drawObjectSideways(princess, princessPos, glm::vec3(1.6f), shader, ViewMatrix, ProjectionMatrix, -90.0f);
+            else
+                drawObject(princess, princessPos, glm::vec3(1.6f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
             // armor
             drawObjectSideways(knight, armorPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
+            // knife
+            if(currentTask == 14)
+                drawObject(knife, knifePos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
+
+            static bool eKeyWasPressed = false;
+
+            float distToPrincess = glm::length(warlockPos - princessPos);
+            float distToKnife = glm::length(warlockPos - knifePos);
+
+                if (window.isPressed(GLFW_KEY_E))
+                {
+                    if (!eKeyWasPressed)
+                    {
+                        if (currentTask == 13 && distToPrincess < 3.0f)
+                        {
+                            LoadDialogue(13);
+                            currentTask = 14;
+                        }
+                        if (currentTask == 14 && distToKnife < 3.0f)
+                        {
+                            LoadDialogue(14);
+                            currentTask = 15;
+                        }
+                        if (currentTask == 15 && distToPrincess < 3.0f)
+                        {
+                            LoadDialogue(15);
+                            currentTask = 16;
+                        }
+                        eKeyWasPressed = true;
+                    }
+                }
+                else {
+                    eKeyWasPressed = false;
+                }
 
             colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 2.8f)));
             colliders.push_back(makeAABB(dresserPos, glm::vec3(2.0f, 3.0f, 2.0f)));
@@ -1731,7 +1796,16 @@ int main()
         case 4: { hint = "Exit the Dungeon."; break; }
         case 5: { hint = "Read the book."; break; }
         case 6: { hint = "Solve the riddle. (Press E near a torch to toggle it)"; break; }
-        case 7: { hint = "Escape the Hallway."; break; }
+        case 7: { hint = "Exit the Hallway."; break; }
+        case 8: { hint = "Find a clue to escape."; break; }
+        case 9: { hint = "Exit the Library."; break; }
+        case 10: { hint = "Exit the Garden."; break; }
+        case 11: { hint = "Find a way to the exit."; break; }
+        case 12: { hint = "Enter the Bedroom."; break; }
+        case 13: { hint = "Talk to the Princess."; break; }
+        case 14: { hint = "Grab the knife..."; break; }
+        case 15: { hint = "Kill the Princess..."; break; }
+        case 16: { hint = "Escape out the window."; break; }
         }
         textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
 
