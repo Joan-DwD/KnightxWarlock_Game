@@ -21,12 +21,14 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 4;
+int currentRoom = 5;
 int firstLoad = 1;
 
 // ======================
 // DIALOGUE SYSTEM STATE
 // ======================
+
+bool wasShown[1000] = { false };
 
 struct DialogueLine {
     std::string CharacterName;
@@ -277,6 +279,7 @@ int main()
     GLuint magenta = loadBMP("Resources/Textures/magenta.bmp");
     GLuint oak = loadBMP("Resources/Textures/oak.bmp");
     GLuint concrete = loadBMP("Resources/Textures/concrete.bmp");
+    GLuint mangrove = loadBMP("Resources/Textures/mangrove.bmp");
 
     // Character portraits
     std::map<std::string, GLuint> portraits;
@@ -285,7 +288,7 @@ int main()
     portraits["Princess"] = loadBMP("Resources/Textures/PAINT_PINK.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
     // Delven pack textures
-    GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
+    //GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
 
     std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_difuse" } };
     std::vector<Texture> paint_black_texture = { { paint_black, "texture_difuse" } };
@@ -308,13 +311,14 @@ int main()
     std::vector<Texture> paint_white_texture = { { paint_white, "texture_difuse" } };
     std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_difuse" } };
 
-    std::vector<Texture> brick_texture = { { floor_brick, "texture_diffuse" } };
+    //std::vector<Texture> brick_texture = { { floor_brick, "texture_diffuse" } };
 
     std::vector<Texture> floor_texture = { { polishedAndesite, "texture_diffuse" } };
     std::vector<Texture> wall_texture = { { deepslateBricks, "texture_diffuse" } };
     std::vector<Texture> bars_texture = { { ironBlock, "texture_diffuse" } };
     std::vector<Texture> prison_door_texture = { { copper, "texture_diffuse" } };
-    std::vector<Texture> door_texture = { { spruce, "texture_diffuse" } };
+    std::vector<Texture> door_texture = { { mangrove, "texture_diffuse" } };
+    std::vector<Texture> deco_door_texture = { { spruce, "texture_diffuse" } };
     std::vector<Texture> garden_floor_texture = { { grass, "texture_diffuse" } };
     std::vector<Texture> bedroom_floor_texture = { { oak, "texture_diffuse" } };
     std::vector<Texture> bedroom_carpet_texture = { { magenta, "texture_diffuse" } };
@@ -343,6 +347,7 @@ int main()
     // Doors
     Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
     Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", prison_door_texture);
+    Mesh decoDoor = loader.loadObj("Resources/Models/standardDoor.obj", deco_door_texture);
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
@@ -477,15 +482,13 @@ int main()
 
     // FROG PUZZLE
 
-    frogSwitch buttons[7] =
+    frogSwitch buttons[5] =
     {
         { false, glm::vec3(6.0f, 2.0f, -6.8f), glm::vec3(0.1f), {0, 1, 2, 3, 4, 5, 6, 7}},
-        { false, glm::vec3(-6.0f, 2.0f, -6.8f), glm::vec3(0.1f), {0, 1, 2, 3, 4, 5, 6} },
-        { false, glm::vec3(6.0f, 2.0f, -2.8f), glm::vec3(0.1f), {2, 3, 4} },
-        { false, glm::vec3(-1.0f, 2.0f, -2.8f), glm::vec3(0.1f), {4, 5, 6} },
-        { false, glm::vec3(1.0f, 2.0f, 1.2f), glm::vec3(0.1f), {1, 2, 3} },
-        { false, glm::vec3(-6.0f, 2.0f, 1.2f), glm::vec3(0.1f), {0, 1} },
-        { false, glm::vec3(6.0f, 2.0f, 5.2f), glm::vec3(0.1f), {0, 6, 7} }
+        { false, glm::vec3(-5.5f, 2.0f, 11.8f), glm::vec3(0.1f), {0, 6} },
+        { false, glm::vec3(-3.0f, 2.0f, 11.8f), glm::vec3(0.1f), {1, 5, 7} },
+        { false, glm::vec3(3.0f, 2.0f, 11.8f), glm::vec3(0.1f), {2, 4} },
+        { false, glm::vec3(5.5f, 2.0f, 11.8f), glm::vec3(0.1f), {3} }
     };
 
     const int DOOR_COUNT = sizeof(doors) / sizeof(doors[0]);
@@ -878,7 +881,7 @@ int main()
 
                 firstLoad = 0;
             }
-            exitPos = glm::vec3(0.0f, 2.0f, 0.0f);
+            exitPos = glm::vec3(6.8f, 2.0f, 0.0f);
 
             // room 1 colliders
             colliders.push_back(backWall.getAABB());
@@ -949,13 +952,24 @@ int main()
                 isSolved_torch = true;
             }
 
+            // =====================
+            // DRAW EXTRA DOORS
+            // =====================
+
+            drawObject(decoDoor, glm::vec3(6.8f, 2.0f, -3.5f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, -90.0f, 4.0f);
+            drawObject(decoDoor, glm::vec3(6.8f, 2.0f, 3.5f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, -90.0f, 4.0f);
+            drawObject(decoDoor, glm::vec3(-6.8f, 2.0f, -3.5f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 90.0f, 4.0f);
+            drawObject(decoDoor, glm::vec3(-6.8f, 2.0f, 3.5f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 90.0f, 4.0f);
+
+            drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 6.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
+
             if (isSolved_torch == true)
             {
                 // ======================
                 // DRAW EXIT
                 // ======================
 
-                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, -90.0f, 4.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -981,8 +995,8 @@ int main()
             {
                 bookcase = loader.loadObj("Resources/Models/bookcaseWideFilled.obj", paint_darkbrown_texture);
 
-                warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
-                knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
+                warlockPos = glm::vec3(-2.7f, 2.0f, 6.0f);
+                knightPos = glm::vec3(-4.7f, 2.0f, 6.0f);
                 warlockYaw = 180.0f;
                 knightYaw = 180.0f;
 
@@ -1018,6 +1032,8 @@ int main()
 
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+
+            drawObject(decoDoor, glm::vec3(-3.5f, 2.0f, 6.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
             // =====================
             // DRAW BOOKSHELVES
@@ -1131,6 +1147,8 @@ int main()
             // ======================
 
             drawObject(gardenFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(15.0f, 0.1f, 15.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+
+            drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 14.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
             // ======================
             // DRAW WALLS
@@ -1276,6 +1294,8 @@ int main()
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 0.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 8.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
+            drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 11.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
+
             // ======================
             // DRAW WALLS
             // ======================
@@ -1322,7 +1342,10 @@ int main()
 
             for (int i = 0; i < BUTTON_COUNT; i++)
             {
-                drawObject(frogButton, buttons[i].position, buttons[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                if( i == 0 )
+                    drawObject(frogButton, buttons[i].position, buttons[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                else
+                    drawObject(frogButton, buttons[i].position, buttons[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 180.0f);
 
                 float distToButton_W = glm::length(warlockPos - buttons[i].position);
                 float distToButton_K = glm::length(knightPos - buttons[i].position);
@@ -1360,15 +1383,13 @@ int main()
                 hallTorches5[i]->draw(room2shader, ViewMatrix, ProjectionMatrix, currentFrame);
             }
 
-            // ======================
-            // DRAW EXIT
-            // ======================
-
-            drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
-
             if (isSolved_wardrobe)
             {
+                // ======================
+                // DRAW EXIT
+                // ======================
 
+                drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
 
                 // ======================
                 // EXIT INTERACTION
@@ -1437,6 +1458,8 @@ int main()
             drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 0.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 8.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+
+            drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 8.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
             // ======================
             // DRAW DECORATIONS
