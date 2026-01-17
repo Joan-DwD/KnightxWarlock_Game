@@ -34,6 +34,7 @@ int firstLoad = 1;
 
 struct DialogueLine {
     std::string CharacterName;
+    bool ShowBlackBackground;
     std::string Text;
 };
 
@@ -271,7 +272,7 @@ void LoadDialogue(int taskId) {
     if (!file.is_open()) {
         std::cout << "ERROR::DIALOGUE: Could not open file " << filename << std::endl;
         // Fallback line so the game doesn't break
-        currentDialogue.push_back({ "System", "Error loading dialogue file." });
+        currentDialogue.push_back({ "System", false, "Error loading dialogue file." });
         return;
     }
 
@@ -281,12 +282,16 @@ void LoadDialogue(int taskId) {
 
         std::stringstream ss(line);
         std::string name;
+        std::string bgOption;
         std::string text;
 
         // 1. Read first word as Character Name
         ss >> name;
 
-        // 2. Read the rest of the line as the Dialogue Text
+        // 2. Read second word as background option (clear/black)
+        ss >> bgOption;
+
+        // 3. Read the rest of the line as the Dialogue Text
         std::getline(ss, text);
 
         // Remove leading space from text (leftover from >> operator)
@@ -294,7 +299,9 @@ void LoadDialogue(int taskId) {
             text = text.substr(1);
         }
 
-        currentDialogue.push_back({ name, text });
+        bool isBlack = (bgOption == "black");
+
+        currentDialogue.push_back({ name, isBlack, text });
     }
     file.close();
     std::cout << "Loaded Dialogue Task " << taskId << ": " << currentDialogue.size() << " lines." << std::endl;
@@ -1910,7 +1917,7 @@ int main()
             DialogueLine& line = currentDialogue[currentLineIndex];
 
             // Draw black background for narrator when the case
-            if (line.CharacterName == "black")
+            if (line.ShowBlackBackground)
             {
                 glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f); // Set Color to Black
                 drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f), glm::vec3(window.getWidth(), window.getHeight(), 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
