@@ -955,7 +955,7 @@ int main()
             // EXIT INTERACTION
             // ======================
             float distToExit = glm::length(warlockPos - exitPos);
-            if (distToExit < 2.0f)
+            if (distToExit < 1.0f)
             {
                 if (currentTask == 4)
                 {
@@ -1091,7 +1091,7 @@ int main()
 
                 static bool eKeyWasPressed = false;
 
-                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 1.5f))
+                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 1.5f) && currentTask == 6)
                 {
                     if (window.isPressed(GLFW_KEY_E))
                     {
@@ -1144,7 +1144,7 @@ int main()
                 // EXIT INTERACTION
                 // ======================
                 float distToExit = glm::length(warlockPos - exitPos);
-                if (distToExit < 2.0f)
+                if (distToExit < 1.0f)
                 {
                     if (currentTask == 7)
                     {
@@ -1220,6 +1220,7 @@ int main()
                     drawObject(part, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 }
                 colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(1.9f, 3.0f, 0.4f)));
+
             }
 
             // Draw the rest
@@ -1231,11 +1232,35 @@ int main()
                 colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
 
+            // reading books:
+            for (int i = 0; i < BOOKSHELF_COUNT; i++)
+            {
+                static bool eKeyWasPressed = false;
+
+                float distToBookhelf = glm::length(activePos - bookshelves[i].position);
+                if (distToBookhelf < 3.0f)
+                {
+                    if (window.isPressed(GLFW_KEY_E))
+                    {
+                        // debounce
+                        if (!eKeyWasPressed)
+                        {
+                            if(!(isSolved_books && i == 0))
+                                LoadDialogue(300 + i);
+                            eKeyWasPressed = true;
+                        }
+                    }
+                    else {
+                        eKeyWasPressed = false;
+                    }
+                }
+            }
+
             glm::vec3 endPos = glm::vec3(7.0f, 2.0f, -7.0f);
 
             float distToEnd = glm::length(warlockPos - endPos);
 
-            if (distToEnd < 2.0f)
+            if (distToEnd < 1.0f)
             {
                 isSolved_books = true;
                 if (currentTask == 8)
@@ -1280,7 +1305,7 @@ int main()
                 // EXIT INTERACTION
                 // ======================
                 float distToExit = glm::length(warlockPos - exitPos);
-                if (distToExit < 2.0f)
+                if (distToExit < 1.0f)
                 {
                     if (currentTask == 9)
                         currentTask = 10;
@@ -1443,7 +1468,7 @@ int main()
                 // EXIT INTERACTION
                 // ======================
                 float distToExit = glm::length(warlockPos - exitPos);
-                if (distToExit < 2.0f)
+                if (distToExit < 1.0f)
                 {
                     if (currentTask == 10)
                         currentTask = 11;
@@ -1600,7 +1625,7 @@ int main()
                 // EXIT INTERACTION
                 // ======================
                 float distToExit = glm::length(warlockPos - exitPos);
-                if (distToExit < 2.0f)
+                if (distToExit < 1.0f)
                 {
                     if (currentTask == 12 && isSolved_wardrobe)
                         currentTask = 13;
