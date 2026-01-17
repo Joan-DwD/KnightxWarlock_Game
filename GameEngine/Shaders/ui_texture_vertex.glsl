@@ -5,9 +5,10 @@ layout (location = 2) in vec2 aTexCoords;
 out vec2 TexCoords;
 
 uniform mat4 MVP; // drawObject sends MVP here
+uniform vec2 uvScale; // for tiling
 
 void main()
 {
     gl_Position = MVP * vec4(aPos, 1.0);
-    TexCoords = aTexCoords;
+    TexCoords = aTexCoords * uvScale;
 }

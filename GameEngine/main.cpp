@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 5;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -280,10 +280,11 @@ int main()
     GLuint oak = loadBMP("Resources/Textures/oak.bmp");
     GLuint concrete = loadBMP("Resources/Textures/concrete.bmp");
     GLuint mangrove = loadBMP("Resources/Textures/mangrove.bmp");
+    GLuint glass = loadBMP("Resources/Textures/glass.bmp");
 
     // Character portraits
     std::map<std::string, GLuint> portraits;
-    portraits["Warlock"] = loadBMP("Resources/Textures/PAINT_PURPLE.bmp");
+    portraits["Warlock"] = loadBMP("Resources/Textures/WarlockTest.bmp");
     portraits["Knight"] = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
     portraits["Princess"] = loadBMP("Resources/Textures/PAINT_PINK.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
@@ -323,6 +324,7 @@ int main()
     std::vector<Texture> bedroom_floor_texture = { { oak, "texture_diffuse" } };
     std::vector<Texture> bedroom_carpet_texture = { { magenta, "texture_diffuse" } };
     std::vector<Texture> bedroom_wall_texture = { { concrete, "texture_diffuse" } };
+    std::vector<Texture> window_texture = { { glass, "texture_diffuse" } };
 
     // ======================
     // LOAD UNIVERSAL MODELS
@@ -333,10 +335,10 @@ int main()
     // walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", wall_texture);
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", floor_texture);
-    Mesh prisonWall = loader.loadObj("Resources/Models/barsCube.obj", bars_texture); // iron bars
+    Mesh prisonWall = loader.loadObj("Resources/Models/barsCube.obj", bars_texture);
 
     // window
-    Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", paint_lightblue_texture); // should be a window
+    Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", window_texture);
 
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/warlock.obj", paint_purple_texture);
@@ -609,7 +611,7 @@ int main()
     glm::vec3 exitPos;
 
     // Load dialogue
-    //LoadDialogue(0);
+    LoadDialogue(0);
 
     Camera camera(warlockPos);
 
@@ -687,13 +689,13 @@ int main()
         // Warlock
 
         if(!activeIsWarlock)
-            drawObject(warlock, warlockPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, warlockYaw);
+            drawObject(warlock, warlockPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.7f), shader, ViewMatrix, ProjectionMatrix, warlockYaw);
 
         // Knight
         if (currentRoom != 6)
         {
             if(activeIsWarlock)
-                drawObject(knight, knightPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, knightYaw);
+                drawObject(knight, knightPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.7f), shader, ViewMatrix, ProjectionMatrix, knightYaw);
         }
 
         // active character position
@@ -746,6 +748,9 @@ int main()
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
+            // window
+            drawObject(windowCube, glm::vec3(3.5f, 3.0f, 6.8f), glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
+
             // room 1 colliders
             colliders.push_back(backWall.getAABB());
             colliders.push_back(frontWall.getAABB());
@@ -761,8 +766,8 @@ int main()
             }
 
             // THE NEW CHARACTER - MR SKELLY BONES
-            glm::vec3 skellyPos = glm::vec3(-6.0f, 2.35f, 6.0f);
-            drawObject(mrSkelly, skellyPos, glm::vec3(0.02f), shader, ViewMatrix, ProjectionMatrix, 135.0f);
+            glm::vec3 skellyPos = glm::vec3(-4.5f, 0.0f, 6.5f);
+            drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
             colliders.push_back(makeAABB(skellyPos, glm::vec3(0.5f, 3.0f, 0.5f)));
 
             // ======================
@@ -1479,8 +1484,8 @@ int main()
             drawObject(bedroomPiano, pianoPos, glm::vec3(0.12f), shader, ViewMatrix, ProjectionMatrix, 210.0f);
             drawObject(bedroomTeddy, teddyPos, glm::vec3(3.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
 
-            // window (exit)
-            drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            // window
+            drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
             // princess pawn
             drawObject(princess, princessPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
             // armor
@@ -1494,25 +1499,6 @@ int main()
             colliders.push_back(makeAABB(armorPos - glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.5f, 3.0f, 0.6f)));
 
             float distToWindow = glm::length(warlockPos - windowPos);
-
-            static bool eKeyWasPressed = false;
-
-            if (window.isPressed(GLFW_KEY_E))
-            {
-                if (!eKeyWasPressed)
-                {
-                    eKeyWasPressed = true;
-                    if (distToWindow < 3.0f)
-                    {
-                        firstLoad = 1;
-                        currentRoom = 4;
-                    }
-                }
-                else
-                {
-                    eKeyWasPressed = false;
-                }
-            }
 
 
         }
@@ -1648,9 +1634,9 @@ int main()
                 // Center X is 960. Box width is 1200. Left edge approx 360.
                 // Placed it at x=450, y=100
                 if(line.CharacterName=="Warlock")
-                    drawObject(dialogueBoxMesh, glm::vec3(200.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
+                    drawObject(dialogueBoxMesh, glm::vec3(200.0f, 150.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
                 else
-                    drawObject(dialogueBoxMesh, glm::vec3(1400.0f, 100.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
+                    drawObject(dialogueBoxMesh, glm::vec3(1400.0f, 150.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
             }
 
             // --------------------------
@@ -1665,21 +1651,18 @@ int main()
         }
 
         float hx = 25.0f;
-        float hy = 800.0f;
+        float hy = 850.0f;
         float hz = 0.8f;
         glm::vec3 white(1.0f, 1.0f, 1.0f);
+        std::string hint;
 
         // --- Render Hints (Always visible) ---
         // Hints (Top Left)
-        if (!hasKey) {
-            textRenderer.RenderText(textShader, "Find the Key...", hx, hy, hz, white);
-        }
-        else if (!doorUnlocked) {
-            textRenderer.RenderText(textShader, "Go to the Door!", 25.0f, 800.0f, 0.8f, glm::vec3(0.2f, 1.0f, 0.2f));
-        }
-        else {
-            textRenderer.RenderText(textShader, "YOU ESCAPED!", 25.0f, 800.0f, 0.8f, glm::vec3(1.0f, 0.8f, 0.0f));
-        }
+
+        switch (currentTask)
+            case 1:
+                hint = "test";
+        textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
 
         // ==========================================
         // TRANSITION LOGIC
