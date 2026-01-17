@@ -21,7 +21,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 2;
 int firstLoad = 1;
 
 // ======================
@@ -342,6 +342,7 @@ int main()
     // Pawns
     Mesh warlock = loader.loadObj("Resources/Models/warlock.obj", paint_purple_texture);
     Mesh knight = loader.loadObj("Resources/Models/knight.obj", paint_gold_texture);
+    Mesh knife = loader.loadObj("Resources/Models/dagger_common.obj", paint_darkgray_texture);
 
     Mesh princess;
 
@@ -377,6 +378,9 @@ int main()
     // ======================
     // ROOM 2 - HALLWAY
     // ======================
+
+    Mesh barrel;
+    Mesh book;
 
     // ====================
     // ROOM 3 - LIBRARY
@@ -875,6 +879,9 @@ int main()
 
             if (firstLoad == 1)
             {
+                barrel = loader.loadObj("Resources/Models/barrel.obj", deco_door_texture);
+                book = loader.loadObj("Resources/Models/openBook.obj", paint_white_texture);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
                 warlockYaw = 180.0f;
@@ -912,6 +919,17 @@ int main()
 
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+
+            //=======================
+            // DRAW BOOK AND BARREL nad knife
+            //=======================
+
+            glm::vec3 barrelPos = glm::vec3(-6.0f, 0.1f, 0.0f);
+            drawObject(barrel, barrelPos, glm::vec3(1.6f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
+            colliders.push_back(makeAABB(barrelPos, glm::vec3(0.8f, 3.0f, 0.8f)));
+
+            drawObject(book, barrelPos, glm::vec3(1.6f), room2shader, ViewMatrix, ProjectionMatrix, 90.0f);
+            drawObject(knife, barrelPos + glm::vec3(0.0f, 1.6f, 0.0f), glm::vec3(2.0f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f);
             
             // ======================
             // DRAW TORCHES
@@ -1680,8 +1698,6 @@ int main()
         case 3: { hint = "Open the door."; break; }
         case 4: { hint = "Exit the Dungeon."; break; }
         }
-
-
         textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
 
         // ==========================================
