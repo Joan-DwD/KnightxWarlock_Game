@@ -481,6 +481,7 @@ int main()
     torch = loader.loadObj("Resources/Models/torch.obj", paint_black_texture);
 
     Mesh mrSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_white_texture);
+    Mesh evilSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_red_texture);
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 0.1f, 7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //back is down
     // Front wall
@@ -890,6 +891,8 @@ int main()
             drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
             colliders.push_back(makeAABB(skellyPos, glm::vec3(0.5f, 3.0f, 0.5f)));
 
+            drawObject(evilSkelly, -skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+
             // ======================
             // KEY PICKUP
             // ======================
@@ -957,10 +960,7 @@ int main()
             float distToExit = glm::length(warlockPos - exitPos);
             if (distToExit < 1.0f)
             {
-                if (currentTask == 4)
-                {
-                    currentTask = 5;
-                }
+
                 firstLoad = 1;
                 currentRoom = 2;
                 // TriggerRoomChange(); timing/function to be adjusted to suit room 1 as well
@@ -1007,7 +1007,11 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
-                LoadDialogue(4);
+                if (currentTask == 4)
+                {
+                    currentTask = 5;
+                    LoadDialogue(4);
+                }
 
                 firstLoad = 0;
             }
@@ -1146,10 +1150,7 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
-                    if (currentTask == 7)
-                    {
-                        currentTask = 8;
-                    }
+
                     firstLoad = 1;
                     currentRoom = 3;
                     TriggerRoomChange();
@@ -1181,7 +1182,11 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
-                LoadDialogue(7);
+                if (currentTask == 7)
+                {
+                    currentTask = 8;
+                    LoadDialogue(7);
+                }
 
                 firstLoad = 0;
             }
@@ -1307,8 +1312,7 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
-                    if (currentTask == 9)
-                        currentTask = 10;
+
                     firstLoad = 1;
                     currentRoom = 4;
                     TriggerRoomChange();
@@ -1355,7 +1359,11 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
-                LoadDialogue(9);
+                if (currentTask == 9)
+                {
+                    currentTask = 10;
+                    LoadDialogue(9);
+                }
 
                 firstLoad = 0;
             }
@@ -1470,8 +1478,6 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
-                    if (currentTask == 10)
-                        currentTask = 11;
                     firstLoad = 1;
                     currentRoom = 5;
                     TriggerRoomChange();
@@ -1504,7 +1510,11 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
-                LoadDialogue(10);
+                if (currentTask == 10)
+                {
+                    currentTask = 11;
+                    LoadDialogue(10);
+                }
 
                 firstLoad = 0;
             }
@@ -1627,8 +1637,6 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
-                    if (currentTask == 12 && isSolved_wardrobe)
-                        currentTask = 13;
                     firstLoad = 1;
                     currentRoom = 6;
                     TriggerRoomChange();
@@ -1667,7 +1675,11 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
-                LoadDialogue(12);
+                if (currentTask == 12)
+                {
+                    currentTask = 13;
+                    LoadDialogue(12);
+                }
 
                 firstLoad = 0;
             }
