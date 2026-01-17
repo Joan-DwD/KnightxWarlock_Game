@@ -1602,7 +1602,7 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 2.0f)
                 {
-                    if (currentTask == 12)
+                    if (currentTask == 12 && isSolved_wardrobe)
                         currentTask = 13;
                     firstLoad = 1;
                     currentRoom = 6;
@@ -1682,7 +1682,7 @@ int main()
             glm::vec3 windowPos(6.0f, 3.0f, -8.9f);
             glm::vec3 princessPos(-3.9f, 0.1f, 3.0f);
             glm::vec3 armorPos(-3.0f, 0.3f, 0.0f);
-            glm::vec3 knifePos(2.0f, 0.1f, -1.0f);
+            glm::vec3 knifePos(2.0f, 1.1f, -1.0f);
 
             drawObject(bedroomBed, bedPos, glm::vec3(0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             drawObject(bedroomDresser, dresserPos, glm::vec3(0.09f), shader, ViewMatrix, ProjectionMatrix, 120.0f);
@@ -1931,7 +1931,8 @@ int main()
         case 15: { hint = "Kill the Princess..."; break; }
         case 16: { hint = "Escape out the window."; break; }
         }
-        textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
+        if (!(!currentDialogue.empty() && currentLineIndex < currentDialogue.size()))
+            textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
 
         // ==========================================
         // TRANSITION LOGIC
