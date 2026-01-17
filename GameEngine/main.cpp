@@ -100,6 +100,29 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
     // Draw the mesh
     mesh.draw(shader);
 }
+
+void drawObject(std::vector<Mesh>& meshes, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation, float tiling = 1.0f) {
+    // 1. Calculate Matrix *once* for the whole object
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    model = glm::rotate(model, rotation, glm::vec3(0, 1, 0));
+    model = glm::scale(model, scale);
+
+    glm::mat4 mvp = projectionMatrix * viewMatrix * model;
+
+    GLuint matrixID = glGetUniformLocation(shader.getId(), "MVP");
+    GLuint modelID = glGetUniformLocation(shader.getId(), "model");
+
+    glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+    glUniform2f(glGetUniformLocation(shader.getId(), "uvScale"), tiling, tiling);
+
+    // 2. Loop and Draw all sub-meshes
+    for (auto& mesh : meshes) {
+        mesh.draw(shader);
+    }
+}
+
 void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation) {
     // Calculate Model Matrix
     glm::mat4 model = glm::mat4(1.0f);
@@ -497,7 +520,7 @@ int main()
     // ROOM 2 - HALLWAY
     // ======================
 
-    Mesh barrel;
+    std::vector<Mesh> barrel;
     Mesh book;
 
     // ====================
@@ -527,9 +550,9 @@ int main()
     // ====================
 
     Mesh gardenFloorCube;
-    Mesh tree_a, tree_b, tree_c, tree_d, tree_e, tree_f;
+    std::vector<Mesh> tree_a, tree_b, tree_c, tree_d, tree_e, tree_f;
     Mesh frog;
-    Mesh bush_a, bush_b, plant_a, plant_b, rock_a, rock_b;
+    std::vector<Mesh> bush_a, bush_b, plant_a, plant_b, rock_a, rock_b;
     Mesh pond_water, pond_frame;
 
     // Back wall
@@ -991,7 +1014,7 @@ int main()
 
             if (firstLoad == 1)
             {
-                barrel = loader.loadObj("Resources/Models/barrel.obj", deco_door_texture);
+                barrel = loadAssimpMesh("Resources/Models/barrel.obj", spruce, 0);
                 book = loader.loadObj("Resources/Models/openBook.obj", paint_white_texture);
 
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
@@ -1327,21 +1350,21 @@ int main()
             {
                 gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", garden_floor_texture);
 
-                tree_a = loader.loadObj("Resources/Models/Nature Pack/PineTree_1.obj", paint_green_texture);
-                tree_b = loader.loadObj("Resources/Models/Nature Pack/PineTree_2.obj", paint_green_texture);
-                tree_c = loader.loadObj("Resources/Models/Nature Pack/CommonTree_5.obj", paint_green_texture);
-                tree_d = loader.loadObj("Resources/Models/Nature Pack/CommonTree_2.obj", paint_green_texture);
-                tree_e = loader.loadObj("Resources/Models/Nature Pack/Willow_5.obj", paint_green_texture);
-                tree_f = loader.loadObj("Resources/Models/Nature Pack/Willow_4.obj", paint_green_texture);
+                tree_a = loadAssimpMesh("Resources/Models/Nature Pack/PineTree_1.obj");
+                tree_b = loadAssimpMesh("Resources/Models/Nature Pack/PineTree_2.obj");
+                tree_c = loadAssimpMesh("Resources/Models/Nature Pack/CommonTree_5.obj");
+                tree_d = loadAssimpMesh("Resources/Models/Nature Pack/CommonTree_2.obj");
+                tree_e = loadAssimpMesh("Resources/Models/Nature Pack/Willow_5.obj");
+                tree_f = loadAssimpMesh("Resources/Models/Nature Pack/Willow_4.obj");
 
                 frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
 
-                bush_a = loader.loadObj("Resources/Models/Nature Pack/Bush_1.obj", paint_lime_texture);
-                bush_b = loader.loadObj("Resources/Models/Nature Pack/BushBerries_2.obj", paint_lime_texture);
-                plant_a = loader.loadObj("Resources/Models/Nature Pack/Plant_4.obj", paint_lime_texture);
-                plant_b = loader.loadObj("Resources/Models/Nature Pack/Plant_5.obj", paint_lime_texture);
-                rock_a = loader.loadObj("Resources/Models/Nature Pack/Rock_6.obj", paint_lightgray_texture);
-                rock_b = loader.loadObj("Resources/Models/Nature Pack/Rock_Moss_7.obj", paint_lightgray_texture);
+                bush_a = loadAssimpMesh("Resources/Models/Nature Pack/Bush_1.obj");
+                bush_b = loadAssimpMesh("Resources/Models/Nature Pack/BushBerries_2.obj");
+                plant_a = loadAssimpMesh("Resources/Models/Nature Pack/Plant_4.obj");
+                plant_b = loadAssimpMesh("Resources/Models/Nature Pack/Plant_5.obj");
+                rock_a = loadAssimpMesh("Resources/Models/Nature Pack/Rock_6.obj");
+                rock_b = loadAssimpMesh("Resources/Models/Nature Pack/Rock_Moss_7.obj");
 
                 pond_frame = loader.loadObj("Resources/Models/Pond Pack/pond_frame.obj", paint_lightgray_texture);
                 pond_water = loader.loadObj("Resources/Models/Pond Pack/water.obj", paint_blue_texture);
