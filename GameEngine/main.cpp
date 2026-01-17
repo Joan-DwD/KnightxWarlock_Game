@@ -28,8 +28,6 @@ int firstLoad = 1;
 // DIALOGUE SYSTEM STATE
 // ======================
 
-bool wasShown[1000] = { false };
-
 struct DialogueLine {
     std::string CharacterName;
     std::string Text;
@@ -287,6 +285,7 @@ int main()
     portraits["Warlock"] = loadBMP("Resources/Textures/WarlockTest.bmp");
     portraits["Knight"] = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
     portraits["Princess"] = loadBMP("Resources/Textures/PAINT_PINK.bmp");
+    portraits["Skelly"] = loadBMP("Resources/Textures/skellyPortrait.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
     // Delven pack textures
     //GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
@@ -779,9 +778,13 @@ int main()
             {
                 if (window.isPressed(GLFW_KEY_E))
                 {
+                    if (currentTask == 2)
+                    {
+                        LoadDialogue(2);
+                        currentTask = 3;
+                    }
                     keyCollected = true;
                     hasKey = true;
-                    std::cout << ">>> You picked up the key!" << std::endl;
                 }
                 else
                 {
@@ -798,17 +801,18 @@ int main()
             // DOOR INTERACTION
             // ======================
             float distToDoor = glm::length(activePos - doorPos);
-            if (distToDoor < 2.0f)
+            if (distToDoor < 2.0f && !activeIsWarlock)
             {
                 if (window.isPressed(GLFW_KEY_E))
                 {
                     if (hasKey && !doorUnlocked)
                     {
+                        if (currentTask == 3)
+                        {
+                            LoadDialogue(3);
+                            currentTask = 4;
+                        }
                         doorUnlocked = true;
-                    }
-                    else if (!hasKey)
-                    {
-                        std::cout << "door locked";
                     }
                 }
             }
@@ -1487,7 +1491,7 @@ int main()
             // window
             drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
             // princess pawn
-            drawObject(princess, princessPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+            drawObject(princess, princessPos, glm::vec3(1.6f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
             // armor
             drawObjectSideways(knight, armorPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
 
@@ -1506,8 +1510,13 @@ int main()
         // CHARACTER SWAP (SPACE)
         // ======================
         static bool spacePressedLastFrame = false;
-        if (window.isPressed(GLFW_KEY_SPACE) && currentRoom != 6)
+        if (window.isPressed(GLFW_KEY_SPACE) && currentRoom != 6 && !(!currentDialogue.empty() && currentLineIndex < currentDialogue.size()))
         {
+            if (currentTask == 1)
+            {
+                LoadDialogue(1);
+                currentTask++;
+            }
             if (!spacePressedLastFrame)
             {
                 // SAVE current character state
@@ -1551,8 +1560,11 @@ int main()
         // ROTATION
         // ======================
         float rotationSpeed = 180.0f * deltaTime;
-        if (window.isPressed(GLFW_KEY_A)) camera.rotateOy(rotationSpeed);
-        if (window.isPressed(GLFW_KEY_D)) camera.rotateOy(-rotationSpeed);
+        if (!(!currentDialogue.empty() && currentLineIndex < currentDialogue.size()))
+        {
+            if (window.isPressed(GLFW_KEY_A)) camera.rotateOy(rotationSpeed);
+            if (window.isPressed(GLFW_KEY_D)) camera.rotateOy(-rotationSpeed);
+        }
 
         // ======================
         // MOVEMENT
@@ -1564,8 +1576,11 @@ int main()
         forward = glm::normalize(forward);
 
         glm::vec3 delta(0.0f);
-        if (window.isPressed(GLFW_KEY_W)) delta += forward * speed;
-        if (window.isPressed(GLFW_KEY_S)) delta -= forward * speed;
+        if (!(!currentDialogue.empty() && currentLineIndex < currentDialogue.size()))
+        {
+            if (window.isPressed(GLFW_KEY_W)) delta += forward * speed;
+            if (window.isPressed(GLFW_KEY_S)) delta -= forward * speed;
+        }
 
         // Move camera cube with collision
         movement(cameraCube.position, delta, cameraCube.halfSize, colliders);
@@ -1611,7 +1626,6 @@ int main()
             glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.2f, 0.212f, 0.239f);
 
 
-            // Use your helper function!
             // ViewMatrix is Identity (glm::mat4(1.0f)) for UI
             drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f), glm::vec3(1200.0f, 200.0f, 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
 
@@ -1660,8 +1674,14 @@ int main()
         // Hints (Top Left)
 
         switch (currentTask)
-            case 1:
-                hint = "test";
+        {
+        case 1: { hint = "Swap to the Knight! (Press Space)"; break; }
+        case 2: { hint = "Pick up the key. (Press E)"; break; }
+        case 3: { hint = "Open the door."; break; }
+        case 4: { hint = "Exit the Dungeon."; break; }
+        }
+
+
         textRenderer.RenderText(textShader, hint, hx, hy, hz, white);
 
         // ==========================================
