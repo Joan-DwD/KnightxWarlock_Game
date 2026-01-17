@@ -10,6 +10,10 @@
 #include <fstream>
 #include <sstream>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 // --- Custom Class Includes ---
 #include "TextRenderer.h"
 #include "Wall.h"
@@ -114,6 +118,119 @@ void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader&
 
     // Draw the mesh
     mesh.draw(shader);
+}
+
+// ==========================================
+// ASSIMP FUNCTIONS
+// ==========================================
+// Helper to create a 1x1 texture from a color
+GLuint CreateTextureFromColor(float r, float g, float b) {
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    unsigned char data[3];
+    data[0] = (unsigned char)(r * 255.0f);
+    data[1] = (unsigned char)(g * 255.0f);
+    data[2] = (unsigned char)(b * 255.0f);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    return textureID;
+}
+
+std::vector<Mesh> loadAssimpMesh(std::string path, GLuint overrideTextureID = 0, int overrideMeshIndex = -1) {
+    Assimp::Importer importer;
+
+    const aiScene* scene = importer.ReadFile(path,
+        aiProcess_Triangulate |
+        aiProcess_FlipUVs |
+        aiProcess_GenSmoothNormals
+    );
+
+    std::vector<Mesh> meshList;
+
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        return meshList;
+    }
+
+    // Process every sub-mesh
+    for (unsigned int m = 0; m < scene->mNumMeshes; m++)
+    {
+        aiMesh* mesh = scene->mMeshes[m];
+        std::vector<Vertex> vertices;
+        std::vector<int> indices;
+        std::vector<Texture> textures;
+
+        // 1. Process Vertices
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+            Vertex vertex;
+
+            vertex.pos.x = mesh->mVertices[i].x;
+            vertex.pos.y = mesh->mVertices[i].y;
+            vertex.pos.z = mesh->mVertices[i].z;
+
+            if (mesh->HasNormals()) {
+                vertex.normals.x = mesh->mNormals[i].x;
+                vertex.normals.y = mesh->mNormals[i].y;
+                vertex.normals.z = mesh->mNormals[i].z;
+            }
+
+            if (mesh->mTextureCoords[0]) {
+                vertex.textureCoords.x = mesh->mTextureCoords[0][i].x;
+                vertex.textureCoords.y = mesh->mTextureCoords[0][i].y;
+            }
+            else {
+                vertex.textureCoords = glm::vec2(0.0f, 0.0f);
+            }
+            vertices.push_back(vertex);
+        }
+
+        // 2. Process Indices
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+            aiFace face = mesh->mFaces[i];
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+                indices.push_back((int)face.mIndices[j]);
+        }
+
+        // 3. Process Material (the color extractor)
+        bool materialAssigned = false;
+
+        // A. Check for Override
+        if (overrideTextureID != 0 && (int)m == overrideMeshIndex)
+        {
+            Texture t;
+            t.id = overrideTextureID;
+            t.type = "texture_diffuse";
+            textures.push_back(t);
+            materialAssigned = true;
+        }
+
+        // B. If no override, try to get color from MTL
+        if (!materialAssigned && mesh->mMaterialIndex >= 0) {
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+            // Get the Diffuse Color (Kd) directly from the MTL
+            aiColor3D color(0.f, 0.f, 0.f);
+            if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+
+                // Create 1x1 texture from color
+                GLuint texID = CreateTextureFromColor(color.r, color.g, color.b);
+
+                Texture t;
+                t.id = texID;
+                t.type = "texture_diffuse";
+                textures.push_back(t);
+            }
+        }
+        meshList.push_back(Mesh(vertices, indices, textures));
+    }
+
+    return meshList;
 }
 
 // =======================
@@ -387,7 +504,7 @@ int main()
     // ====================
 
     // books
-    Mesh bookcase;
+    std::vector<Mesh> bookcaseParts;
 
     bookshelf bookshelves[8] =
     {
@@ -1049,7 +1166,7 @@ int main()
             glUniform1i(glGetUniformLocation(room2shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT3);
             if (firstLoad == 1)
             {
-                bookcase = loader.loadObj("Resources/Models/bookcaseWideFilled.obj", paint_darkbrown_texture);
+                bookcaseParts = loadAssimpMesh("Resources/Models/bookcaseWideFilled.obj", spruce, 0);
 
                 warlockPos = glm::vec3(-2.7f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-4.7f, 2.0f, 6.0f);
@@ -1098,12 +1215,19 @@ int main()
             // =====================
             if (!isSolved_books)
             {
-                drawObject(bookcase, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                // Draw the first shelf
+                for (auto& part : bookcaseParts) {
+                    drawObject(part, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                }
                 colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
-            for (int i = 1; i < BOOKSHELF_COUNT; i++) 
+
+            // Draw the rest
+            for (int i = 1; i < BOOKSHELF_COUNT; i++)
             {
-                drawObject(bookcase, bookshelves[i].position, bookshelves[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                for (auto& part : bookcaseParts) {
+                    drawObject(part, bookshelves[i].position, bookshelves[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                }
                 colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(1.9f, 3.0f, 0.4f)));
             }
 
