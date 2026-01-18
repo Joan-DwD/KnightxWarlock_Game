@@ -1731,9 +1731,7 @@ int main()
                 bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", bedroom_floor_texture);
                 bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", bedroom_carpet_texture);
 
-                bedroomBed = loader.loadObj("Resources/Models/bed.obj", paint_pink_texture);
-                bedroomPiano = loader.loadObj("Resources/Models/piano.obj", paint_black_texture);
-                bedroomDresser = loader.loadObj("Resources/Models/dresser.obj", paint_darkbrown_texture);
+                bedroomBed = loader.loadObj("Resources/Models/bed_single_B.obj", paint_pink_texture);
                 bedroomTeddy = loader.loadObj("Resources/Models/teddy.obj", paint_purple_texture);
                 
                 princess = loader.loadObj("Resources/Models/princess.obj", paint_yellow_texture);
@@ -1797,9 +1795,7 @@ int main()
             glm::vec3 armorPos(-3.0f, 0.3f, 0.0f);
             glm::vec3 knifePos(2.0f, 1.1f, -1.0f);
 
-            drawObject(bedroomBed, bedPos, glm::vec3(0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
-            drawObject(bedroomDresser, dresserPos, glm::vec3(0.09f), shader, ViewMatrix, ProjectionMatrix, 120.0f);
-            drawObject(bedroomPiano, pianoPos, glm::vec3(0.12f), shader, ViewMatrix, ProjectionMatrix, 210.0f);
+            drawObject(bedroomBed, bedPos, glm::vec3(2.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             drawObject(bedroomTeddy, teddyPos, glm::vec3(3.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
 
             // window
@@ -1846,9 +1842,8 @@ int main()
                     eKeyWasPressed = false;
                 }
 
-            colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 2.8f)));
-            colliders.push_back(makeAABB(dresserPos, glm::vec3(2.0f, 3.0f, 2.0f)));
-            colliders.push_back(makeAABB(pianoPos, glm::vec3(1.8f, 3.0f, 2.3f)));
+            colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 2.8f))); // tbd
+
             colliders.push_back(makeAABB(teddyPos, glm::vec3(1.5f, 3.0f, 1.5f)));
             colliders.push_back(makeAABB(princessPos, glm::vec3(0.7f, 3.0f, 0.7f)));
             colliders.push_back(makeAABB(armorPos - glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.5f, 3.0f, 0.6f)));
