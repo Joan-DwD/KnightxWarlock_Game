@@ -511,7 +511,9 @@ int main()
     torch = loader.loadObj("Resources/Models/torch.obj", paint_black_texture);
 
     Mesh mrSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_white_texture);
-    Mesh evilSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_red_texture);
+
+    //Mesh evilSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_red_texture);
+ 
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 0.1f, 7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //back is down
     // Front wall
@@ -920,8 +922,6 @@ int main()
             glm::vec3 skellyPos = glm::vec3(-4.5f, 0.0f, 6.5f);
             drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
             colliders.push_back(makeAABB(skellyPos, glm::vec3(0.5f, 3.0f, 0.5f)));
-
-            drawObject(evilSkelly, -skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
             // ======================
             // KEY PICKUP
