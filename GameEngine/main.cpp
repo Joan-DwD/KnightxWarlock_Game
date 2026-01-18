@@ -25,7 +25,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 6;
 int firstLoad = 1;
 
 // ======================
@@ -143,6 +143,7 @@ void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader&
     // Draw the mesh
     mesh.draw(shader);
 }
+
 
 // ==========================================
 // ASSIMP FUNCTIONS
@@ -607,6 +608,13 @@ int main()
         { glm::vec3(9.0f,0.0f,  3.0f), glm::vec3(2.6f), 155.0f }
     };
 
+
+    Mesh tree_a_shadow;
+    Mesh tree_b_shadow;
+    Mesh tree_c_shadow;
+    Mesh tree_d_shadow;
+    Mesh tree_e_shadow;
+    Mesh tree_f_shadow;
 
     // ====================
     // ROOM 5 - WARDROBE
@@ -1254,7 +1262,7 @@ int main()
                 for (auto& part : bookcaseParts) {
                     drawObject(part, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 }
-                colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(1.9f, 3.0f, 0.4f)));
+                colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(2.0f, 3.0f, 0.6f)));
 
             }
 
@@ -1264,7 +1272,7 @@ int main()
                 for (auto& part : bookcaseParts) {
                     drawObject(part, bookshelves[i].position, bookshelves[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 }
-                colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(1.9f, 3.0f, 0.4f)));
+                colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(2.0f, 3.0f, 0.4f)));
             }
 
             // reading books:
@@ -1364,6 +1372,13 @@ int main()
                 tree_e = loadAssimpMesh("Resources/Models/Nature Pack/Willow_5.obj");
                 tree_f = loadAssimpMesh("Resources/Models/Nature Pack/Willow_4.obj");
 
+                tree_a_shadow = loader.loadObj("Resources/Models/Nature Pack/PineTree_1.obj", paint_black_texture);
+                tree_b_shadow = loader.loadObj("Resources/Models/Nature Pack/PineTree_2.obj", paint_black_texture);
+                tree_c_shadow = loader.loadObj("Resources/Models/Nature Pack/CommonTree_5.obj", paint_black_texture);
+                tree_d_shadow = loader.loadObj("Resources/Models/Nature Pack/CommonTree_2.obj", paint_black_texture);
+                tree_e_shadow = loader.loadObj("Resources/Models/Nature Pack/Willow_5.obj", paint_black_texture);
+                tree_f_shadow = loader.loadObj("Resources/Models/Nature Pack/Willow_4.obj", paint_black_texture);
+
                 frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
 
                 bush_a = loadAssimpMesh("Resources/Models/Nature Pack/Bush_1.obj");
@@ -1438,6 +1453,8 @@ int main()
             {
                 glm::vec3 treePos = trees[i].position;
                 glm::vec3 treeScale = glm::vec3(trees[i].scale);
+                glm::vec3 shadowScale = glm::vec3(0.001f, 2.0f, 2.0f);
+
                 float treeRotation = trees[i].rotation;
 
                 switch (i % 6)
@@ -1445,33 +1462,62 @@ int main()
                 case 0:
                 {
                     drawObject(bush_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
-                    drawObject(tree_a, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                    drawObject(tree_a, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); 
+
+                    drawObjectSideways(tree_a_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    
+                    break;
 
                 }
                 case 1:
                 {
                     drawObject(bush_b, -treePos - glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
-                    drawObject(tree_b, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                    drawObject(tree_b, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
+
+
+                    drawObjectSideways(tree_b_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    
+                    break;
                 }
                 case 2:
                 {
                     drawObject(plant_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
-                    drawObject(tree_c, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                    drawObject(tree_c, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
+
+
+                    drawObjectSideways(tree_c_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    
+                    break;
                 }
                 case 3:
                 {
                     drawObject(plant_b, -treePos - glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
-                    drawObject(tree_d, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                    drawObject(tree_d, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
+
+
+                    drawObjectSideways(tree_d_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    
+                    break;
                 }
                 case 4:
                 {
                     drawObject(rock_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
-                    drawObject(tree_e, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                    drawObject(tree_e, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
+
+
+                    drawObjectSideways(tree_e_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    
+                    break;
                 }
                 case 5:
                 {
                     drawObject(rock_b, -treePos - glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
-                    drawObject(tree_f, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); break;
+                    drawObject(tree_f, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
+
+
+                    drawObjectSideways(tree_f_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    
+                    break;
                 }
                 }
 
@@ -1920,6 +1966,7 @@ int main()
             if (line.ShowBlackBackground)
             {
                 glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f); // Set Color to Black
+
                 drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f), glm::vec3(window.getWidth(), window.getHeight(), 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
             }
 
