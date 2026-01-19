@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Camera\camera.h"
 #include "Shaders\shader.h"
 #include "Model Loading\mesh.h"
@@ -19,6 +20,53 @@
 #include "Wall.h"
 #include "Torch.h"
 #include "Collision.h"
+
+
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+
+// ======================
+// RAY CASTING 
+// ======================
+struct Ray {
+    glm::vec3 origin;
+    glm::vec3 direction;
+};
+// Returns distance to intersection, or -1 if no intersection
+inline float rayAABBIntersect(const Ray& ray, const AABB& box) {
+    glm::vec3 invDir = 1.0f / ray.direction;
+    glm::vec3 t1 = (box.min - ray.origin) * invDir;
+    glm::vec3 t2 = (box.max - ray.origin) * invDir;
+    glm::vec3 tmin = glm::min(t1, t2);
+    glm::vec3 tmax = glm::max(t1, t2);
+    float tNear = glm::max(glm::max(tmin.x, tmin.y), tmin.z);
+    float tFar = glm::min(glm::min(tmax.x, tmax.y), tmax.z);
+    // Check if ray intersects box
+    if (tNear > tFar || tFar < 0.0f) {
+        return -1.0f;
+    }
+    return tNear > 0.0f ? tNear : tFar;
+}
+// Convert screen coordinates to world ray
+inline Ray screenToWorldRay(double mouseX, double mouseY, int screenWidth, int screenHeight,
+    const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix,
+    const glm::vec3& cameraPos) {
+    // Convert mouse coordinates to normalized device coordinates as in -1 to +1
+    float x = (2.0f * static_cast<float>(mouseX)) / screenWidth - 1.0f;
+    float y = 1.0f - (2.0f * static_cast<float>(mouseY)) / screenHeight;
+    // Create ray in clip space, a point 
+    glm::vec4 rayClip(x, y, -1.0f, 1.0f);
+    // Convert to eye space so our can travel into the 3D world that is flattened to 2D in our perspective projection
+    glm::vec4 rayEye = glm::inverse(projectionMatrix) * rayClip;
+    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f); // this is now a direction vector pointing forward beause we set w = 0
+    // Convert to world space so that the ray is relative to the world and not the camera
+    glm::vec3 rayWorld = glm::vec3(glm::inverse(viewMatrix) * rayEye);
+    rayWorld = glm::normalize(rayWorld);
+    Ray ray;
+    ray.origin = cameraPos;
+    ray.direction = rayWorld;
+    return ray;
+}
 
 // ======================
 // GLOBAL QUEST HANDLING VARIABLES
@@ -74,6 +122,10 @@ struct CameraCollider
 glm::vec3 lightColor = glm::vec3(0.8f, 0.6f, 0.4f);
 glm::vec3 lightPos = glm::vec3(0.0f, 6.5f, 1.0f);
 
+
+
+ma_engine g_audioEngine;
+bool g_audioInitialized = false;
 
 // =======================
 // DRAWING FUNCTION
@@ -365,6 +417,11 @@ int main()
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+
+    ma_result audioResult = ma_engine_init(NULL, &g_audioEngine);
+    if (audioResult == MA_SUCCESS) {
+        g_audioInitialized = true;
+    }
 
     // Enable blending
     glEnable(GL_BLEND);
@@ -758,12 +815,23 @@ int main()
     bool activeIsWarlock = true; // start controlling Warlock
     const glm::vec3 pawnHalfSize(0.3f, 1.0f, 0.3f); // collision box for player
 
-    glm::vec3 keyPos = glm::vec3(-3.0f, 0.2f, -3.0f);
     bool keyCollected = false;
     bool hasKey = false;
+    glm::vec3 keyBasePos = glm::vec3(-3.0f, 1.0f, -3.0f);
+    glm::vec3 keyPos = keyBasePos;
+    float keyRotation = 0.0f;
+    float keyPickupTimer = 0.0f;
+    bool keyPickingUp = false;
 
+    const float KEY_PICKUP_DURATION = 1.5f;
     glm::vec3 doorPos = glm::vec3(5.0f, 2.0f, 0.0f);
     bool doorUnlocked = false;
+    glm::vec3 doorHingePos = glm::vec3(7.0f, 2.0f, 0.0f);
+    float doorRotation = 0.0f;
+    bool doorOpening = false;
+    const float DOOR_OPEN_ANGLE = 65.0f;
+    const float DOOR_OPEN_SPEED = 25.0f;
+    bool doorSoundPlayed = false;
 
     bool isSolved_torch = false; // room 2 puzzle
     bool isSolved_books = false; // NEEDS ACTUAL PUZZLE LOL
@@ -928,24 +996,48 @@ int main()
             colliders.push_back(rightWall.getAABB());
             colliders.push_back(middleWall.getAABB());
 
-            if (!doorUnlocked)
+            // Idle Animation (Floating & Spinning)
+            if (!keyCollected && !keyPickingUp)
             {
-                colliders.push_back(
-                    makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
-                );
+                // Floating effect (Sine wave on Y-axis)
+                float keyOffset = sin(currentFrame * 2.0f) * 0.15f;
+                keyPos = keyBasePos + glm::vec3(0.0f, keyOffset, 0.0f);
+
+                // Rotation (Spinning)
+                keyRotation += deltaTime * 90.0f;
+                if (keyRotation > 360.0f) keyRotation -= 360.0f;
             }
 
-            // THE NEW CHARACTER - MR SKELLY BONES
-            glm::vec3 skellyPos = glm::vec3(-4.5f, 0.0f, 6.5f);
-            drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
-            colliders.push_back(makeAABB(skellyPos, glm::vec3(0.5f, 3.0f, 0.5f)));
+            // Pickup Animation (Rise, Speed Spin, Shrink)
+            if (keyPickingUp)
+            {
+                keyPickupTimer += deltaTime;
+                float t = keyPickupTimer / KEY_PICKUP_DURATION;
+
+                if (t >= 1.0f)
+                {
+                    // Animation Complete
+                    keyCollected = true;
+                    hasKey = true;
+                    keyPickingUp = false;
+                }
+                else
+                {
+                    // Acceleration spin
+                    keyRotation += deltaTime * (180.0f + t * 720.0f);
+
+                    // Rise up and shrink using Ease-Out interpolation
+                    float easeOut = 1.0f - (1.0f - t) * (1.0f - t);
+                    keyPos = keyBasePos + glm::vec3(0.0f, easeOut * 3.0f, 0.0f);
+                }
+            }
 
             // ======================
             // KEY PICKUP
             // ======================
-            
+
             float distToKey = glm::length(activePos - keyPos);
-            if (distToKey < 2.0f && !keyCollected)
+            if (distToKey < 2.0f && !keyCollected && !keyPickingUp)
             {
                 if (window.isPressed(GLFW_KEY_E))
                 {
@@ -954,8 +1046,21 @@ int main()
                         LoadDialogue(2);
                         currentTask = 3;
                     }
-                    keyCollected = true;
-                    hasKey = true;
+                    keyPickingUp = true; // Start pickup animation
+                }
+            }
+
+            // ======================
+            // DOOR ANIMATION
+            // ======================
+
+            if (doorOpening)
+            {
+                doorRotation += DOOR_OPEN_SPEED * deltaTime;
+                if (doorRotation >= DOOR_OPEN_ANGLE)
+                {
+                    doorRotation = DOOR_OPEN_ANGLE;
+                    doorOpening = false;
                 }
             }
 
@@ -969,11 +1074,18 @@ int main()
                 {
                     if (hasKey && !doorUnlocked)
                     {
+                        if (g_audioInitialized && !doorSoundPlayed)
+                        {
+                            ma_engine_play_sound(&g_audioEngine, "audio/creakydoor.wav", NULL);
+                            doorSoundPlayed = true;
+                            std::cout << "CREEEEAK" << std::endl;
+                        }
                         if (currentTask == 3)
                         {
                             LoadDialogue(3);
                             currentTask = 4;
                         }
+                        doorOpening = true;
                         doorUnlocked = true;
                     }
                 }
@@ -984,15 +1096,55 @@ int main()
             // ======================
             if (!keyCollected)
             {
-                drawObject(keyMesh, keyPos, glm::vec3(0.01f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                ModelMatrix = glm::mat4(1.0f);
+                ModelMatrix = glm::translate(ModelMatrix, keyPos); // Apply animated position
+                ModelMatrix = glm::rotate(ModelMatrix, keyRotation, glm::vec3(0.0f, 1.0f, 0.0f)); // Apply animated rotation
+
+                float keyScale = 0.02f;
+                if (keyPickingUp)
+                {
+                    // Shrink and Pulse effect during pickup
+                    float t = keyPickupTimer / KEY_PICKUP_DURATION;
+                    float scaleMod = 1.0f + sin(t * 3.14159f) * 0.5f - t * t;
+                    keyScale *= std::max(0.0f, scaleMod);
+                }
+                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(keyScale));
+
+                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+                keyMesh.draw(shader);
             }
 
             // ======================
             // DRAW DOOR
             // ======================
+            {
+                ModelMatrix = glm::mat4(1.0f);
+
+                // translate to hinge position
+                ModelMatrix = glm::translate(ModelMatrix, doorHingePos);
+
+                // rotate around Y axis (hinge)
+                ModelMatrix = glm::rotate(ModelMatrix, doorRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+
+                // translate back so door's position (center) is correct
+                ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-2.0f, 0.0f, 0.0f));
+
+                ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.1f));
+
+                MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+                glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+                glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+                prisonDoor.draw(shader);
+            }
+
+            // Door collision (only when not unlocked)
             if (!doorUnlocked)
             {
-                drawObject(prisonDoor, doorPos, glm::vec3(2.0f, 2.0f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
+                colliders.push_back(
+                    makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
+                );
             }
 
             // ======================
@@ -1123,41 +1275,81 @@ int main()
             // ======================
 
             // light iters
+            double mouseX, mouseY;
+            window.getMousePos(mouseX, mouseY);
+            bool mouseClicked = window.isMousePressed(GLFW_MOUSE_BUTTON_LEFT);
+
+            // Create ray from mouse position
+            Ray pickRay = screenToWorldRay(mouseX, mouseY, window.getWidth(), window.getHeight(),
+                ProjectionMatrix, ViewMatrix, camera.getCameraPosition());
+
+            // THIS WILL BE REMOVED AT THE END, I JUST WANTED DEBUG INFO
+            if (mouseClicked)
+            {
+                std::cout << "MOUSE CLICKED" << std::endl;
+                std::cout << "Screen: (" << mouseX << ", " << mouseY << ") / (" << window.getWidth() << ", " << window.getHeight() << ")" << std::endl;
+                std::cout << "Camera pos: (" << camera.getCameraPosition().x << ", " << camera.getCameraPosition().y << ", " << camera.getCameraPosition().z << ")" << std::endl;
+                std::cout << "Ray origin: (" << pickRay.origin.x << ", " << pickRay.origin.y << ", " << pickRay.origin.z << ")" << std::endl;
+                std::cout << "Ray dir: (" << pickRay.direction.x << ", " << pickRay.direction.y << ", " << pickRay.direction.z << ")" << std::endl;
+                std::cout << "Current Task: " << currentTask << std::endl;
+            }
+
+            // Update torch uniforms
             for (int i = 0; i < HALL_TORCH_COUNT; i++)
             {
                 std::string posName = "torchPos[" + std::to_string(i) + "]";
                 std::string colorName = "torchColor[" + std::to_string(i) + "]";
                 std::string onName = "torchOn[" + std::to_string(i) + "]";
-
                 glm::vec3 p = hallTorches[i]->position + glm::vec3(0.0f, 0.4f, 0.0f);
-
                 glUniform3f(glGetUniformLocation(room2shader.getId(), posName.c_str()), p.x, p.y, p.z);
                 glUniform3f(glGetUniformLocation(room2shader.getId(), colorName.c_str()), 1.0f, 0.5f, 0.2f);
                 glUniform1i(glGetUniformLocation(room2shader.getId(), onName.c_str()), hallTorches[i]->isOn ? 1 : 0);
             }
-            
-            for (int i = 0; i < HALL_TORCH_COUNT; i++) 
+
+            // Draw and interact with torches using raycasting
+            static bool mouseClickedLastFrame = false;
+
+            for (int i = 0; i < HALL_TORCH_COUNT; i++)
             {
                 hallTorches[i]->draw(room2shader, ViewMatrix, ProjectionMatrix, currentFrame);
 
-                static bool eKeyWasPressed = false;
+                // Get torch position
+                glm::vec3 torchPos = hallTorches[i]->position;
 
-                if (hallTorches[i]->isPlayerClose(activeIsWarlock ? warlockPos : knightPos, 1.5f) && currentTask == 6)
+                // Create an AABB around the torch
+                AABB torchBox = makeAABB(torchPos, glm::vec3(0.8f, 1.2f, 0.8f));
+
+                // Cast ray against torch
+                float torchDist = rayAABBIntersect(pickRay, torchBox);
+
+                // HERE TOO - DEBUG INFO
+                if (mouseClicked)
                 {
-                    if (window.isPressed(GLFW_KEY_E))
+                    std::cout << "Torch[" << i << "] pos: (" << torchPos.x << ", " << torchPos.y << ", " << torchPos.z << ") | ";
+                    std::cout << "AABB: min(" << torchBox.min.x << "," << torchBox.min.y << "," << torchBox.min.z << ") ";
+                    std::cout << "max(" << torchBox.max.x << "," << torchBox.max.y << "," << torchBox.max.z << ") | ";
+                    std::cout << "Distance: " << torchDist << std::endl;
+                }
+
+                // Check if ray hits torch
+                if (torchDist > 0.0f && torchDist < 100.0f)
+                {
+                    std::cout << ">>> HIT DETECTED on Torch " << i << " (distance: " << torchDist << ")" << std::endl;
+
+                    // Only toggle if task allows it
+                    if (currentTask == 6)
                     {
-                        // debounce
-                        if (!eKeyWasPressed) {
+                        if (mouseClicked && !mouseClickedLastFrame)
+                        {
                             hallTorches[i]->toggle();
-                            std::cout << ">>> Torch toggled!" << std::endl;
-                            eKeyWasPressed = true;
+                            std::cout << ">>> Torch " << i << " TOGGLED to " << (hallTorches[i]->isOn ? "ON" : "OFF") << std::endl;
                         }
                     }
-                    else {
-                        eKeyWasPressed = false;
-                    }
+
                 }
             }
+
+            mouseClickedLastFrame = mouseClicked;
 
             if (hallTorches[0]->isOn && !hallTorches[1]->isOn && !hallTorches[2]->isOn
                 && !hallTorches[3]->isOn && !hallTorches[4]->isOn && hallTorches[5]->isOn
@@ -2124,7 +2316,9 @@ int main()
 
         window.update();
     }
-
+    if (g_audioInitialized) {
+        ma_engine_uninit(&g_audioEngine);
+    }
     return 0;
 }
 
