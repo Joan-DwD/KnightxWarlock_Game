@@ -26,6 +26,15 @@
 #include "miniaudio.h"
 
 // ======================
+// GLOBAL QUEST HANDLING VARIABLES
+// ======================
+
+int currentTask = 1;
+int currentRoom = 4;
+int firstLoad = 1;
+
+
+// ======================
 // RAY CASTING 
 // ======================
 struct Ray {
@@ -68,13 +77,6 @@ inline Ray screenToWorldRay(double mouseX, double mouseY, int screenWidth, int s
     return ray;
 }
 
-// ======================
-// GLOBAL QUEST HANDLING VARIABLES
-// ======================
-
-int currentTask = 1;
-int currentRoom = 1;
-int firstLoad = 1;
 
 // ======================
 // DIALOGUE SYSTEM STATE
@@ -195,6 +197,37 @@ void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader&
 
     // Draw the mesh
     mesh.draw(shader);
+}
+
+void drawSkybox(Mesh& mesh, GLuint cubemapTexture, Shader& shader, Camera& camera, glm::mat4 projectionMatrix) {
+    // 1. Remove camera translation
+    glm::mat4 viewMatrix = camera.getViewMatrix();
+    viewMatrix = glm::mat4(glm::mat3(viewMatrix)); // rotation only
+
+    // 2. Skybox has no model transform
+    glm::mat4 model = glm::mat4(1.0f);
+
+    // 3. MVP
+    glm::mat4 mvp = projectionMatrix * viewMatrix * model;
+
+    // 4. Send to shader
+    GLuint matrixID = glGetUniformLocation(shader.getId(), "MVP");
+    glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+
+    GLuint modelID = glGetUniformLocation(shader.getId(), "model");
+    glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+    // 5. Bind cubemap texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+    // 6. Depth function
+    glDepthFunc(GL_LEQUAL);
+
+    // 7. Draw the cube
+    mesh.draw(shader);
+
+    glDepthFunc(GL_LESS); // restore default
 }
 
 
@@ -409,6 +442,7 @@ struct TreeStruct
     float rotation;
 };
 
+
 int main()
 {
     // ======================
@@ -435,6 +469,7 @@ int main()
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
     Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
+    Shader skyboxShader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
 
     // ======================
     // TEXTURES
@@ -486,7 +521,7 @@ int main()
     GLuint mangrove = loadBMP("Resources/Textures/mangrove.bmp");
     GLuint glass = loadBMP("Resources/Textures/glass.bmp");
     GLuint purpur = loadBMP("Resources/Textures/purpur.bmp");
-
+    GLuint sky = loadBMP("Resources/Textures/sky.bmp");
 
 
     // Character portraits
@@ -533,6 +568,7 @@ int main()
     std::vector<Texture> bedroom_carpet_texture = { { magenta, "texture_diffuse" } };
     std::vector<Texture> bedroom_wall_texture = { { purpur, "texture_diffuse" } };
     std::vector<Texture> window_texture = { { glass, "texture_diffuse" } };
+    std::vector<Texture> skyTexture = { { sky, "texture_diffuse"} };
 
     // ======================
     // LOAD UNIVERSAL MODELS
@@ -557,6 +593,8 @@ int main()
 
     Mesh princess;
 
+    Mesh skyCube = loader.loadObj("Resources/Models/cube.obj", skyTexture);
+
     // Doors
     //Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
 
@@ -567,10 +605,45 @@ int main()
 
     Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", prison_door_texture);
 
-
-
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
+
+    Mesh skyboxMesh = loader.loadObj("Resources/Models/cube.obj", skyTexture);
+
+    // 1. Load 2D BMP
+    GLuint bmp2D = loadBMP("Resources/Textures/sky.bmp"); // your existing loader
+
+    // 2. Get width and height from 2D texture
+    glBindTexture(GL_TEXTURE_2D, bmp2D);
+    int width, height;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+
+    // 3. Read pixels from GPU
+    std::vector<unsigned char> pixels(width* height * 3);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, pixels.data());
+
+    // 4. Create cubemap
+    GLuint skyboxTexture;
+    glGenTextures(1, &skyboxTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+
+    for (int i = 0; i < 6; i++)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            0, GL_RGB,
+            width, height,
+            0, GL_BGR, GL_UNSIGNED_BYTE,
+            pixels.data());
+    }
+
+    // 5. Cubemap parameters
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
 
     // ======================
     // ROOM 1 - PRISON
@@ -752,12 +825,14 @@ int main()
     // TORCH
     // ======================
     Torch* wallTorch = nullptr;
+    Torch* wallTorch2 = nullptr;
 
     Mesh flameCube = loader.loadObj("Resources/Models/cube.obj", paint_orange_texture);
     Mesh stickCube = loader.loadObj("Resources/Models/cube.obj", paint_darkbrown_texture);
 
     // room 1 torch
     wallTorch = new Torch(&torch, &flameCube, glm::vec3(-6.8, 3.0f, 2.0f), 180.0f);
+    wallTorch2 = new Torch(&torch, &flameCube, glm::vec3(6.8, 3.0f, -2.0f), 180.0f);
 
     // room 2 torches
     Torch* hallTorches[] = 
@@ -833,7 +908,14 @@ int main()
     bool doorOpening = false;
     const float DOOR_OPEN_ANGLE = 65.0f;
     const float DOOR_OPEN_SPEED = 25.0f;
+
+    // sound stuff
     bool doorSoundPlayed = false;
+    ma_sound torchAmbient;
+    ma_sound_init_from_file(&g_audioEngine, "audio/torch_ambient.mp3", 0, NULL, NULL, &torchAmbient);
+    ma_sound natureAmbient;
+    ma_sound_init_from_file(&g_audioEngine, "audio/garden_ambient.mp3", 0, NULL, NULL, &natureAmbient);
+    //bool doorSoundPlayed = false;
 
     bool isSolved_torch = false; // room 2 puzzle
     bool isSolved_books = false; // NEEDS ACTUAL PUZZLE LOL
@@ -965,6 +1047,8 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
+                ma_sound_start(&torchAmbient);
+
                 firstLoad = 0;
 
             }
@@ -1049,6 +1133,7 @@ int main()
                         currentTask = 3;
                     }
                     keyPickingUp = true; // Start pickup animation
+                    ma_engine_play_sound(&g_audioEngine, "audio/key.mp3", NULL);
                 }
             }
 
@@ -1078,9 +1163,9 @@ int main()
                     {
                         if (g_audioInitialized && !doorSoundPlayed)
                         {
+                            //AUDIO EXAMPLE
                             ma_engine_play_sound(&g_audioEngine, "audio/creakydoor.wav", NULL);
                             doorSoundPlayed = true;
-                            std::cout << "CREEEEAK" << std::endl;
                         }
                         if (currentTask == 3)
                         {
@@ -1102,7 +1187,7 @@ int main()
                 ModelMatrix = glm::translate(ModelMatrix, keyPos); // Apply animated position
                 ModelMatrix = glm::rotate(ModelMatrix, keyRotation, glm::vec3(0.0f, 1.0f, 0.0f)); // Apply animated rotation
 
-                float keyScale = 0.02f;
+                float keyScale = 0.01f;
                 if (keyPickingUp)
                 {
                     // Shrink and Pulse effect during pickup
@@ -1161,6 +1246,9 @@ int main()
             float distToExit = glm::length(warlockPos - exitPos);
             if (distToExit < 1.0f)
             {
+
+                 
+
 
                 firstLoad = 1;
                 currentRoom = 2;
@@ -1259,6 +1347,7 @@ int main()
                     // debounce
                     if (!eKeyWasPressed) 
                     {
+                        ma_engine_play_sound(&g_audioEngine, "audio/book.mp3", NULL);
                         LoadDialogue(5);
                         if (currentTask == 5)
                         {
@@ -1285,7 +1374,7 @@ int main()
             Ray pickRay = screenToWorldRay(mouseX, mouseY, window.getWidth(), window.getHeight(),
                 ProjectionMatrix, ViewMatrix, camera.getCameraPosition());
 
-            // THIS WILL BE REMOVED AT THE END, I JUST WANTED DEBUG INFO
+            // THIS WILL BE REMOVED AT THE END, I JUST WANTED DEBUG INFO // ok
             if (mouseClicked)
             {
                 std::cout << "MOUSE CLICKED" << std::endl;
@@ -1339,12 +1428,14 @@ int main()
                     std::cout << ">>> HIT DETECTED on Torch " << i << " (distance: " << torchDist << ")" << std::endl;
 
                     // Only toggle if task allows it
-                    if (currentTask == 6)
+                    if (currentTask == 6 && activeIsWarlock)
                     {
                         if (mouseClicked && !mouseClickedLastFrame)
                         {
                             hallTorches[i]->toggle();
                             std::cout << ">>> Torch " << i << " TOGGLED to " << (hallTorches[i]->isOn ? "ON" : "OFF") << std::endl;
+
+                            ma_engine_play_sound(&g_audioEngine, "audio/torch_toggle.mp3", NULL);
                         }
                     }
 
@@ -1392,6 +1483,9 @@ int main()
                 if (distToExit < 1.0f)
                 {
 
+                     
+
+
                     firstLoad = 1;
                     currentRoom = 3;
                     TriggerRoomChange();
@@ -1428,6 +1522,7 @@ int main()
                     currentTask = 8;
                     LoadDialogue(7);
                 }
+
 
                 firstLoad = 0;
             }
@@ -1491,8 +1586,11 @@ int main()
                         // debounce
                         if (!eKeyWasPressed)
                         {
-                            if(!(isSolved_books && i == 0))
+                            if (!(isSolved_books && i == 0))
+                            {
                                 LoadDialogue(300 + i);
+                                ma_engine_play_sound(&g_audioEngine, "audio/book.mp3", NULL);
+                            }
                             eKeyWasPressed = true;
                         }
                     }
@@ -1511,6 +1609,7 @@ int main()
                 isSolved_books = true;
                 if (currentTask == 8)
                 {
+                    ma_engine_play_sound(&g_audioEngine, "audio/click.mp3", NULL);
                     LoadDialogue(8);
                     currentTask = 9;
                 }
@@ -1553,6 +1652,9 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
+
+                     
+
 
                     firstLoad = 1;
                     currentRoom = 4;
@@ -1613,10 +1715,18 @@ int main()
                     LoadDialogue(9);
                 }
 
+                ma_sound_stop(&torchAmbient);
+                ma_sound_start(&natureAmbient);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(0.0f, 2.0f, -14.8f);
 
+            // =====================
+            // DRAW SKY???
+            // ====================
+            
+            
             // ======================
             // DRAW FLOOR
             // ======================
@@ -1757,6 +1867,9 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
+                     
+
+
                     firstLoad = 1;
                     currentRoom = 5;
                     TriggerRoomChange();
@@ -1795,6 +1908,9 @@ int main()
                     LoadDialogue(10);
                 }
 
+                ma_sound_stop(&natureAmbient);
+                ma_sound_start(&torchAmbient);
+
                 firstLoad = 0;
             }
             exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
@@ -1831,6 +1947,8 @@ int main()
             // DRAW DOORS LOCK PUZZLE
             // ==================
 
+
+
             for (int i = 0; i < DOOR_COUNT; i++)
             {
                 if (doors[i].isUnlocked == false)
@@ -1840,9 +1958,13 @@ int main()
                         colliders.push_back(makeAABB(doors[i].position, glm::vec3(0.1f, 2.0f, 2.0f)));
                     else
                         colliders.push_back(makeAABB(doors[i].position, doors[i].scale));
+                    
                 }
                 else
+                {
                     drawObject(prisonDoor, doors[i].position + glm::vec3(0.0f, 4.0f, 0.0f), doors[i].scale, room2shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
+
+                }
                 doors[i].isUnlocked = false;
             }
 
@@ -1878,6 +2000,7 @@ int main()
                         doors[link].isUnlocked = true;
                     }
                 }
+
             }
 
             // ======================
@@ -1916,6 +2039,9 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
+                     
+
+
                     firstLoad = 1;
                     currentRoom = 6;
                     TriggerRoomChange();
@@ -1963,6 +2089,8 @@ int main()
                     currentTask = 13;
                     LoadDialogue(12);
                 }
+
+                 
 
                 firstLoad = 0;
             }
@@ -2051,6 +2179,7 @@ int main()
                         }
                         if (currentTask == 15 && distToPrincess < 3.0f)
                         {
+                            ma_engine_play_sound(&g_audioEngine, "audio/damage.wav", NULL);
                             LoadDialogue(15);
                             currentTask = 16;
                         }
@@ -2074,8 +2203,27 @@ int main()
 
             float distToWindow = glm::length(warlockPos - windowPos);
 
+            // ======================
+            // TORCH
+            // ======================
+            //  offset to be "inside" the flame
+            glm::vec3 flameLightPos = wallTorch->position + glm::vec3(0.0f, 0.4f, 0.0f);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchPos"), flameLightPos.x, flameLightPos.y, flameLightPos.z);
+            glUniform3f(glGetUniformLocation(shader.getId(), "torchColor"), 1.0f, 0.5f, 0.0f);
+            // torch state
+            glUniform1i(glGetUniformLocation(shader.getId(), "torchOn"), wallTorch->isOn);
 
+            wallTorch->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
+
+            // ioana o sa vreau inca o torta aici pe celalalt perete
         }
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+            (float)900 / 1600,
+            0.1f, 1000.0f);
+
+        drawSkybox(skyboxMesh, skyboxTexture, skyboxShader, camera, projection);
+
         // ======================
         // CHARACTER SWAP (SPACE)
         // ======================
@@ -2186,6 +2334,7 @@ int main()
             {
                 glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f); // Set Color to Black
 
+                // worst line of code in history award v
                 drawObject(blackCube, warlockPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
