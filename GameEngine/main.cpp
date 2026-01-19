@@ -199,37 +199,6 @@ void drawObjectSideways(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader&
     mesh.draw(shader);
 }
 
-void drawSkybox(Mesh& mesh, GLuint cubemapTexture, Shader& shader, Camera& camera, glm::mat4 projectionMatrix) {
-    // 1. Remove camera translation
-    glm::mat4 viewMatrix = camera.getViewMatrix();
-    viewMatrix = glm::mat4(glm::mat3(viewMatrix)); // rotation only
-
-    // 2. Skybox has no model transform
-    glm::mat4 model = glm::mat4(1.0f);
-
-    // 3. MVP
-    glm::mat4 mvp = projectionMatrix * viewMatrix * model;
-
-    // 4. Send to shader
-    GLuint matrixID = glGetUniformLocation(shader.getId(), "MVP");
-    glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
-
-    GLuint modelID = glGetUniformLocation(shader.getId(), "model");
-    glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-
-    // 5. Bind cubemap texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-
-    // 6. Depth function
-    glDepthFunc(GL_LEQUAL);
-
-    // 7. Draw the cube
-    mesh.draw(shader);
-
-    glDepthFunc(GL_LESS); // restore default
-}
-
 
 // ==========================================
 // ASSIMP FUNCTIONS
@@ -442,7 +411,6 @@ struct TreeStruct
     float rotation;
 };
 
-
 int main()
 {
     // ======================
@@ -469,7 +437,6 @@ int main()
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
     Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
-    Shader skyboxShader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
 
     // ======================
     // TEXTURES
@@ -605,45 +572,10 @@ int main()
 
     Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", prison_door_texture);
 
+
+
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
-
-    Mesh skyboxMesh = loader.loadObj("Resources/Models/cube.obj", skyTexture);
-
-    // 1. Load 2D BMP
-    GLuint bmp2D = loadBMP("Resources/Textures/sky.bmp"); // your existing loader
-
-    // 2. Get width and height from 2D texture
-    glBindTexture(GL_TEXTURE_2D, bmp2D);
-    int width, height;
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-
-    // 3. Read pixels from GPU
-    std::vector<unsigned char> pixels(width* height * 3);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, pixels.data());
-
-    // 4. Create cubemap
-    GLuint skyboxTexture;
-    glGenTextures(1, &skyboxTexture);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
-
-    for (int i = 0; i < 6; i++)
-    {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-            0, GL_RGB,
-            width, height,
-            0, GL_BGR, GL_UNSIGNED_BYTE,
-            pixels.data());
-    }
-
-    // 5. Cubemap parameters
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
 
     // ======================
     // ROOM 1 - PRISON
@@ -1726,7 +1658,7 @@ int main()
             // DRAW SKY???
             // ====================
             
-            
+            drawObject(skyCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(15.1f, 15.1f, 15.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 0.0f);
             // ======================
             // DRAW FLOOR
             // ======================
@@ -2217,13 +2149,6 @@ int main()
 
             // ioana o sa vreau inca o torta aici pe celalalt perete
         }
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-            (float)900 / 1600,
-            0.1f, 1000.0f);
-
-        drawSkybox(skyboxMesh, skyboxTexture, skyboxShader, camera, projection);
-
         // ======================
         // CHARACTER SWAP (SPACE)
         // ======================
