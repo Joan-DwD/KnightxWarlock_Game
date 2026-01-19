@@ -25,7 +25,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 6;
 int firstLoad = 1;
 
 // ======================
@@ -430,6 +430,8 @@ int main()
     GLuint glass = loadBMP("Resources/Textures/glass.bmp");
     GLuint purpur = loadBMP("Resources/Textures/purpur.bmp");
 
+
+
     // Character portraits
     std::map<std::string, GLuint> portraits;
     portraits["Warlock"] = loadBMP("Resources/Textures/WarlockTest.bmp");
@@ -440,26 +442,26 @@ int main()
     // Delven pack textures
     //GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
 
-    std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_difuse" } };
-    std::vector<Texture> paint_black_texture = { { paint_black, "texture_difuse" } };
-    std::vector<Texture> paint_blue_texture = { { paint_blue, "texture_difuse" } };
-    std::vector<Texture> paint_cyan_texture = { { paint_cyan, "texture_difuse" } };
-    std::vector<Texture> paint_darkblue_texture = { { paint_darkblue, "texture_difuse" } };
-    std::vector<Texture> paint_darkbrown_texture = { { paint_darkbrown, "texture_difuse" } };
-    std::vector<Texture> paint_darkgray_texture = { { paint_darkgray, "texture_difuse" } };
-    std::vector<Texture> paint_gold_texture = { { paint_gold, "texture_difuse" } };
-    std::vector<Texture> paint_green_texture = { { paint_green, "texture_difuse" } };
-    std::vector<Texture> paint_lavender_texture = { { paint_lavender, "texture_difuse" } };
-    std::vector<Texture> paint_lightblue_texture = { { paint_lightblue, "texture_difuse" } };
-    std::vector<Texture> paint_lightbrown_texture = { { paint_lightbrown, "texture_difuse" } };
-    std::vector<Texture> paint_lightgray_texture = { { paint_lightgray, "texture_difuse" } };
-    std::vector<Texture> paint_lime_texture = { { paint_lime, "texture_difuse" } };
-    std::vector<Texture> paint_orange_texture = { { paint_orange, "texture_difuse" } };
-    std::vector<Texture> paint_pink_texture = { { paint_pink, "texture_difuse" } };
-    std::vector<Texture> paint_purple_texture = { { paint_purple, "texture_difuse" } };
-    std::vector<Texture> paint_red_texture = { { paint_red, "texture_difuse" } };
-    std::vector<Texture> paint_white_texture = { { paint_white, "texture_difuse" } };
-    std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_difuse" } };
+    std::vector<Texture> paint_beige_texture = { { paint_beige, "texture_diffuse" } };
+    std::vector<Texture> paint_black_texture = { { paint_black, "texture_diffuse" } };
+    std::vector<Texture> paint_blue_texture = { { paint_blue, "texture_diffuse" } };
+    std::vector<Texture> paint_cyan_texture = { { paint_cyan, "texture_diffuse" } };
+    std::vector<Texture> paint_darkblue_texture = { { paint_darkblue, "texture_diffuse" } };
+    std::vector<Texture> paint_darkbrown_texture = { { paint_darkbrown, "texture_diffuse" } };
+    std::vector<Texture> paint_darkgray_texture = { { paint_darkgray, "texture_diffuse" } };
+    std::vector<Texture> paint_gold_texture = { { paint_gold, "texture_diffuse" } };
+    std::vector<Texture> paint_green_texture = { { paint_green, "texture_diffuse" } };
+    std::vector<Texture> paint_lavender_texture = { { paint_lavender, "texture_diffuse" } };
+    std::vector<Texture> paint_lightblue_texture = { { paint_lightblue, "texture_diffuse" } };
+    std::vector<Texture> paint_lightbrown_texture = { { paint_lightbrown, "texture_diffuse" } };
+    std::vector<Texture> paint_lightgray_texture = { { paint_lightgray, "texture_diffuse" } };
+    std::vector<Texture> paint_lime_texture = { { paint_lime, "texture_diffuse" } };
+    std::vector<Texture> paint_orange_texture = { { paint_orange, "texture_diffuse" } };
+    std::vector<Texture> paint_pink_texture = { { paint_pink, "texture_diffuse" } };
+    std::vector<Texture> paint_purple_texture = { { paint_purple, "texture_diffuse" } };
+    std::vector<Texture> paint_red_texture = { { paint_red, "texture_diffuse" } };
+    std::vector<Texture> paint_white_texture = { { paint_white, "texture_diffuse" } };
+    std::vector<Texture> paint_yellow_texture = { { paint_yellow, "texture_diffuse" } };
 
     //std::vector<Texture> brick_texture = { { floor_brick, "texture_diffuse" } };
 
@@ -498,11 +500,15 @@ int main()
 
     // Doors
     //Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
-    std::vector<Mesh> doorMesh = loadAssimpMesh("Resources/Models/standardDoor.obj");
+
+
+    std::vector<Mesh> doorMesh = loadAssimpMesh("Resources/Models/standardDoor.obj"); // exit door
+    // andreea fix this one ^ and make this one v the same but a diff color
+    Mesh decoDoor = loader.loadObj("Resources/Models/standardDoor.obj", deco_door_texture); // decorative door
 
     Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", prison_door_texture);
 
-    Mesh decoDoor = loader.loadObj("Resources/Models/standardDoor.obj", deco_door_texture);
+
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
@@ -670,18 +676,18 @@ int main()
 
     Mesh bedroomFloorCube;
     Mesh bedroomFloorCarpet;
-
-    Mesh bedroomBed;
     Mesh bedroomTeddy;
 
+    std::vector<Mesh> bedroomBed, bedroomChair, bedroomTable, bedroomNoptiera, bedroomPicture, bedroomCabinet;
+
     // Back wall
-    Wall backWall_6(&bedroomWallCube, glm::vec3(0.0f, -0.9f, 9.0f), glm::vec3(9.0f, 9.0f, 0.1f));
+    Wall backWall_6(&bedroomWallCube, glm::vec3(0.0f, -0.9f, 7.0f), glm::vec3(7.0f, 7.0f, 0.1f));
     // Front wall
-    Wall frontWall_6(&bedroomWallCube, glm::vec3(0.0f, -0.9f, -9.0f), glm::vec3(9.0f, 9.0f, 0.1f));
+    Wall frontWall_6(&bedroomWallCube, glm::vec3(0.0f, -0.9f, -7.0f), glm::vec3(7.0f, 7.0f, 0.1f));
     // Left wall
-    Wall leftWall_6(&bedroomWallCube, glm::vec3(-9.0f, -0.9f, 0.0f), glm::vec3(0.1f, 9.0f, 9.0f));
+    Wall leftWall_6(&bedroomWallCube, glm::vec3(-7.0f, -0.9f, 0.0f), glm::vec3(0.1f, 7.0f, 7.0f));
     // Right wall
-    Wall rightWall_6(&bedroomWallCube, glm::vec3(9.0f, -0.9f, 0.0f), glm::vec3(0.1f, 9.0f, 9.0f));
+    Wall rightWall_6(&bedroomWallCube, glm::vec3(7.0f, -0.9f, 0.0f), glm::vec3(0.1f, 7.0f, 7.0f));
 
     // ======================
     // TORCH
@@ -910,7 +916,7 @@ int main()
             // ======================
 
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 7.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             // window
             drawObject(windowCube, glm::vec3(3.5f, 3.0f, 6.8f), glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
@@ -1077,7 +1083,7 @@ int main()
             // ======================
 
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 7.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             //=======================
             // DRAW BOOK AND BARREL nad knife
@@ -1252,7 +1258,7 @@ int main()
             // ======================
 
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 7.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             drawObject(decoDoor, glm::vec3(-3.5f, 2.0f, 6.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
@@ -1604,7 +1610,7 @@ int main()
             // ======================
 
             drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 0.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(floorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(12.0f, 8.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(floorCube, glm::vec3(0.0f, 8.0f, 0.0f), glm::vec3(12.0f, 0.1f, 12.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 11.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
@@ -1734,10 +1740,16 @@ int main()
                 bedroomFloorCube = loader.loadObj("Resources/Models/cube.obj", bedroom_floor_texture);
                 bedroomFloorCarpet = loader.loadObj("Resources/Models/cube.obj", bedroom_carpet_texture);
 
-                bedroomBed = loader.loadObj("Resources/Models/bed_single_B.obj", paint_pink_texture);
                 bedroomTeddy = loader.loadObj("Resources/Models/teddy.obj", paint_purple_texture);
                 
                 princess = loader.loadObj("Resources/Models/princess.obj", paint_yellow_texture);
+
+                bedroomBed = loadAssimpMesh("Resources/Models/Furniture/bed_single_A.obj");
+                bedroomChair = loadAssimpMesh("Resources/Models/Furniture/chair_A_wood.obj");
+                bedroomTable = loadAssimpMesh("Resources/Models/Furniture/table_small.obj");
+                bedroomNoptiera = loadAssimpMesh("Resources/Models/Furniture/cabinet_small_decorated.obj");
+                bedroomPicture = loadAssimpMesh("Resources/Models/Furniture/pictureframe_large_A.obj");
+                bedroomCabinet = loadAssimpMesh("Resources/Models/Furniture/cabinet_medium_decorated.obj");
 
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
@@ -1778,31 +1790,41 @@ int main()
             // DRAW FLOOR
             // ======================
 
-            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 0.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 8.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f, 32.0f);
+            drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(bedroomFloorCube, glm::vec3(0.0f, 6.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(4.0f, 0.1f, 4.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f, 32.0f);
 
-            drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 8.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
+            drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 6.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
             // ======================
             // DRAW DECORATIONS
             // ======================
 
-            glm::vec3 bedPos(0.0f, 0.0f, -5.5f);
-            glm::vec3 dresserPos(-6.0f, 0.0f, 5.5f);
-            glm::vec3 pianoPos(6.0f, 0.0f, 5.5f);
-            glm::vec3 teddyPos(-6.0, 0.0f, -5.5f);
+            glm::vec3 bedPos(0.0f, 0.0f, -3.5f);
+            glm::vec3 teddyPos(-5.5f, 0.0f, -5.0f);
+            glm::vec3 chairPos(5.0f, 0.0f, 4.0f);
+            glm::vec3 tablePos(5.0f, 0.0f, 5.5f);
+            glm::vec3 noptieraPos(2.7f, 0.0f, -5.9f);
+            glm::vec3 picturePos(5.0f, 3.0f, 6.8f);
+            glm::vec3 cabinetPos(-5.5f, 0.0f, 5.0f);
 
-            glm::vec3 windowPos(6.0f, 3.0f, -8.9f);
-            glm::vec3 princessPos(-3.9f, 0.1f, 3.0f);
-            glm::vec3 armorPos(-3.0f, 0.3f, 0.0f);
+
+            glm::vec3 windowPos(6.9f, 3.0f, -4.5f);
+            glm::vec3 princessPos(-3.0f, 0.1f, 3.0f);
+            glm::vec3 armorPos(0.0f, 0.3f, 1.0f);
             glm::vec3 knifePos(2.0f, 1.1f, -1.0f);
 
-            drawObject(bedroomBed, bedPos, glm::vec3(2.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
-            drawObject(bedroomTeddy, teddyPos, glm::vec3(3.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+
+            drawObject(bedroomBed, bedPos, glm::vec3(2.2f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(bedroomTeddy, teddyPos, glm::vec3(2.5f), shader, ViewMatrix, ProjectionMatrix, 45.0f);
+            drawObject(bedroomChair, chairPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(bedroomTable, tablePos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(bedroomNoptiera, noptieraPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            drawObject(bedroomPicture, picturePos, glm::vec3(1.6f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
+            drawObject(bedroomCabinet, cabinetPos, glm::vec3(1.8f), shader, ViewMatrix, ProjectionMatrix, 90.0f);
 
             // window
-            drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
+            drawObject(windowCube, windowPos, glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 90.0f, 8.0f);
             // princess
             if (currentTask == 16)
                 drawObjectSideways(princess, princessPos, glm::vec3(1.6f), shader, ViewMatrix, ProjectionMatrix, -90.0f);
@@ -1845,11 +1867,16 @@ int main()
                     eKeyWasPressed = false;
                 }
 
-            colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 2.8f))); // tbd
+            colliders.push_back(makeAABB(bedPos, glm::vec3(1.9f, 3.0f, 3.0f))); // tbd
 
             colliders.push_back(makeAABB(teddyPos, glm::vec3(1.5f, 3.0f, 1.5f)));
             colliders.push_back(makeAABB(princessPos, glm::vec3(0.7f, 3.0f, 0.7f)));
             colliders.push_back(makeAABB(armorPos - glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.5f, 3.0f, 0.6f)));
+
+            colliders.push_back(makeAABB(noptieraPos, glm::vec3(0.9f, 3.0f, 0.9f)));
+            colliders.push_back(makeAABB(cabinetPos, glm::vec3(0.9f, 3.0f, 1.6f)));
+            colliders.push_back(makeAABB(chairPos, glm::vec3(0.6f, 3.0f, 0.8f)));
+            colliders.push_back(makeAABB(tablePos, glm::vec3(0.8f, 3.0f, 0.8f)));
 
             float distToWindow = glm::length(warlockPos - windowPos);
 
