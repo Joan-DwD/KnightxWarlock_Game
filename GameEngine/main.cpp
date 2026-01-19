@@ -428,6 +428,7 @@ int main()
     GLuint concrete = loadBMP("Resources/Textures/concrete.bmp");
     GLuint mangrove = loadBMP("Resources/Textures/mangrove.bmp");
     GLuint glass = loadBMP("Resources/Textures/glass.bmp");
+    GLuint purpur = loadBMP("Resources/Textures/purpur.bmp");
 
     // Character portraits
     std::map<std::string, GLuint> portraits;
@@ -471,7 +472,7 @@ int main()
     std::vector<Texture> garden_floor_texture = { { grass, "texture_diffuse" } };
     std::vector<Texture> bedroom_floor_texture = { { oak, "texture_diffuse" } };
     std::vector<Texture> bedroom_carpet_texture = { { magenta, "texture_diffuse" } };
-    std::vector<Texture> bedroom_wall_texture = { { concrete, "texture_diffuse" } };
+    std::vector<Texture> bedroom_wall_texture = { { purpur, "texture_diffuse" } };
     std::vector<Texture> window_texture = { { glass, "texture_diffuse" } };
 
     // ======================
@@ -496,8 +497,11 @@ int main()
     Mesh princess;
 
     // Doors
-    Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
+    //Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
+    std::vector<Mesh> doorMesh = loadAssimpMesh("Resources/Models/standardDoor.obj");
+
     Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", prison_door_texture);
+
     Mesh decoDoor = loader.loadObj("Resources/Models/standardDoor.obj", deco_door_texture);
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
@@ -668,8 +672,6 @@ int main()
     Mesh bedroomFloorCarpet;
 
     Mesh bedroomBed;
-    Mesh bedroomPiano;
-    Mesh bedroomDresser;
     Mesh bedroomTeddy;
 
     // Back wall
@@ -1778,7 +1780,7 @@ int main()
 
             drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 0.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(9.0f, 8.1f, 9.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(5.0f, 0.1f, 5.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f, 32.0f);
 
             drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 8.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
 
