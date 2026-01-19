@@ -129,7 +129,6 @@
     <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ECG_project-main (2)\ECG_project-main\GameEngine\miniaudio.h" />
     <ClInclude Include="Camera\camera.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Graphics\window.h" />

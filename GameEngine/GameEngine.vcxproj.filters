@@ -80,9 +80,6 @@
     <ClInclude Include="Torch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ECG_project-main (2)\ECG_project-main\GameEngine\miniaudio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\vertex_shader.glsl" />
