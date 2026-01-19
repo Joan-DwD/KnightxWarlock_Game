@@ -25,7 +25,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 6;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -561,7 +561,7 @@ int main()
 
     Mesh gardenFloorCube;
     std::vector<Mesh> tree_a, tree_b, tree_c, tree_d, tree_e, tree_f;
-    Mesh frog;
+    std::vector<Mesh> frog;
     std::vector<Mesh> bush_a, bush_b, plant_a, plant_b, rock_a, rock_b;
     Mesh pond_water, pond_frame;
 
@@ -975,7 +975,7 @@ int main()
             // ======================
             if (!keyCollected)
             {
-                drawObject(keyMesh, keyPos, glm::vec3(0.02f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(keyMesh, keyPos, glm::vec3(0.01f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
             // ======================
@@ -1379,7 +1379,7 @@ int main()
                 tree_e_shadow = loader.loadObj("Resources/Models/Nature Pack/Willow_5.obj", paint_black_texture);
                 tree_f_shadow = loader.loadObj("Resources/Models/Nature Pack/Willow_4.obj", paint_black_texture);
 
-                frog = loader.loadObj("Resources/Models/frog.obj", paint_orange_texture);
+                frog = loadAssimpMesh("Resources/Models/frog.obj");
 
                 bush_a = loadAssimpMesh("Resources/Models/Nature Pack/Bush_1.obj");
                 bush_b = loadAssimpMesh("Resources/Models/Nature Pack/BushBerries_2.obj");
@@ -1453,7 +1453,7 @@ int main()
             {
                 glm::vec3 treePos = trees[i].position;
                 glm::vec3 treeScale = glm::vec3(trees[i].scale);
-                glm::vec3 shadowScale = glm::vec3(0.001f, 2.0f, 2.0f);
+                glm::vec3 shadowScale = glm::vec3(2.0f, 0.001f, 2.0f);
 
                 float treeRotation = trees[i].rotation;
 
@@ -1464,7 +1464,7 @@ int main()
                     drawObject(bush_a, -treePos + glm::vec3(1.0f, 0.0f, 1.0f), treeScale - glm::vec3(1.5f), shader, ViewMatrix, ProjectionMatrix, treeRotation);
                     drawObject(tree_a, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation); 
 
-                    drawObjectSideways(tree_a_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    drawObject(tree_a_shadow, treePos + glm::vec3(0.0f, 0.1f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 0.0f); 
                     
                     break;
 
@@ -1475,7 +1475,7 @@ int main()
                     drawObject(tree_b, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
 
 
-                    drawObjectSideways(tree_b_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    drawObject(tree_b_shadow, treePos + glm::vec3(0.0f, 0.1f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 0.0f); 
                     
                     break;
                 }
@@ -1485,7 +1485,7 @@ int main()
                     drawObject(tree_c, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
 
 
-                    drawObjectSideways(tree_c_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    drawObject(tree_c_shadow, treePos + glm::vec3(0.0f, 0.1f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 0.0f); 
                     
                     break;
                 }
@@ -1495,7 +1495,7 @@ int main()
                     drawObject(tree_d, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
 
 
-                    drawObjectSideways(tree_d_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    drawObject(tree_d_shadow, treePos + glm::vec3(0.0f, 0.1f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 0.0f); 
                     
                     break;
                 }
@@ -1505,7 +1505,7 @@ int main()
                     drawObject(tree_e, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
 
 
-                    drawObjectSideways(tree_e_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    drawObject(tree_e_shadow, treePos + glm::vec3(0.0f, 0.1f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 0.0f); 
                     
                     break;
                 }
@@ -1515,7 +1515,7 @@ int main()
                     drawObject(tree_f, treePos, treeScale, shader, ViewMatrix, ProjectionMatrix, treeRotation);
 
 
-                    drawObjectSideways(tree_f_shadow, treePos + glm::vec3(0.0f, 0.2f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 90.0f); 
+                    drawObject(tree_f_shadow, treePos + glm::vec3(0.0f, 0.1f, 0.0f), shadowScale, shader, ViewMatrix, ProjectionMatrix, 0.0f); 
                     
                     break;
                 }
