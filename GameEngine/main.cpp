@@ -102,6 +102,7 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
     mesh.draw(shader);
 }
 
+// for objects with multiple textures, overloaded!
 void drawObject(std::vector<Mesh>& meshes, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation, float tiling = 1.0f) {
     // 1. Calculate Matrix *once* for the whole object
     glm::mat4 model = glm::mat4(1.0f);
