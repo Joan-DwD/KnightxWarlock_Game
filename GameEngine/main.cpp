@@ -545,6 +545,8 @@ int main()
     Mesh floorCube = loader.loadObj("Resources/Models/cube.obj", floor_texture);
     Mesh prisonWall = loader.loadObj("Resources/Models/barsCube.obj", bars_texture);
 
+    Mesh blackCube = loader.loadObj("Resources/Models/cube.obj", paint_black_texture);
+
     // window
     Mesh windowCube = loader.loadObj("Resources/Models/cube.obj", window_texture);
 
@@ -2184,7 +2186,7 @@ int main()
             {
                 glUniform3f(glGetUniformLocation(diagShader.getId(), "color"), 0.0f, 0.0f, 0.0f); // Set Color to Black
 
-                drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, window.getHeight() / 2.0f, 0.0f), glm::vec3(window.getWidth(), window.getHeight(), 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
+                drawObject(blackCube, warlockPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
             // --------------------------
