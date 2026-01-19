@@ -25,7 +25,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 6;
+int currentRoom = 1;
 int firstLoad = 1;
 
 // ======================
@@ -1791,7 +1791,7 @@ int main()
             // ======================
 
             drawObject(bedroomFloorCube, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
-            drawObject(bedroomFloorCube, glm::vec3(0.0f, 6.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
+            drawObject(bedroomFloorCube, glm::vec3(0.0f, 6.1f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
             drawObject(bedroomFloorCarpet, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(4.0f, 0.1f, 4.0f), shader, ViewMatrix, ProjectionMatrix, 45.0f, 32.0f);
 
             drawObject(decoDoor, glm::vec3(0.0f, 2.0f, 6.8f), glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, 180.0f, 4.0f);
