@@ -25,6 +25,9 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "Model Loading\stb_image.h"
+
 // ======================
 // RAY CASTING 
 // ======================
@@ -73,7 +76,7 @@ inline Ray screenToWorldRay(double mouseX, double mouseY, int screenWidth, int s
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 4;
 int firstLoad = 1;
 
 // ======================
@@ -434,7 +437,10 @@ int main()
     Shader room2shader("Shaders/vertex_shader_room2.glsl", "Shaders/fragment_shader_room2.glsl");
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
-    Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
+    Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");\
+    Shader skyboxShader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
+    skyboxShader.use();
+    glUniform1i(glGetUniformLocation(skyboxShader.getId(), "skybox"), 0);
 
     // ======================
     // TEXTURES
@@ -539,6 +545,27 @@ int main()
     // ======================
     MeshLoaderObj loader;
     std::vector<Texture> noTextures;
+
+    // ======================
+    float skyboxVertices[] = {
+        -500.0f, -500.0f,  500.0f,
+         500.0f, -500.0f,  500.0f,
+         500.0f, -500.0f, -500.0f,
+        -500.0f, -500.0f, -500.0f,
+        -500.0f,  500.0f,  500.0f,
+         500.0f,  500.0f,  500.0f,
+         500.0f,  500.0f, -500.0f,
+        -500.0f,  500.0f, -500.0f
+    };
+
+    unsigned int skyboxIndices[] = {
+        1, 2, 6, 6, 5, 1,
+        0, 4, 7, 7, 3, 0,
+        4, 5, 6, 6, 7, 4,
+        0, 3, 2, 2, 1, 0,
+        0, 1, 5, 5, 4, 0,
+        3, 7, 6, 6, 2, 3
+    };
 
     // walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", wall_texture);
@@ -789,6 +816,75 @@ int main()
 
     const int HALL_TORCH_COUNT5 = sizeof(hallTorches5) / sizeof(hallTorches5[0]);
 
+
+    unsigned int skyboxVAO, skyboxVBO, skyboxEBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glGenBuffers(1, &skyboxEBO);
+
+    glBindVertexArray(skyboxVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyboxEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // Load cubemap texture
+    std::vector<std::string> skyboxFaces{
+        "right.png",  
+        "left.png",    
+        "up.png",    
+        "down.png",   
+        "front.png",  
+        "back.png"     
+    };
+
+    unsigned int cubemapTexture;
+    glGenTextures(1, &cubemapTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    for (unsigned int i = 0; i < 6; i++)
+    {
+        int width, height, nrChannels;
+        unsigned char* data = stbi_load(skyboxFaces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            // Determine format based on number of channels
+            GLenum format = GL_RGB;
+            if (nrChannels == 4) {
+                format = GL_RGBA;  // Handle RGBA PNGs
+            }
+
+            glTexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data  // Use detected format
+            );
+            std::cout << "Loaded skybox face: " << skyboxFaces[i]
+                << " (Size: " << width << "x" << height
+                << ", Channels: " << nrChannels << ")" << std::endl;
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Failed to load skybox face: " << skyboxFaces[i] << std::endl;
+        }
+    }
+
+
     // ======================
     // TEXT RENDERER SETUP
     // ======================
@@ -808,6 +904,11 @@ int main()
     // ======================
     // IMPORTANT VARIABLES
     // ======================
+    OctreeNode* octree = nullptr;
+    AABB worldBounds = { glm::vec3(-20, -20, -20), glm::vec3(20, 20, 20) };
+    std::vector<Collider*> activeColliders;
+    Collider* doorCollider = nullptr; // Keep reference to door for Room 1
+
     glm::vec3 warlockPos;
     glm::vec3 knightPos;
     float warlockYaw = 0.0f;
@@ -856,6 +957,7 @@ int main()
     CameraCollider cameraCube;
     cameraCube.halfSize = glm::vec3(0.3f, 1.0f, 0.3f);
     cameraCube.position = camera.getCameraPosition();
+    octree = new OctreeNode(worldBounds);
 
     // ======================
     // MAIN LOOP
@@ -883,8 +985,29 @@ int main()
             camera.getCameraPosition() + camera.getCameraViewDirection(),
             camera.getCameraUp()
         );
+
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.use();
+
+        // Remove translation from view matrix (keeps skybox centered on player)
+        glm::mat4 skyboxView = glm::mat4(glm::mat3(ViewMatrix));
+
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.getId(), "view"), 1, GL_FALSE, glm::value_ptr(skyboxView));
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
+
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS);
+
+        // ======================
+        // DRAW REGULAR SCENE
+        // ======================
         glm::mat4 ModelMatrix;
         glm::mat4 MVP;
+
 
         shader.use();
         GLuint MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
@@ -896,6 +1019,7 @@ int main()
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
 
+   
         // =============================
         // DIALOGUE CYCLING (Press R)
         // =============================
@@ -945,8 +1069,16 @@ int main()
             if (firstLoad == 1)
             {
                 // ======================
-                // ROOM 1 - PRISON
+                // ROOM 1 - PRISON - OCTREE SETUP
                 // ======================
+
+                // Clear previous room's octree
+                if (octree) {
+                    delete octree;
+                    for (Collider* c : activeColliders) delete c;
+                    activeColliders.clear();
+                }
+                octree = new OctreeNode(worldBounds);
 
                 keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
 
@@ -963,8 +1095,46 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
-                firstLoad = 0;
+                // Insert wall colliders into octree
+                Collider* c1 = new Collider();
+                c1->box = backWall.getAABB();
+                c1->typeID = COLLIDER_WALL;
+                octree->insert(c1);
+                activeColliders.push_back(c1);
 
+                Collider* c2 = new Collider();
+                c2->box = frontWall.getAABB();
+                c2->typeID = COLLIDER_WALL;
+                octree->insert(c2);
+                activeColliders.push_back(c2);
+
+                Collider* c3 = new Collider();
+                c3->box = leftWall.getAABB();
+                c3->typeID = COLLIDER_WALL;
+                octree->insert(c3);
+                activeColliders.push_back(c3);
+
+                Collider* c4 = new Collider();
+                c4->box = rightWall.getAABB();
+                c4->typeID = COLLIDER_WALL;
+                octree->insert(c4);
+                activeColliders.push_back(c4);
+
+                Collider* c5 = new Collider();
+                c5->box = middleWall.getAABB();
+                c5->typeID = COLLIDER_WALL;
+                octree->insert(c5);
+                activeColliders.push_back(c5);
+
+                // Door collider (will be toggled active/inactive)
+                doorCollider = new Collider();
+                doorCollider->box = makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f));
+                doorCollider->typeID = COLLIDER_DOOR;
+                doorCollider->active = !doorUnlocked;
+                octree->insert(doorCollider);
+                activeColliders.push_back(doorCollider);
+
+                firstLoad = 0;
             }
 
             exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
@@ -989,12 +1159,6 @@ int main()
             // window
             drawObject(windowCube, glm::vec3(3.5f, 3.0f, 6.8f), glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
 
-            // room 1 colliders
-            colliders.push_back(backWall.getAABB());
-            colliders.push_back(frontWall.getAABB());
-            colliders.push_back(leftWall.getAABB());
-            colliders.push_back(rightWall.getAABB());
-            colliders.push_back(middleWall.getAABB());
 
             // Idle Animation (Floating & Spinning)
             if (!keyCollected && !keyPickingUp)
@@ -1140,11 +1304,8 @@ int main()
             }
 
             // Door collision (only when not unlocked)
-            if (!doorUnlocked)
-            {
-                colliders.push_back(
-                    makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
-                );
+            if (doorCollider) {
+                doorCollider->active = !doorUnlocked;
             }
 
             // ======================
@@ -2151,7 +2312,9 @@ int main()
         }
 
         // Move camera cube with collision
-        movement(cameraCube.position, delta, cameraCube.halfSize, colliders);
+        if(octree){
+            movementOctree(cameraCube.position, delta, cameraCube.halfSize, octree);
+        }
 
         // ======================
         // UPDATE ACTIVE CHARACTER POSITION
