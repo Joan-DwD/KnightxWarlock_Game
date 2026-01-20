@@ -5,11 +5,9 @@ obj/
 Debug/
 GameEngine/Debug
 *.exe
-*.dll
 *.pdb
 *.ilk
 *.tlog
-*.log
-
+*.idb
 # Ignore Mac system files
 .DS_Store
