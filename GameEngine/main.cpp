@@ -30,7 +30,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 5;
+int currentRoom = 0;
 int firstLoad = 1;
 bool gameStart = true;
 
@@ -2134,28 +2134,35 @@ int main()
 
             float distToPrincess = glm::length(warlockPos - princessPos);
             float distToKnife = glm::length(warlockPos - knifePos);
+            float distToWindow = glm::length(warlockPos - windowPos);
 
-                if (window.isPressed(GLFW_KEY_E))
+            if (window.isPressed(GLFW_KEY_E))
+            {
+                if (!eKeyWasPressed)
                 {
-                    if (!eKeyWasPressed)
+                    if (currentTask == 13 && distToPrincess < 3.0f)
                     {
-                        if (currentTask == 13 && distToPrincess < 3.0f)
-                        {
-                            LoadDialogue(13);
-                            currentTask = 14;
-                        }
-                        if (currentTask == 14 && distToKnife < 3.0f)
-                        {
-                            LoadDialogue(14);
-                            currentTask = 15;
-                        }
-                        if (currentTask == 15 && distToPrincess < 3.0f)
-                        {
-                            ma_engine_play_sound(&g_audioEngine, "audio/damage.wav", NULL);
-                            LoadDialogue(15);
-                            currentTask = 16;
-                        }
-                        eKeyWasPressed = true;
+                        LoadDialogue(13);
+                        currentTask = 14;
+                    }
+                    if (currentTask == 14 && distToKnife < 3.0f)
+                    {
+                        LoadDialogue(14);
+                        currentTask = 15;
+                    }
+                    if (currentTask == 15 && distToPrincess < 3.0f)
+                    {                         
+                        ma_engine_play_sound(&g_audioEngine, "audio/damage.wav", NULL);
+                        LoadDialogue(15);
+                        currentTask = 16;
+                    }
+                    if (currentTask == 16 && distToWindow < 4.0f)
+                    {
+                        currentTask = 17;
+                        firstLoad = 1;
+                        currentRoom = 7;
+                    }
+                    eKeyWasPressed = true;
                     }
                 }
                 else {
@@ -2173,10 +2180,6 @@ int main()
             colliders.push_back(makeAABB(chairPos, glm::vec3(0.6f, 3.0f, 0.8f)));
             colliders.push_back(makeAABB(tablePos, glm::vec3(0.8f, 3.0f, 0.8f)));
 
-            float distToWindow = glm::length(warlockPos - windowPos);
-            // ^^^ NEEDS TO BE DONE
-
-
             // ======================
             // TORCH
             // ======================
@@ -2190,6 +2193,20 @@ int main()
             wallTorch->draw(shader, ViewMatrix, ProjectionMatrix, currentFrame);
 
             // ioana o sa vreau inca o torta aici pe celalalt perete
+        }
+        else
+        if (currentRoom == 7)
+        {
+            if (firstLoad == 1)
+            {
+                LoadDialogue(101);
+                firstLoad = 0;
+            }
+            if (!(!currentDialogue.empty() && currentLineIndex < currentDialogue.size()))
+            {
+                glfwSetWindowShouldClose(window.getWindow(), true);
+
+            }
         }
 
         // ======================
