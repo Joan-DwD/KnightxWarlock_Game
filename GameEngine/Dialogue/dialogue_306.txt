@@ -1,1 +1,2 @@
-none book 6
+none clear "Exotic Recipes (Dragon edition), by The Drag-on Queen"
+Warlock clear Not looking for this...

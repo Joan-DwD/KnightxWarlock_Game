@@ -1,1 +1,4 @@
-none book 4
+none clear "Jellyfish Garden 92, by Lillie Lille"
+none clear A note slips from between the pages of the book.
+none clear "Do not look behind the frog"
+Warlock clear What does that even mean?

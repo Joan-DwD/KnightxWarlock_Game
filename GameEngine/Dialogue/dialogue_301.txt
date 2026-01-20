@@ -1,1 +1,4 @@
-none book 1
+none clear "67 Facts about frogs, by The Frog Master"
+none clear A note slips from between the pages of the book.
+none clear "There is a hidden switch somewhere in this room."
+Warlock clear I... knew that... already...

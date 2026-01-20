@@ -1,1 +1,4 @@
-none book 7
+none clear "The Man of the Saw of Chains, by Tatsuki Fujimoto"
+none clear A note slips from between the pages of the book.
+none clear "One of the other 3 notes inside this room is lying."
+Warlock clear Huh? What could this mean?

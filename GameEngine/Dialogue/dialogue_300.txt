@@ -1,1 +1,4 @@
-none book 0
+none clear "Tarot reading guide for dummies, by Tara Carder"
+none clear A note slips from between the pages of the book.
+none clear "There is a door behind this bookshelf."
+Warlock clear Wow. Great insight book.

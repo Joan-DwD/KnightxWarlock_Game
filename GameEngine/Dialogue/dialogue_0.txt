@@ -1,3 +1,15 @@
-Skelly clear hohoho
-Warlock clear someone turn on the lights already
-Knight clear there
+Warlock black Huh? What happened?
+Warlock clear ...huh? Where am I?
+Knight clear So you're finally awake, Warlock.
+Warlock clear Wait, what? Why am I in prison? Who are you?
+Knight clear Well, you just entered the prison, through that window behind you, then you hit your head... and were unconscious for a few moments...
+Knight clear ...but I know what you're here for, you want to kill the Princess, isn't that right?
+Warlock clear How did- Nevermind. Let me out. I just stumbled here, accidentally.
+Knight clear Don't worry, we have a common goal, I'm the head of security here, and I've grown displeased of how the Royalty treat us, the common people.
+Knight clear I can't go after the King or the Queen, as that would cause chaos, but going after their daughter seems like a good wake-up call for them.
+Warlock clear Huh? What are you even talking about?
+Knight clear Let's join forces, and kill the Princess together, are you in?
+Warlock clear How can you even think I'd trust you? You'll just kill me because I'm a warlock, won't you?
+Knight clear You need the Princess's blood, is that right? I may have overheard you during a night patrol, so I made sure the path was clear for you on this night.
+Warlock clear Huh- How- Ok, fine, please, get me out of here.
+none clear Swap your character to the Knight by pressing Space!

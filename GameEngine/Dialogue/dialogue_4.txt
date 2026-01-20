@@ -1,2 +1,5 @@
-black what is this room?
-Knight this is the hallway, go read that book
+Warlock clear Alright, which door do we take?
+Knight clear We can't see the correct door yet, it's sealed by magic, read that book on the left.
+Warlock clear Huh? If you know your way around, can't you unseal the magic?
+Knight clear I'm not a magic user, that's why I needed you.
+Warlock clear I see...

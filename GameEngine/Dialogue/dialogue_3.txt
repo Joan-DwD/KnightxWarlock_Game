@@ -1,2 +1,8 @@
-Warlock Thanks, now where do we go?
-Knight That door right there, go ahead.
+Warlock clear Thanks, now, what's the plan?
+Knight clear That door leads to a hallway that connects the castle...
+Knight clear ...but there is a secret door that leads to a secret passageway that goes directly to the Princess's bedroom.
+Warlock clear That seems way too convenient, why does anything like that even exist...?
+Knight clear The Princess sneaks out sometimes, and this is the safest way to do it, I happen to know my way around it.
+Knight clear So go ahead, I'll come after you.
+Skelly clear Nothing is as it seems, nyo-ho-ho!
+none clear The Warlock is the one who should exit the rooms!

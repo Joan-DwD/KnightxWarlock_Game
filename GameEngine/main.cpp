@@ -581,6 +581,7 @@ int main()
     portraits["Knight"] = loadBMP("Resources/Textures/charPortraitKnight.bmp");
     portraits["Princess"] = loadBMP("Resources/Textures/charPortraitPrincess.bmp");
     portraits["Skelly"] = loadBMP("Resources/Textures/charPortraitSkelly.bmp");
+    portraits["Witch"] = loadBMP("Resources/Textures/charPortraitWarlock.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
     // Delven pack textures
     //GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
@@ -1028,10 +1029,14 @@ int main()
 
     // sound stuff
     bool doorSoundPlayed = false;
+
     ma_sound torchAmbient;
     ma_sound_init_from_file(&g_audioEngine, "audio/torch_ambient.mp3", 0, NULL, NULL, &torchAmbient);
     ma_sound natureAmbient;
     ma_sound_init_from_file(&g_audioEngine, "audio/garden_ambient.mp3", 0, NULL, NULL, &natureAmbient);
+    ma_sound bedroomMusic;
+    ma_sound_init_from_file(&g_audioEngine, "audio/bedroom_music.mp3", 0, NULL, NULL, &bedroomMusic);
+
     bool puzzleDoorPlayed = false;
     bool puzzleDoorPlayed2 = true;
 
@@ -2423,7 +2428,8 @@ int main()
                     LoadDialogue(12);
                 }
 
-                 
+                ma_sound_stop(&torchAmbient);
+                ma_sound_start(&bedroomMusic);
 
                 firstLoad = 0;
             }
@@ -2723,7 +2729,7 @@ int main()
                 // Position: Left side of the dialogue box
                 // Center X is 960. Box width is 1200. Left edge approx 360.
                 // Placed it at x=450, y=100
-                if(line.CharacterName=="Warlock")
+                if(line.CharacterName=="Warlock" || line.CharacterName=="Witch")
                     drawObject(dialogueBoxMesh, glm::vec3(200.0f, 150.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
                 else
                     drawObject(dialogueBoxMesh, glm::vec3(1400.0f, 150.0f, 0.0f), glm::vec3(150.0f, 150.0f, 1.0f), portraitShader, glm::mat4(1.0f), textProjection, 0.0f);
@@ -2756,7 +2762,7 @@ int main()
         case 3: { hint = "Open the door."; break; }
         case 4: { hint = "Exit the Dungeon."; break; }
         case 5: { hint = "Read the book."; break; }
-        case 6: { hint = "Solve the riddle. (Press E near a torch to toggle it)"; break; }
+        case 6: { hint = "Solve the riddle. (Mouse-click on a torch to toggle it)"; break; }
         case 7: { hint = "Exit the Hallway."; break; }
         case 8: { hint = "Find a clue to escape."; break; }
         case 9: { hint = "Exit the Library."; break; }
