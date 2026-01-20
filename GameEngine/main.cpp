@@ -25,12 +25,15 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
+
+#include "Model Loading\stb_image.h"
+
 // ======================
 // GLOBAL QUEST HANDLING VARIABLES
 // ======================
 
 int currentTask = 1;
-int currentRoom = 2;
+int currentRoom = 1;
 int firstLoad = 1;
 bool gameStart = true;
 
@@ -414,6 +417,32 @@ void LoadDialogue(int taskId) {
     std::cout << "Loaded Dialogue Task " << taskId << ": " << currentDialogue.size() << " lines." << std::endl;
 }
 
+void setupRoomOctree(OctreeNode*& octree, std::vector<Collider*>& activeColliders, const AABB& worldBounds) {
+    if (octree) {
+        delete octree;
+        for (Collider* c : activeColliders) delete c;
+        activeColliders.clear();
+    }
+    octree = new OctreeNode(worldBounds);
+}
+
+void addWallCollider(OctreeNode* octree, std::vector<Collider*>& activeColliders, const Wall& wall) {
+    Collider* c = new Collider();
+    c->box = wall.getAABB();
+    c->typeID = COLLIDER_WALL;
+    octree->insert(c);
+    activeColliders.push_back(c);
+}
+
+void addAABBCollider(OctreeNode* octree, std::vector<Collider*>& activeColliders,
+    const glm::vec3& pos, const glm::vec3& halfSize, ColliderType type) {
+    Collider* c = new Collider();
+    c->box = makeAABB(pos, halfSize);
+    c->typeID = type;
+    octree->insert(c);
+    activeColliders.push_back(c);
+}
+
 // =======================
 // ROOM TRANSITION FUNCTION
 // =======================
@@ -487,7 +516,11 @@ int main()
     Shader room2shader("Shaders/vertex_shader_room2.glsl", "Shaders/fragment_shader_room2.glsl");
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader textShader("Shaders/text_vertex.glsl", "Shaders/text_fragment.glsl");
-    Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");
+    Shader diagShader("Shaders/dialogue_vertex.glsl", "Shaders/dialogue_fragment.glsl");\
+    Shader skyboxShader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
+    skyboxShader.use();
+    glUniform1i(glGetUniformLocation(skyboxShader.getId(), "skybox"), 0);
+    Shader waterShader("Shaders/waves_vertex.glsl", "Shaders/waves_fragment.glsl");
 
     // ======================
     // TEXTURES
@@ -593,6 +626,27 @@ int main()
     // ======================
     MeshLoaderObj loader;
     std::vector<Texture> noTextures;
+
+    // ======================
+    float skyboxVertices[] = {
+        -500.0f, -500.0f,  500.0f,
+         500.0f, -500.0f,  500.0f,
+         500.0f, -500.0f, -500.0f,
+        -500.0f, -500.0f, -500.0f,
+        -500.0f,  500.0f,  500.0f,
+         500.0f,  500.0f,  500.0f,
+         500.0f,  500.0f, -500.0f,
+        -500.0f,  500.0f, -500.0f
+    };
+
+    unsigned int skyboxIndices[] = {
+        1, 2, 6, 6, 5, 1,
+        0, 4, 7, 7, 3, 0,
+        4, 5, 6, 6, 7, 4,
+        0, 3, 2, 2, 1, 0,
+        0, 1, 5, 5, 4, 0,
+        3, 7, 6, 6, 2, 3
+    };
 
     // walls and floor
     Mesh wallCube = loader.loadObj("Resources/Models/cube.obj", wall_texture);
@@ -855,6 +909,75 @@ int main()
 
     const int HALL_TORCH_COUNT5 = sizeof(hallTorches5) / sizeof(hallTorches5[0]);
 
+
+    unsigned int skyboxVAO, skyboxVBO, skyboxEBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glGenBuffers(1, &skyboxEBO);
+
+    glBindVertexArray(skyboxVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyboxEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // Load cubemap texture
+    std::vector<std::string> skyboxFaces{
+        "right.png",  
+        "left.png",    
+        "up.png",    
+        "down.png",   
+        "front.png",  
+        "back.png"     
+    };
+
+    unsigned int cubemapTexture;
+    glGenTextures(1, &cubemapTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    for (unsigned int i = 0; i < 6; i++)
+    {
+        int width, height, nrChannels;
+        unsigned char* data = stbi_load(skyboxFaces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            // Determine format based on number of channels
+            GLenum format = GL_RGB;
+            if (nrChannels == 4) {
+                format = GL_RGBA;  // Handle RGBA PNGs
+            }
+
+            glTexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data  // Use detected format
+            );
+            std::cout << "Loaded skybox face: " << skyboxFaces[i]
+                << " (Size: " << width << "x" << height
+                << ", Channels: " << nrChannels << ")" << std::endl;
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Failed to load skybox face: " << skyboxFaces[i] << std::endl;
+        }
+    }
+
+
     // ======================
     // TEXT RENDERER SETUP
     // ======================
@@ -874,6 +997,11 @@ int main()
     // ======================
     // IMPORTANT VARIABLES
     // ======================
+    OctreeNode* octree = nullptr;
+    AABB worldBounds = { glm::vec3(-20, -20, -20), glm::vec3(20, 20, 20) };
+    std::vector<Collider*> activeColliders;
+    Collider* doorCollider = nullptr; // Keep reference to door for Room 1
+
     glm::vec3 warlockPos;
     glm::vec3 knightPos;
     float warlockYaw = 0.0f;
@@ -927,6 +1055,7 @@ int main()
     CameraCollider cameraCube;
     cameraCube.halfSize = glm::vec3(0.3f, 1.0f, 0.3f);
     cameraCube.position = camera.getCameraPosition();
+    octree = new OctreeNode(worldBounds);
 
     // ======================
     // MAIN LOOP
@@ -954,8 +1083,29 @@ int main()
             camera.getCameraPosition() + camera.getCameraViewDirection(),
             camera.getCameraUp()
         );
+
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.use();
+
+        // Remove translation from view matrix (keeps skybox centered on player)
+        glm::mat4 skyboxView = glm::mat4(glm::mat3(ViewMatrix));
+
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.getId(), "view"), 1, GL_FALSE, glm::value_ptr(skyboxView));
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
+
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS);
+
+        // ======================
+        // DRAW REGULAR SCENE
+        // ======================
         glm::mat4 ModelMatrix;
         glm::mat4 MVP;
+
 
         shader.use();
         GLuint MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
@@ -967,6 +1117,7 @@ int main()
             camera.getCameraPosition().y,
             camera.getCameraPosition().z);
 
+   
         // =============================
         // DIALOGUE CYCLING (Press R)
         // =============================
@@ -1032,8 +1183,9 @@ int main()
             if (firstLoad == 1)
             {
                 // ======================
-                // ROOM 1 - PRISON
+                // ROOM 1 - PRISON - OCTREE SETUP
                 // ======================
+                setupRoomOctree(octree, activeColliders, worldBounds);
 
                 keyMesh = loader.loadObj("Resources/Models/key.obj", paint_lavender_texture);
 
@@ -1050,11 +1202,24 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
+                addWallCollider(octree, activeColliders, backWall);
+                addWallCollider(octree, activeColliders, frontWall);
+                addWallCollider(octree, activeColliders, leftWall);
+                addWallCollider(octree, activeColliders, rightWall);
+                addWallCollider(octree, activeColliders, middleWall);
+                addWallCollider(octree, activeColliders, middleWall);
+
+                doorCollider = new Collider();
+                doorCollider->box = makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f));
+                doorCollider->typeID = COLLIDER_DOOR;
+                doorCollider->active = !doorUnlocked;
+                octree->insert(doorCollider);
+                activeColliders.push_back(doorCollider);
+
                 ma_sound_start(&torchAmbient);
                 LoadDialogue(0);
 
                 firstLoad = 0;
-
             }
 
             exitPos = glm::vec3(0.0f, 2.0f, -6.8f);
@@ -1079,20 +1244,6 @@ int main()
             // window
             drawObject(windowCube, glm::vec3(3.5f, 3.0f, 6.8f), glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
 
-            //===================================================================================
-            // DRAWING SKELLY FUNCTION - SKELLY REBORN - DO NOT REMOVE SKELLY - GAME WILL CRASH
-            //===================================================================================
-
-            // THE NEW CHARACTER - MR SKELLY BONES
-            glm::vec3 skellyPos = glm::vec3(-4.5f, 0.0f, 6.5f);
-            drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
-
-            // room 1 colliders
-            colliders.push_back(backWall.getAABB());
-            colliders.push_back(frontWall.getAABB());
-            colliders.push_back(leftWall.getAABB());
-            colliders.push_back(rightWall.getAABB());
-            colliders.push_back(middleWall.getAABB());
 
             // Idle Animation (Floating & Spinning)
             if (!keyCollected && !keyPickingUp)
@@ -1239,11 +1390,8 @@ int main()
             }
 
             // Door collision (only when not unlocked)
-            if (!doorUnlocked)
-            {
-                colliders.push_back(
-                    makeAABB(doorPos, glm::vec3(2.0f, 2.0f, 0.1f))
-                );
+            if (doorCollider) {
+                doorCollider->active = !doorUnlocked;
             }
 
             // ======================
@@ -1289,6 +1437,9 @@ int main()
 
             if (firstLoad == 1)
             {
+
+                setupRoomOctree(octree, activeColliders, worldBounds);
+
                 barrel = loadAssimpMesh("Resources/Models/barrel.obj", spruce, 0);
                 book = loader.loadObj("Resources/Models/openBook.obj", paint_white_texture);
 
@@ -1305,6 +1456,15 @@ int main()
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
 
+                addWallCollider(octree, activeColliders, backWall);
+                addWallCollider(octree, activeColliders, frontWall);
+                addWallCollider(octree, activeColliders, leftWall);
+                addWallCollider(octree, activeColliders, rightWall);
+
+                glm::vec3 barrelPos = glm::vec3(-6.0f, 0.1f, 0.0f);
+                addAABBCollider(octree, activeColliders, barrelPos, glm::vec3(0.8f, 3.0f, 0.8f), COLLIDER_WALL);
+
+
                 if (currentTask == 4)
                 {
                     currentTask = 5;
@@ -1315,11 +1475,6 @@ int main()
             }
             exitPos = glm::vec3(6.8f, 2.0f, 0.0f);
 
-            // room 1 colliders
-            colliders.push_back(backWall.getAABB());
-            colliders.push_back(frontWall.getAABB());
-            colliders.push_back(leftWall.getAABB());
-            colliders.push_back(rightWall.getAABB());
 
             // ======================
             // DRAW WALLS
@@ -1342,7 +1497,7 @@ int main()
 
             glm::vec3 barrelPos = glm::vec3(-6.0f, 0.1f, 0.0f);
             drawObject(barrel, barrelPos, glm::vec3(1.6f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 4.0f);
-            colliders.push_back(makeAABB(barrelPos, glm::vec3(0.8f, 3.0f, 0.8f)));
+            
 
             drawObject(book, barrelPos, glm::vec3(1.6f), room2shader, ViewMatrix, ProjectionMatrix, 90.0f);
 
@@ -1514,6 +1669,7 @@ int main()
             glUniform1i(glGetUniformLocation(room2shader.getId(), "activeTorchCount"), HALL_TORCH_COUNT3);
             if (firstLoad == 1)
             {
+                setupRoomOctree(octree, activeColliders, worldBounds);
                 bookcaseParts = loadAssimpMesh("Resources/Models/bookcaseWideFilled.obj", spruce, 0);
 
                 warlockPos = glm::vec3(-2.7f, 2.0f, 6.0f);
@@ -1528,6 +1684,17 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                addWallCollider(octree, activeColliders, backWall);
+                addWallCollider(octree, activeColliders, frontWall);
+                addWallCollider(octree, activeColliders, leftWall);
+                addWallCollider(octree, activeColliders, rightWall);
+
+                // Add bookshelves
+                for (int i = 0; i < BOOKSHELF_COUNT; i++) {
+                    addAABBCollider(octree, activeColliders, bookshelves[i].position,
+                        glm::vec3(2.0f, 3.0f, 0.6f), COLLIDER_WALL);
+                }
 
                 if (currentTask == 7)
                 {
@@ -1548,12 +1715,6 @@ int main()
             leftWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
             rightWall.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
-
-            colliders.push_back(backWall.getAABB());
-            colliders.push_back(frontWall.getAABB());
-            colliders.push_back(leftWall.getAABB());
-            colliders.push_back(rightWall.getAABB());
-
             // ======================
             // DRAW FLOOR
             // ======================
@@ -1573,7 +1734,6 @@ int main()
                 for (auto& part : bookcaseParts) {
                     drawObject(part, bookshelves[0].position, bookshelves[0].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 }
-                colliders.push_back(makeAABB(bookshelves[0].position, glm::vec3(2.0f, 3.0f, 0.6f)));
 
             }
 
@@ -1583,7 +1743,6 @@ int main()
                 for (auto& part : bookcaseParts) {
                     drawObject(part, bookshelves[i].position, bookshelves[i].scale, room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
                 }
-                colliders.push_back(makeAABB(bookshelves[i].position, glm::vec3(2.0f, 3.0f, 0.4f)));
             }
 
             // reading books:
@@ -1627,8 +1786,17 @@ int main()
                     currentTask = 9;
                 }
             }
-                
 
+            if (isSolved_books) {
+                for (Collider* col : activeColliders) {
+                    AABB shelfBox = makeAABB(bookshelves[0].position, glm::vec3(2.0f, 3.0f, 0.6f));
+                    if (col->box.min == shelfBox.min && col->box.max == shelfBox.max) {
+                        col->active = false;
+                        break;
+                    }
+                }
+            }
+                
             // ======================
             // TORCH
             // ======================
@@ -1711,6 +1879,8 @@ int main()
                 pond_frame = loader.loadObj("Resources/Models/Pond Pack/pond_frame.obj", paint_lightgray_texture);
                 pond_water = loader.loadObj("Resources/Models/Pond Pack/water.obj", paint_blue_texture);
 
+                setupRoomOctree(octree, activeColliders, worldBounds);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 14.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 14.0f);
                 warlockYaw = 180.0f;
@@ -1723,6 +1893,69 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                addWallCollider(octree, activeColliders, backWall_4);
+                addWallCollider(octree, activeColliders, frontWall_4);
+                addWallCollider(octree, activeColliders, leftWall_4);
+                addWallCollider(octree, activeColliders, rightWall_4);
+
+                for (int i = 0; i < 25; i++) {
+                    addAABBCollider(octree, activeColliders, trees[i].position,
+                        glm::vec3(0.5f, 2.0f, 0.5f), COLLIDER_WALL);
+
+                    glm::vec3 treePos = trees[i].position;
+                    glm::vec3 treeScale = glm::vec3(trees[i].scale);
+                    glm::vec3 decoHalfSize = (treeScale - glm::vec3(1.5f)) / 2.0f;
+
+                    switch (i % 6)
+                    {
+                    case 0: // bush_a
+                    {
+                        glm::vec3 decoPos = -treePos + glm::vec3(1.0f, 0.0f, 1.0f);
+                        decoPos.y += decoHalfSize.y;
+                        addAABBCollider(octree, activeColliders, decoPos, decoHalfSize, COLLIDER_WALL);
+                        break;
+                    }
+                    case 1: // bush_b
+                    {
+                        glm::vec3 decoPos = -treePos - glm::vec3(1.0f, 0.0f, 1.0f);
+                        decoPos.y += decoHalfSize.y;
+                        addAABBCollider(octree, activeColliders, decoPos, decoHalfSize, COLLIDER_WALL);
+                        break;
+                    }
+                    case 2: // plant_a
+                    {
+                        glm::vec3 decoPos = -treePos + glm::vec3(1.0f, 0.0f, 1.0f);
+                        decoPos.y += decoHalfSize.y;
+                        addAABBCollider(octree, activeColliders, decoPos, decoHalfSize, COLLIDER_WALL);
+                        break;
+                    }
+                    case 3: // plant_b
+                    {
+                        glm::vec3 decoPos = -treePos - glm::vec3(1.0f, 0.0f, 1.0f);
+                        decoPos.y += decoHalfSize.y;
+                        addAABBCollider(octree, activeColliders, decoPos, decoHalfSize, COLLIDER_WALL);
+                        break;
+                    }
+                    case 4: // rock_a
+                    {
+                        glm::vec3 decoPos = -treePos + glm::vec3(1.0f, 0.0f, 1.0f);
+                        decoPos.y += decoHalfSize.y;
+                        addAABBCollider(octree, activeColliders, decoPos, decoHalfSize, COLLIDER_WALL);
+                        break;
+                    }
+                    case 5: // rock_b
+                    {
+                        glm::vec3 decoPos = -treePos - glm::vec3(1.0f, 0.0f, 1.0f);
+                        decoPos.y += decoHalfSize.y;
+                        addAABBCollider(octree, activeColliders, decoPos, decoHalfSize, COLLIDER_WALL);
+                        break;
+                    }
+                    }
+                }
+
+                addAABBCollider(octree, activeColliders, glm::vec3(0.0f, 0.0f, 0.0f),
+                    glm::vec3(3.5f, 3.0f, 3.5f), COLLIDER_WALL);
 
                 if (currentTask == 9)
                 {
@@ -1754,21 +1987,29 @@ int main()
             leftWall_4.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
             rightWall_4.draw(shader, ViewMatrix, ProjectionMatrix, 32.0f);
 
-            colliders.push_back(backWall_4.getAABB());
-            colliders.push_back(frontWall_4.getAABB());
-            colliders.push_back(leftWall_4.getAABB());
-            colliders.push_back(rightWall_4.getAABB());
-
             // ======================
             // DRAW POND
             // ======================
 
             drawObject(pond_frame, glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.6f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
-            // THIS NEEDS TO BE WAVY JWAN
-            drawObject(pond_water, glm::vec3(0.0f, 0.22f, 0.0f), glm::vec3(0.5f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
+            waterShader.use();
 
-            colliders.push_back(makeAABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(3.5f, 3.0f, 3.5f)));
+            // Set time for animation
+            float time = glfwGetTime();
+            glUniform1f(glGetUniformLocation(waterShader.getId(), "time"), time);
+
+            // Set lighting uniforms
+            glm::vec3 cameraPos = camera.getCameraPosition();
+            glm::vec3 waterLightPos = glm::vec3(0.0f, 10.0f, 0.0f);
+            glUniform3fv(glGetUniformLocation(waterShader.getId(), "viewPos"), 1, &cameraPos[0]);
+            glUniform3fv(glGetUniformLocation(waterShader.getId(), "lightPos"), 1, &waterLightPos[0]);
+            glUniform3f(glGetUniformLocation(waterShader.getId(), "lightColor"), 1.0f, 1.0f, 1.0f);
+
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            drawObject(pond_water, glm::vec3(0.0f, 0.22f, 0.0f), glm::vec3(0.45f), waterShader, ViewMatrix, ProjectionMatrix, 0.0f);
+
+            shader.use();
 
             // ======================
             // EFFED UP GARDEN GENERATION (TRUST ME BRO)
@@ -1845,7 +2086,6 @@ int main()
                 }
                 }
 
-                colliders.push_back(makeAABB(treePos, glm::vec3(0.5f, 2.0f, 0.5f)));
             }
 
             // =======================
@@ -1899,6 +2139,8 @@ int main()
             {
                 frogButton = loader.loadObj("Resources/Models/frog_button.obj", paint_gold_texture);
 
+                setupRoomOctree(octree, activeColliders, worldBounds);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 9.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 9.0f);
                 warlockYaw = 180.0f;
@@ -1911,6 +2153,27 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                addWallCollider(octree, activeColliders, backWall_5);
+                addWallCollider(octree, activeColliders, frontWall_5);
+                addWallCollider(octree, activeColliders, leftWall_5);
+                addWallCollider(octree, activeColliders, rightWall_5);
+                addWallCollider(octree, activeColliders, wall_5_a);
+                addWallCollider(octree, activeColliders, wall_5_b);
+                addWallCollider(octree, activeColliders, wall_5_c);
+
+                for (int i = 0; i < DOOR_COUNT; i++) {
+                    Collider* doorCol = new Collider();
+                    if (i == 1 || i == 2 || i == 4 || i == 5 || i == 7)
+                        doorCol->box = makeAABB(doors[i].position, glm::vec3(0.1f, 2.0f, 2.0f));
+                    else
+                        doorCol->box = makeAABB(doors[i].position, doors[i].scale);
+                        doorCol->typeID = COLLIDER_DOOR;
+                        doorCol->active = true;
+                        doorCol->userData = &doors[i];
+                        octree->insert(doorCol);
+                        activeColliders.push_back(doorCol);
+                }
 
                 if (currentTask == 10)
                 {
@@ -1946,14 +2209,7 @@ int main()
             wall_5_b.draw(room2shader, ViewMatrix, ProjectionMatrix, 4.0f);
             wall_5_c.draw(room2shader, ViewMatrix, ProjectionMatrix, 4.0f);
 
-            colliders.push_back(backWall_5.getAABB());
-            colliders.push_back(frontWall_5.getAABB());
-            colliders.push_back(leftWall_5.getAABB());
-            colliders.push_back(rightWall_5.getAABB());
-            colliders.push_back(wall_5_a.getAABB());
-            colliders.push_back(wall_5_b.getAABB());
-            colliders.push_back(wall_5_c.getAABB());
-
+ 
             // ==================
             // DRAW DOORS LOCK PUZZLE
             // ==================
@@ -1965,17 +2221,19 @@ int main()
                 if (doors[i].isUnlocked == false)
                 {
                     drawObject(prisonDoor, doors[i].position, doors[i].scale, room2shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
-                    if (i == 1 || i == 2 || i == 4 || i == 5 || i == 7)
-                        colliders.push_back(makeAABB(doors[i].position, glm::vec3(0.1f, 2.0f, 2.0f)));
-                    else
-                        colliders.push_back(makeAABB(doors[i].position, doors[i].scale));
-                    
                 }
                 else
                 {
                     drawObject(prisonDoor, doors[i].position + glm::vec3(0.0f, 4.0f, 0.0f), doors[i].scale, room2shader, ViewMatrix, ProjectionMatrix, doors[i].rotation);
-
                 }
+
+                for (Collider* col : activeColliders) {
+                    if (col->userData == &doors[i]) {
+                        col->active = !doors[i].isUnlocked;
+                        break;
+                    }
+                }
+
                 doors[i].isUnlocked = false;
             }
 
@@ -2110,6 +2368,8 @@ int main()
                 bedroomPicture = loadAssimpMesh("Resources/Models/Furniture/pictureframe_large_A.obj");
                 bedroomCabinet = loadAssimpMesh("Resources/Models/Furniture/cabinet_medium_decorated.obj");
 
+                setupRoomOctree(octree, activeColliders, worldBounds);
+
                 warlockPos = glm::vec3(1.2f, 2.0f, 6.0f);
                 knightPos = glm::vec3(-1.2f, 2.0f, 6.0f);
                 warlockYaw = 180.0f;
@@ -2122,6 +2382,30 @@ int main()
 
                 camera.setCameraPosition(cameraCube.position);
                 camera.setYaw(warlockYaw);
+
+                addWallCollider(octree, activeColliders, backWall_6);
+                addWallCollider(octree, activeColliders, frontWall_6);
+                addWallCollider(octree, activeColliders, leftWall_6);
+                addWallCollider(octree, activeColliders, rightWall_6);
+
+                glm::vec3 bedPos(0.0f, 0.0f, -3.5f);
+                glm::vec3 teddyPos(-5.5f, 0.0f, -5.0f);
+                glm::vec3 chairPos(5.0f, 0.0f, 4.0f);
+                glm::vec3 tablePos(5.0f, 0.0f, 5.5f);
+                glm::vec3 noptieraPos(2.7f, 0.0f, -5.9f);
+                glm::vec3 cabinetPos(-5.5f, 0.0f, 5.0f);
+                glm::vec3 princessPos(-3.0f, 0.1f, 3.0f);
+                glm::vec3 armorPos(0.0f, 0.3f, 1.0f);
+
+                addAABBCollider(octree, activeColliders, bedPos, glm::vec3(1.9f, 3.0f, 3.0f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, teddyPos, glm::vec3(1.5f, 3.0f, 1.5f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, princessPos, glm::vec3(0.7f, 3.0f, 0.7f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, armorPos - glm::vec3(1.0f, 0.0f, 0.0f),
+                    glm::vec3(1.5f, 3.0f, 0.6f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, noptieraPos, glm::vec3(0.9f, 3.0f, 0.9f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, cabinetPos, glm::vec3(0.9f, 3.0f, 1.6f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, chairPos, glm::vec3(0.6f, 3.0f, 0.8f), COLLIDER_WALL);
+                addAABBCollider(octree, activeColliders, tablePos, glm::vec3(0.8f, 3.0f, 0.8f), COLLIDER_WALL);
 
                 if (currentTask == 12)
                 {
@@ -2141,11 +2425,6 @@ int main()
             frontWall_6.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
             leftWall_6.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
             rightWall_6.draw(room2shader, ViewMatrix, ProjectionMatrix, 32.0f);
-
-            colliders.push_back(backWall_6.getAABB());
-            colliders.push_back(frontWall_6.getAABB());
-            colliders.push_back(leftWall_6.getAABB());
-            colliders.push_back(rightWall_6.getAABB());
 
             // ======================
             // DRAW FLOOR
@@ -2365,7 +2644,9 @@ int main()
         }
 
         // Move camera cube with collision
-        movement(cameraCube.position, delta, cameraCube.halfSize, colliders);
+        if(octree){
+            movementOctree(cameraCube.position, delta, cameraCube.halfSize, octree);
+        }
 
         // ======================
         // UPDATE ACTIVE CHARACTER POSITION

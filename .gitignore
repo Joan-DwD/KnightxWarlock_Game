@@ -2,7 +2,12 @@
 .vs/
 bin/
 obj/
-
-
+Debug/
+GameEngine/Debug
+*.exe
+*.pdb
+*.ilk
+*.tlog
+*.idb
 # Ignore Mac system files
 .DS_Store
