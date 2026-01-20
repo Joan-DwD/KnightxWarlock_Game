@@ -33,7 +33,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 1;
+int currentRoom = 0;
 int firstLoad = 1;
 bool gameStart = true;
 
@@ -1243,6 +1243,13 @@ int main()
 
             // window
             drawObject(windowCube, glm::vec3(3.5f, 3.0f, 6.8f), glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
+
+            //===============================================================================
+            // THE THIRD COMING OF SKELLY
+            //===============================================================================
+
+            glm::vec3 skellyPos = glm::vec3(-4.5f, 0.0f, 6.5f);
+            drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
 
 
             // Idle Animation (Floating & Spinning)
