@@ -577,10 +577,10 @@ int main()
 
     // Character portraits
     std::map<std::string, GLuint> portraits;
-    portraits["Warlock"] = loadBMP("Resources/Textures/WarlockTest.bmp");
-    portraits["Knight"] = loadBMP("Resources/Textures/PAINT_GOLD.bmp");
-    portraits["Princess"] = loadBMP("Resources/Textures/PAINT_PINK.bmp");
-    portraits["Skelly"] = loadBMP("Resources/Textures/skellyPortrait.bmp");
+    portraits["Warlock"] = loadBMP("Resources/Textures/charPortraitWarlock.bmp");
+    portraits["Knight"] = loadBMP("Resources/Textures/charPortraitKnight.bmp");
+    portraits["Princess"] = loadBMP("Resources/Textures/charPortraitPrincess.bmp");
+    portraits["Skelly"] = loadBMP("Resources/Textures/charPortraitSkelly.bmp");
     Shader portraitShader("Shaders/ui_texture_vertex.glsl", "Shaders/ui_texture_fragment.glsl");
     // Delven pack textures
     //GLuint floor_brick = loadBMP("Resources/Textures/WarlockTest.bmp"); // not a correct bmp file..?
