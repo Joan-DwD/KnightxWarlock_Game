@@ -33,7 +33,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 0;
+int currentRoom = 4;
 int firstLoad = 1;
 bool gameStart = true;
 
@@ -1416,7 +1416,7 @@ int main()
             {
                 firstLoad = 1;
                 currentRoom = 2;
-                // TriggerRoomChange(); timing/function to be adjusted to suit room 1 as well
+                TriggerRoomChange();
             }
 
             // ======================
@@ -1856,6 +1856,9 @@ int main()
         if (currentRoom == 4)
         {
             shader.use();
+            glm::vec3 lightColor = glm::vec3(0.3f, 0.4f, 0.8f);
+            glUniform3f(glGetUniformLocation(shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+
             if (firstLoad == 1)
             {
                 gardenFloorCube = loader.loadObj("Resources/Models/cube.obj", garden_floor_texture);
