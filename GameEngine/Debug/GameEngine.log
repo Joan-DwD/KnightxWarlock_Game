@@ -4,10 +4,7 @@ C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(1
       C:\MyDocs\GitHub\ECG_project\Dependencies\GLFW\include\glfw3.h(98,11):
       see previous definition of 'APIENTRY'
   
-C:\MyDocs\GitHub\ECG_project\GameEngine\main.cpp(954,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
-glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\MyDocs\GitHub\ECG_project\Debug\vc120.pdb'; linking object as if no debug info
+C:\MyDocs\GitHub\ECG_project\GameEngine\main.cpp(884,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   GameEngine.vcxproj -> C:\MyDocs\GitHub\ECG_project\Debug\GameEngine.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

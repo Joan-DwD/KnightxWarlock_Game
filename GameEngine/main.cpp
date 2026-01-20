@@ -30,8 +30,9 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 4;
+int currentRoom = 0;
 int firstLoad = 1;
+bool gameStart = true;
 
 
 // ======================
@@ -864,9 +865,6 @@ int main()
 
     glm::vec3 exitPos;
 
-    // Load dialogue
-    LoadDialogue(0);
-
     Camera camera(warlockPos);
 
     CameraCollider cameraCube;
@@ -923,6 +921,7 @@ int main()
                 if (currentLineIndex < currentDialogue.size()) {
                     currentLineIndex++;
                 }
+
                 rPressedLastFrame = true;
             }
         }
@@ -946,7 +945,7 @@ int main()
             drawObject(warlock, warlockPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.7f), shader, ViewMatrix, ProjectionMatrix, warlockYaw);
 
         // Knight
-        if (currentRoom != 6)
+        if (currentRoom != 6 && currentRoom != 0)
         {
             if(activeIsWarlock)
                 drawObject(knight, knightPos - glm::vec3(0.0f, 1.9f, 0.0f), glm::vec3(1.7f), shader, ViewMatrix, ProjectionMatrix, knightYaw);
@@ -955,6 +954,21 @@ int main()
         // active character position
         glm::vec3 activePos = activeIsWarlock ? warlockPos : knightPos;
 
+        if (currentRoom == 0)
+        {
+            if (firstLoad == 1)
+            {
+                LoadDialogue(100);
+                firstLoad = 0;
+            }
+
+            if (!(!currentDialogue.empty() && currentLineIndex < currentDialogue.size()))
+            {
+                firstLoad = 1;
+                currentRoom = 1;
+            }
+        }
+        else
         if (currentRoom == 1)
         {
             shader.use();
@@ -980,6 +994,7 @@ int main()
                 camera.setYaw(warlockYaw);
 
                 ma_sound_start(&torchAmbient);
+                LoadDialogue(0);
 
                 firstLoad = 0;
 
@@ -1006,6 +1021,14 @@ int main()
 
             // window
             drawObject(windowCube, glm::vec3(3.5f, 3.0f, 6.8f), glm::vec3(1.8f, 1.8f, 0.1f), shader, ViewMatrix, ProjectionMatrix, 0.0f, 8.0f);
+
+            //===================================================================================
+            // DRAWING SKELLY FUNCTION - SKELLY REBORN - DO NOT REMOVE SKELLY - GAME WILL CRASH
+            //===================================================================================
+
+            // THE NEW CHARACTER - MR SKELLY BONES
+            glm::vec3 skellyPos = glm::vec3(-4.5f, 0.0f, 6.5f);
+            drawObject(mrSkelly, skellyPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 180.0f);
 
             // room 1 colliders
             colliders.push_back(backWall.getAABB());
@@ -1178,10 +1201,6 @@ int main()
             float distToExit = glm::length(warlockPos - exitPos);
             if (distToExit < 1.0f)
             {
-
-                 
-
-
                 firstLoad = 1;
                 currentRoom = 2;
                 // TriggerRoomChange(); timing/function to be adjusted to suit room 1 as well
@@ -2134,6 +2153,8 @@ int main()
             colliders.push_back(makeAABB(tablePos, glm::vec3(0.8f, 3.0f, 0.8f)));
 
             float distToWindow = glm::length(warlockPos - windowPos);
+            // ^^^ NEEDS TO BE DONE
+
 
             // ======================
             // TORCH
@@ -2149,6 +2170,7 @@ int main()
 
             // ioana o sa vreau inca o torta aici pe celalalt perete
         }
+
         // ======================
         // CHARACTER SWAP (SPACE)
         // ======================
