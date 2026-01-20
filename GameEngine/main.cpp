@@ -162,7 +162,7 @@ void drawObject(Mesh& mesh, glm::vec3 position, glm::vec3 scale, Shader& shader,
 
 // for objects with multiple textures, overloaded!
 void drawObject(std::vector<Mesh>& meshes, glm::vec3 position, glm::vec3 scale, Shader& shader, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, float rotation, float tiling = 1.0f) {
-    // 1. Calculate Matrix *once* for the whole object
+    // Calculate Matrix *once* for the whole object
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
     model = glm::rotate(model, rotation, glm::vec3(0, 1, 0));
@@ -177,7 +177,7 @@ void drawObject(std::vector<Mesh>& meshes, glm::vec3 position, glm::vec3 scale, 
     glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
     glUniform2f(glGetUniformLocation(shader.getId(), "uvScale"), tiling, tiling);
 
-    // 2. Loop and Draw all sub-meshes
+    // Loop and Draw all sub-meshes
     for (auto& mesh : meshes) {
         mesh.draw(shader);
     }
@@ -248,10 +248,8 @@ std::vector<Mesh> loadAssimpMesh(
         return meshList;
     }
 
-    // Directory of OBJ file
     std::string directory = path.substr(0, path.find_last_of('/'));
 
-    // Process all meshes
     for (unsigned int m = 0; m < scene->mNumMeshes; m++)
     {
         aiMesh* mesh = scene->mMeshes[m];
@@ -261,18 +259,18 @@ std::vector<Mesh> loadAssimpMesh(
         std::vector<Texture> textures;
 
         // =====================
-        // 1. Vertices
+        // VERTICES
         // =====================
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
             Vertex vertex;
 
-            // Position
+            // position
             vertex.pos.x = mesh->mVertices[i].x;
             vertex.pos.y = mesh->mVertices[i].y;
             vertex.pos.z = mesh->mVertices[i].z;
 
-            // Normals
+            // normals
             if (mesh->HasNormals())
             {
                 vertex.normals.x = mesh->mNormals[i].x;
@@ -284,7 +282,7 @@ std::vector<Mesh> loadAssimpMesh(
                 vertex.normals = glm::vec3(0.0f);
             }
 
-            // Texture coordinates
+            // coordinates
             if (mesh->mTextureCoords[0])
             {
                 vertex.textureCoords.x = mesh->mTextureCoords[0][i].x;
@@ -299,7 +297,7 @@ std::vector<Mesh> loadAssimpMesh(
         }
 
         // =====================
-        // 2. Indices
+        // INDICES
         // =====================
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
@@ -309,11 +307,11 @@ std::vector<Mesh> loadAssimpMesh(
         }
 
         // =====================
-        // 3. Materials / Textures
+        // TEXTURES
         // =====================
         bool materialAssigned = false;
 
-        // A. Override texture
+        // override texture
         if (overrideTextureID != 0 && (int)m == overrideMeshIndex)
         {
             Texture t;
@@ -323,12 +321,12 @@ std::vector<Mesh> loadAssimpMesh(
             materialAssigned = true;
         }
 
-        // B. Load from MTL
+        // load .mtl file
         if (!materialAssigned && mesh->mMaterialIndex >= 0)
         {
             aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-            // Try map_Kd first
+            // try mapping texture (bedroom furniture)
             if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
             {
                 aiString texPath;
@@ -343,7 +341,7 @@ std::vector<Mesh> loadAssimpMesh(
             }
             else
             {
-                // Fallback to Kd color
+                // if not, map colors (garden stuff)
                 aiColor3D color(1.0f, 1.0f, 1.0f);
                 if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
                 {
@@ -395,13 +393,13 @@ void LoadDialogue(int taskId) {
         std::string bgOption;
         std::string text;
 
-        // 1. Read first word as Character Name
+        // Read first word as Character Name
         ss >> name;
 
-        // 2. Read second word as background option (clear/black)
+        // Read second word as background option (clear/black)
         ss >> bgOption;
 
-        // 3. Read the rest of the line as the Dialogue Text
+        // Read the rest of the line as the Dialogue Text
         std::getline(ss, text);
 
         // Remove leading space from text (leftover from >> operator)
@@ -525,19 +523,6 @@ int main()
     // ======================
     // TEXTURES
     // ======================
-    //GLuint woodTex = loadBMP("Resources/Textures/wood.bmp");
-    //GLuint rockTex = loadBMP("Resources/Textures/rock.bmp");
-    //GLuint orangeTex = loadBMP("Resources/Textures/orange.bmp");
-    //GLuint purpleTex = loadBMP("Resources/Textures/purple.bmp");
-    //GLuint goldTex = loadBMP("Resources/Textures/gold.bmp");
-    //GLuint bookTex = loadBMP("Resources/Textures/books.bmp");
-
-    //std::vector<Texture> woodTextures = { { woodTex, "texture_diffuse" } };
-    //std::vector<Texture> stoneTextures = { { rockTex, "texture_diffuse" } };
-    //std::vector<Texture> orangeTextures = { { orangeTex, "texture_diffuse" } };
-    //std::vector<Texture> purpleTextures = { { purpleTex, "texture_diffuse" } };
-    //std::vector<Texture> goldTextures = { { goldTex, "texture_diffuse" } };
-    //std::vector<Texture> bookTextures = { { bookTex, "texture_diffuse" } };
 
     GLuint paint_beige = loadBMP("Resources/Textures/PAINT_BEIGE.bmp");
     GLuint paint_black = loadBMP("Resources/Textures/PAINT_BLACK.bmp");
@@ -671,14 +656,9 @@ int main()
     // Doors
     Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
 
-
-    //std::vector<Mesh> doorMesh = loadAssimpMesh("Resources/Models/standardDoor.obj"); // exit door
-    // andreea fix this one ^ and make this one v the same but a diff color
     Mesh decoDoor = loader.loadObj("Resources/Models/standardDoor.obj", deco_door_texture); // decorative door
 
     Mesh prisonDoor = loader.loadObj("Resources/Models/prisonDoorCube.obj", prison_door_texture);
-
-
 
     // Dialogue Box: We pass an EMPTY texture list because the shader uses solid color only
     Mesh dialogueBoxMesh = loader.loadObj("Resources/Models/cube.obj", noTextures);
@@ -695,6 +675,7 @@ int main()
     Mesh mrSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_white_texture);
 
     //Mesh evilSkelly = loader.loadObj("Resources/Models/mr_skelly.obj", paint_red_texture);
+    // do i add him back guys
  
     // Back wall
     Wall backWall(&wallCube, glm::vec3(0.0f, 0.1f, 7.0f), glm::vec3(7.0f, 7.0f, 0.1f)); //back is down
@@ -1041,8 +1022,8 @@ int main()
     bool puzzleDoorPlayed2 = true;
 
     bool isSolved_torch = false; // room 2 puzzle
-    bool isSolved_books = false; // NEEDS ACTUAL PUZZLE LOL
-    bool isSolved_frog = true; //TO BE ADDED
+    bool isSolved_books = false; // room 3 "puzzle"
+    bool isSolved_frog = true; // leftover, there was a puzzle here
     bool isSolved_wardrobe = false; // room 5 puzzle
 
     // frog stuff
@@ -1260,11 +1241,9 @@ int main()
             // Idle Animation (Floating & Spinning)
             if (!keyCollected && !keyPickingUp)
             {
-                // Floating effect (Sine wave on Y-axis)
                 float keyOffset = sin(currentFrame * 2.0f) * 0.15f;
                 keyPos = keyBasePos + glm::vec3(0.0f, keyOffset, 0.0f);
 
-                // Rotation (Spinning)
                 keyRotation += deltaTime * 90.0f;
                 if (keyRotation > 360.0f) keyRotation -= 360.0f;
             }
@@ -1287,7 +1266,7 @@ int main()
                     // Acceleration spin
                     keyRotation += deltaTime * (180.0f + t * 720.0f);
 
-                    // Rise up and shrink using Ease-Out interpolation
+                    // Rise up and shrink
                     float easeOut = 1.0f - (1.0f - t) * (1.0f - t);
                     keyPos = keyBasePos + glm::vec3(0.0f, easeOut * 3.0f, 0.0f);
                 }
@@ -2100,7 +2079,7 @@ int main()
                     break;
                 }
                 }
-
+                //oh my god bruh
             }
 
             // =======================
@@ -2118,8 +2097,9 @@ int main()
             glm::vec3 frogScale(0.15f);
 
             drawObject(frog, frogPos, frogScale, shader, ViewMatrix, ProjectionMatrix, frogRotation * -58 - glm::half_pi<float>());
+            // theres a smarter way to do this btw
 
-            if (isSolved_frog)
+            if (isSolved_frog) //always true
             {
                 // ======================
                 // DRAW EXIT
@@ -2229,8 +2209,6 @@ int main()
             // DRAW DOORS LOCK PUZZLE
             // ==================
 
-
-
             for (int i = 0; i < DOOR_COUNT; i++)
             {
                 if (doors[i].isUnlocked == false)
@@ -2303,10 +2281,6 @@ int main()
                 puzzleDoorPlayed = false;
             }
 
-
-
-
-
             // ======================
             // TORCH
             // ======================
@@ -2348,9 +2322,7 @@ int main()
                 float distToExit = glm::length(warlockPos - exitPos);
                 if (distToExit < 1.0f)
                 {
-                     
-
-
+        
                     firstLoad = 1;
                     currentRoom = 6;
                     TriggerRoomChange();
@@ -2699,9 +2671,9 @@ int main()
                 drawObject(blackCube, warlockPos, glm::vec3(2.0f), shader, ViewMatrix, ProjectionMatrix, 0.0f);
             }
 
-            // --------------------------
-            // 1. Draw Background Box
-            // --------------------------
+            // ==========================
+            // Draw Background Box
+            // ==========================
             diagShader.use();
             glUniform1f(glGetUniformLocation(diagShader.getId(), "alpha"), 1.0f);
             // Pass Color
@@ -2712,9 +2684,9 @@ int main()
             drawObject(dialogueBoxMesh, glm::vec3(window.getWidth() / 2.0f, 100.0f, 0.0f), glm::vec3(1200.0f, 200.0f, 1.0f), diagShader, glm::mat4(1.0f), textProjection, 0.0f);
 
 
-            // --------------------------
-            // 2. Draw Character Portrait
-            // --------------------------
+            // =========================
+            // Draw Character Portrait
+            // =========================
             if (portraits.find(line.CharacterName) != portraits.end())
             {
                 GLuint portraitTex = portraits[line.CharacterName];
@@ -2736,7 +2708,7 @@ int main()
             }
 
             // --------------------------
-            // 3. Render Text
+            // Render Text
             // --------------------------
             if((line.CharacterName!="none") && (line.CharacterName !="black"))
                 // Character Name (Yellow)
@@ -2752,8 +2724,7 @@ int main()
         glm::vec3 white(1.0f, 1.0f, 1.0f);
         std::string hint;
 
-        // --- Render Hints (Always visible) ---
-        // Hints (Top Left)
+        // Render Hints
 
         switch (currentTask)
         {
@@ -2845,3 +2816,12 @@ void processKeyboardInput()
     //if (window.isPressed(GLFW_KEY_A)) camera.rotateOy(cameraSpeed * 15);
     //if (window.isPressed(GLFW_KEY_D)) camera.rotateOy(-cameraSpeed * 15);
 }
+
+
+
+
+
+
+
+
+// 2828
