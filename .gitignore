@@ -2,7 +2,12 @@
 .vs/
 bin/
 obj/
-
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.tlog
+*.log
 
 # Ignore Mac system files
 .DS_Store
