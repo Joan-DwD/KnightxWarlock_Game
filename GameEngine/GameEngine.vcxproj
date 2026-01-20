@@ -154,6 +154,8 @@
     <None Include="Shaders\ui_texture_vertex.glsl" />
     <None Include="Shaders\vertex_shader.glsl" />
     <None Include="Shaders\vertex_shader_room2.glsl" />
+    <None Include="Shaders\waves_fragment.glsl" />
+    <None Include="Shaders\waves_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\rock.bmp" />
