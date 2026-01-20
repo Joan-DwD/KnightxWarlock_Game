@@ -30,7 +30,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 0;
+int currentRoom = 2;
 int firstLoad = 1;
 bool gameStart = true;
 
@@ -223,10 +223,15 @@ GLuint CreateTextureFromColor(float r, float g, float b) {
     return textureID;
 }
 
-std::vector<Mesh> loadAssimpMesh(std::string path, GLuint overrideTextureID = 0, int overrideMeshIndex = -1) {
+std::vector<Mesh> loadAssimpMesh(
+    std::string path,
+    GLuint overrideTextureID = 0,
+    int overrideMeshIndex = -1)
+{
     Assimp::Importer importer;
 
-    const aiScene* scene = importer.ReadFile(path,
+    const aiScene* scene = importer.ReadFile(
+        path,
         aiProcess_Triangulate |
         aiProcess_FlipUVs |
         aiProcess_GenSmoothNormals
@@ -234,54 +239,78 @@ std::vector<Mesh> loadAssimpMesh(std::string path, GLuint overrideTextureID = 0,
 
     std::vector<Mesh> meshList;
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
         std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
         return meshList;
     }
 
-    // Process every sub-mesh
+    // Directory of OBJ file
+    std::string directory = path.substr(0, path.find_last_of('/'));
+
+    // Process all meshes
     for (unsigned int m = 0; m < scene->mNumMeshes; m++)
     {
         aiMesh* mesh = scene->mMeshes[m];
+
         std::vector<Vertex> vertices;
         std::vector<int> indices;
         std::vector<Texture> textures;
 
-        // 1. Process Vertices
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        // =====================
+        // 1. Vertices
+        // =====================
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
             Vertex vertex;
 
+            // Position
             vertex.pos.x = mesh->mVertices[i].x;
             vertex.pos.y = mesh->mVertices[i].y;
             vertex.pos.z = mesh->mVertices[i].z;
 
-            if (mesh->HasNormals()) {
+            // Normals
+            if (mesh->HasNormals())
+            {
                 vertex.normals.x = mesh->mNormals[i].x;
                 vertex.normals.y = mesh->mNormals[i].y;
                 vertex.normals.z = mesh->mNormals[i].z;
             }
+            else
+            {
+                vertex.normals = glm::vec3(0.0f);
+            }
 
-            if (mesh->mTextureCoords[0]) {
+            // Texture coordinates
+            if (mesh->mTextureCoords[0])
+            {
                 vertex.textureCoords.x = mesh->mTextureCoords[0][i].x;
                 vertex.textureCoords.y = mesh->mTextureCoords[0][i].y;
             }
-            else {
-                vertex.textureCoords = glm::vec2(0.0f, 0.0f);
+            else
+            {
+                vertex.textureCoords = glm::vec2(0.0f);
             }
+
             vertices.push_back(vertex);
         }
 
-        // 2. Process Indices
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        // =====================
+        // 2. Indices
+        // =====================
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        {
             aiFace face = mesh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; j++)
-                indices.push_back((int)face.mIndices[j]);
+                indices.push_back(face.mIndices[j]);
         }
 
-        // 3. Process Material (the color extractor)
+        // =====================
+        // 3. Materials / Textures
+        // =====================
         bool materialAssigned = false;
 
-        // A. Check for Override
+        // A. Override texture
         if (overrideTextureID != 0 && (int)m == overrideMeshIndex)
         {
             Texture t;
@@ -291,23 +320,44 @@ std::vector<Mesh> loadAssimpMesh(std::string path, GLuint overrideTextureID = 0,
             materialAssigned = true;
         }
 
-        // B. If no override, try to get color from MTL
-        if (!materialAssigned && mesh->mMaterialIndex >= 0) {
+        // B. Load from MTL
+        if (!materialAssigned && mesh->mMaterialIndex >= 0)
+        {
             aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-            // Get the Diffuse Color (Kd) directly from the MTL
-            aiColor3D color(0.f, 0.f, 0.f);
-            if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+            // Try map_Kd first
+            if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+            {
+                aiString texPath;
+                material->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
 
-                // Create 1x1 texture from color
-                GLuint texID = CreateTextureFromColor(color.r, color.g, color.b);
+                std::string fullPath = directory + "/" + texPath.C_Str();
 
                 Texture t;
-                t.id = texID;
+                t.id = loadTexture(fullPath.c_str());
                 t.type = "texture_diffuse";
                 textures.push_back(t);
             }
+            else
+            {
+                // Fallback to Kd color
+                aiColor3D color(1.0f, 1.0f, 1.0f);
+                if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+                {
+                    GLuint texID = CreateTextureFromColor(
+                        color.r,
+                        color.g,
+                        color.b
+                    );
+
+                    Texture t;
+                    t.id = texID;
+                    t.type = "texture_diffuse";
+                    textures.push_back(t);
+                }
+            }
         }
+
         meshList.push_back(Mesh(vertices, indices, textures));
     }
 
@@ -1287,7 +1337,7 @@ int main()
             drawObject(floorCube, glm::vec3(0.0f, 7.0f, 0.0f), glm::vec3(7.0f, 0.1f, 7.0f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f, 32.0f);
 
             //=======================
-            // DRAW BOOK AND BARREL nad knife
+            // DRAW BOOK AND BARREL
             //=======================
 
             glm::vec3 barrelPos = glm::vec3(-6.0f, 0.1f, 0.0f);
