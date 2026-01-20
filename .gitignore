@@ -2,6 +2,8 @@
 .vs/
 bin/
 obj/
+Debug/
+GameEngine/Debug
 *.exe
 *.dll
 *.pdb
