@@ -1,8 +1,10 @@
-# Blender 5.0.1 MTL File: 'None'
+# Blender 4.0.2 MTL File: 'MedievalVillage_Modules_Standard.blend'
 # www.blender.org
 
 newmtl MI_MetalOrnaments
 Ka 1.000000 1.000000 1.000000
+# Solid Gray Color for Handle/Bars
+Kd 0.250000 0.250000 0.250000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
@@ -11,6 +13,8 @@ illum 3
 
 newmtl MI_WoodTrim_Wear
 Ka 1.000000 1.000000 1.000000
+# Solid Brown Color for the Door
+Kd 0.360000 0.200000 0.090000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000

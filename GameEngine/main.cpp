@@ -668,10 +668,10 @@ int main()
     Mesh skyCube = loader.loadObj("Resources/Models/cube.obj", skyTexture);
 
     // Doors
-    //Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
+    Mesh doorMesh = loader.loadObj("Resources/Models/standardDoor.obj", door_texture);
 
 
-    std::vector<Mesh> doorMesh = loadAssimpMesh("Resources/Models/standardDoor.obj"); // exit door
+    //std::vector<Mesh> doorMesh = loadAssimpMesh("Resources/Models/standardDoor.obj"); // exit door
     // andreea fix this one ^ and make this one v the same but a diff color
     Mesh decoDoor = loader.loadObj("Resources/Models/standardDoor.obj", deco_door_texture); // decorative door
 
@@ -1651,7 +1651,7 @@ int main()
                 // ======================
 
                 drawObject(doorMesh, exitPos, glm::vec3(1.5f, 2.0f, 0.1f), room2shader, ViewMatrix, ProjectionMatrix, -90.0f, 4.0f);
-                drawObject(blackCube, exitPos + glm::vec3(0.0f, 1.0f, -0.1f), glm::vec3(0.1f, 0.5f, 0.5f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
+                drawObject(blackCube, exitPos + glm::vec3(0.1f, 1.0f, 0.0f), glm::vec3(0.1f, 0.5f, 0.5f), room2shader, ViewMatrix, ProjectionMatrix, 0.0f);
 
                 // ======================
                 // EXIT INTERACTION
