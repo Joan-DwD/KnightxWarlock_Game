@@ -4,7 +4,7 @@ C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(1
       C:\MyDocs\GitHub\ECG_project\Dependencies\GLFW\include\glfw3.h(98,11):
       see previous definition of 'APIENTRY'
   
-C:\MyDocs\GitHub\ECG_project\GameEngine\main.cpp(884,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\MyDocs\GitHub\ECG_project\GameEngine\main.cpp(885,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   GameEngine.vcxproj -> C:\MyDocs\GitHub\ECG_project\Debug\GameEngine.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

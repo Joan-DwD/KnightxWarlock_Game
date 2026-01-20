@@ -30,7 +30,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 0;
+int currentRoom = 5;
 int firstLoad = 1;
 bool gameStart = true;
 
@@ -848,7 +848,8 @@ int main()
     ma_sound_init_from_file(&g_audioEngine, "audio/torch_ambient.mp3", 0, NULL, NULL, &torchAmbient);
     ma_sound natureAmbient;
     ma_sound_init_from_file(&g_audioEngine, "audio/garden_ambient.mp3", 0, NULL, NULL, &natureAmbient);
-    //bool doorSoundPlayed = false;
+    bool puzzleDoorPlayed = false;
+    bool puzzleDoorPlayed2 = true;
 
     bool isSolved_torch = false; // room 2 puzzle
     bool isSolved_books = false; // NEEDS ACTUAL PUZZLE LOL
@@ -1924,6 +1925,7 @@ int main()
             // =======================
 
             isSolved_wardrobe = false;
+            bool noButtonActive = true;
 
             for (int i = 0; i < BUTTON_COUNT; i++)
             {
@@ -1936,6 +1938,13 @@ int main()
                 float distToButton_K = glm::length(knightPos - buttons[i].position);
                 if (distToButton_W < 1.0f || distToButton_K < 1.0f)
                 {
+                    noButtonActive = false;
+                    puzzleDoorPlayed2 = false;
+                    if (!puzzleDoorPlayed)
+                    {
+                        ma_engine_play_sound(&g_audioEngine, "audio/door_up.mp3", NULL);
+                        puzzleDoorPlayed = true;
+                    }
                     if (i == 0)
                     {
                         if (currentTask == 11)
@@ -1951,8 +1960,20 @@ int main()
                         doors[link].isUnlocked = true;
                     }
                 }
-
             }
+            if (noButtonActive)
+            {
+                if (!puzzleDoorPlayed2)
+                {
+                    ma_engine_play_sound(&g_audioEngine, "audio/door_down.mp3", NULL);
+                    puzzleDoorPlayed2 = true;
+                }
+                puzzleDoorPlayed = false;
+            }
+
+
+
+
 
             // ======================
             // TORCH
