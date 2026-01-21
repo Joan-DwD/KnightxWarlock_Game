@@ -33,7 +33,7 @@
 // ======================
 
 int currentTask = 1;
-int currentRoom = 4;
+int currentRoom = 0;
 int firstLoad = 1;
 bool gameStart = true;
 
