@@ -16,7 +16,7 @@
 
 *"Then, all I need for my potion to be done is... **princess blood**... That's the last thing I need... "*
 
-WARLOCK X KNIGHT is a short, single-player adventure, in which you will have to traverse a series of puzzles designed around the 'character swap' gimmick. 
+WARLOCK X KNIGHT is a short, single-player adventure, in which you will have to solve a series of puzzles designed around the 'character swap' gimmick. 
 Switch between the Warlock and the Knight as you traverse the winding castle rooms. Each challenge surpassed brings you one step closer to your objective: to 
 reach the princess's quarters and obtain her blood.
 
@@ -68,7 +68,7 @@ Copy the repository and open *GameEngine.sln*. In the Visual Studio terminal, ru
 | <img src="https://avatars.githubusercontent.com/u/209956358?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/183308975?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/182642157?v=4" width="100">  | <img src="https://avatars.githubusercontent.com/u/209906609?v=4" width="100"> |
 | ------------- | ------------- | ------------- | ------------- |
 | **Daoudo Mohamed** | **Nedelcu Andreea**  | **Nedelcu Ioana** | **Profir Andrei** |
-| TBA | TBA | TBA | TBA |
+| - octree based collisions <br> - water physics (gerstner waves) <br> - key/door animations <br> - mouse enabled object interaction (raycasting) <br> - skybox | - text rendering <br> - dialogue engine <br> - mtl file support (custom assimp mesh loader) <br> - texture tiling implementation <br> - texturing <br> - asset and texture curation | - torch object (placement, logic, animation) <br> - lighting system, shaders <br> - room transition animation <br> - character portraits and poster <br> - readme | - puzzle design and implementation <br> - quest progression logic <br> - room layouts, object placements, texturing <br> - custom object drawing function <br> - character and camera movement <br>- story and dialogue <br> - project manager|
 
 ## 📜 License
 Under exclusive copyright
@@ -76,3 +76,5 @@ Under exclusive copyright
 ## 📖 References
 - [Text Rendering](https://learnopengl.com/In-Practice/Text-Rendering) by Learn OpenGL
 - [Basic Lighting](https://learnopengl.com/Lighting/Basic-Lighting) by Learn OpenGL
+- [Model Loading](https://learnopengl.com/Model-Loading/Model) by Learn OpenGL
+- [The Asset-Importer-Lib Documentation](https://the-asset-importer-lib-documentation.readthedocs.io/en/latest/index.html)
